@@ -4,7 +4,7 @@ import logging
 import re
 from typing import Optional
 
-import anthropic
+import openai
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -34,17 +34,17 @@ app.add_middleware(
 
 # ── Anthropic client ──────────────────────────────────────────────────────────
 
-_client: Optional[anthropic.Anthropic] = None
+_client: Optional[openai.OpenAI] = None
 
 
-def get_client() -> Optional[anthropic.Anthropic]:
+def get_client() -> Optional[openai.OpenAI]:
     global _client
     if _client is None:
-        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        api_key = os.environ.get("NVIDIA_API_KEY")
         if not api_key:
-            logger.warning("ANTHROPIC_API_KEY not set — extraction will return empty results")
+            logger.warning("NVIDIA_API_KEY not set — extraction will return empty results")
             return None
-        _client = anthropic.Anthropic(api_key=api_key)
+        _client = openai.OpenAI(api_key=api_key, base_url="https://integrate.api.nvidia.com/v1")
     return _client
 
 # ── Cross-Encoder (Lazy Load) ─────────────────────────────────────────────────
@@ -157,7 +157,7 @@ async def health():
     client = get_client()
     return {
         "status": "ok",
-        "anthropic_configured": client is not None,
+        "nvidia_nim_configured": client is not None,
     }
 
 
@@ -174,11 +174,14 @@ async def extract(request: ExtractRequest) -> ExtractResponse:
     content = request.content[:4000]  # Token limit guard
 
     try:
-        message = client.messages.create(
-            model="claude-3-haiku-20240307",  # Fast and cost-efficient for extraction
+        message = client.chat.completions.create(
+            model="meta/llama-3.1-8b-instruct",
             max_tokens=1024,
-            system=SYSTEM_PROMPT,
             messages=[
+                {
+                    "role": "system",
+                    "content": SYSTEM_PROMPT
+                },
                 {
                     "role": "user",
                     "content": f"Extract entities and facts from this {request.memory_type} memory:\n\n{content}",
@@ -186,7 +189,7 @@ async def extract(request: ExtractRequest) -> ExtractResponse:
             ],
         )
 
-        raw_text = message.content[0].text if message.content else ""
+        raw_text = message.choices[0].message.content if message.choices else ""
         if not raw_text.strip():
             return EMPTY_RESULT
 
@@ -226,8 +229,8 @@ async def extract(request: ExtractRequest) -> ExtractResponse:
     except json.JSONDecodeError as e:
         logger.warning("JSON parse error in extraction response: %s", e)
         return EMPTY_RESULT
-    except anthropic.APIError as e:
-        logger.warning("Anthropic API error: %s", e)
+    except openai.OpenAIError as e:
+        logger.warning("NVIDIA API error: %s", e)
         return EMPTY_RESULT
     except Exception as e:
         logger.error("Unexpected extraction error: %s", e, exc_info=True)
