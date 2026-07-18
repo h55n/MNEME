@@ -1,4 +1,5 @@
-import { ethers } from 'ethers';
+import { createPublicClient, createWalletClient, http, Hex, padHex, stringToHex, encodeFunctionData, parseAbi } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
 import { db } from '../db/index.js';
 import { attestations } from '../db/schema.js';
 import { eq, isNull } from 'drizzle-orm';
@@ -8,10 +9,10 @@ import { createLogger } from '../utils/logger.js';
 const logger = createLogger('attestation-batcher');
 
 // ABI for AttestationAggregator.batchAttest
-const ATTESTATION_ABI = [
+const ATTESTATION_ABI = parseAbi([
   'function batchAttest(bytes32[] vaultIds, bytes32[] contentHashes, bytes32[] stateHashes, uint8[] operationTypes, uint256[] timestamps) returns (uint256)',
   'event BatchAttested(uint256 indexed batchId, uint256 attestationCount, address indexed submitter, uint256 timestamp)',
-];
+]);
 
 const OPERATION_TYPES: Record<string, number> = {
   WRITE: 0,
@@ -37,9 +38,10 @@ export class AttestationBatcher {
   private readonly BATCH_SIZE = parseInt(process.env.ATTESTATION_BATCH_SIZE ?? '100');
   private readonly FLUSH_INTERVAL_MS = parseInt(process.env.ATTESTATION_FLUSH_INTERVAL_MS ?? '10000');
 
-  private provider?: ethers.JsonRpcProvider;
-  private signer?: ethers.Wallet;
-  private contract?: ethers.Contract;
+  private publicClient?: ReturnType<typeof createPublicClient>;
+  private walletClient?: ReturnType<typeof createWalletClient>;
+  private account?: ReturnType<typeof privateKeyToAccount>;
+  private contractAddress?: `0x${string}`;
 
   constructor() {
     this.initBlockchain();
@@ -57,9 +59,10 @@ export class AttestationBatcher {
     }
 
     try {
-      this.provider = new ethers.JsonRpcProvider(rpcUrl);
-      this.signer = new ethers.Wallet(privateKey, this.provider);
-      this.contract = new ethers.Contract(contractAddress, ATTESTATION_ABI, this.signer);
+      this.publicClient = createPublicClient({ transport: http(rpcUrl) });
+      this.account = privateKeyToAccount(privateKey as `0x${string}`);
+      this.walletClient = createWalletClient({ account: this.account, transport: http(rpcUrl) });
+      this.contractAddress = contractAddress as `0x${string}`;
       logger.info({ contractAddress }, 'Attestation batcher connected to Monad');
     } catch (err) {
       logger.error({ err }, 'Failed to initialise blockchain connection');
@@ -93,31 +96,39 @@ export class AttestationBatcher {
     logger.info({ batchSize: batch.length }, 'Flushing attestation batch');
 
     try {
-      if (!this.contract || !this.signer) {
+      if (!this.publicClient || !this.walletClient || !this.account || !this.contractAddress) {
         logger.warn('No blockchain connection — attestations marked as pending');
         return;
       }
 
-      const vaultIds = batch.map(a => ethers.zeroPadBytes(
-        ethers.toUtf8Bytes(a.vaultId).slice(0, 32), 32
-      ));
-      const contentHashes = batch.map(a => `0x${a.contentHash.padEnd(64, '0').slice(0, 64)}`);
-      const stateHashes = batch.map(a => `0x${a.vaultStateHash.padEnd(64, '0').slice(0, 64)}`);
+      const vaultIds = batch.map(a => padHex(stringToHex(a.vaultId.slice(0, 32)), { size: 32 }));
+      const contentHashes = batch.map(a => `0x${a.contentHash.padEnd(64, '0').slice(0, 64)}` as Hex);
+      const stateHashes = batch.map(a => `0x${a.vaultStateHash.padEnd(64, '0').slice(0, 64)}` as Hex);
       const opTypes = batch.map(a => OPERATION_TYPES[a.operation] ?? 0);
-      const timestamps = batch.map(a => Math.floor(new Date(a.createdAt).getTime() / 1000));
+      const timestamps = batch.map(a => BigInt(Math.floor(new Date(a.createdAt).getTime() / 1000)));
 
-      const tx = await this.contract.batchAttest(
-        vaultIds,
-        contentHashes,
-        stateHashes,
-        opTypes,
-        timestamps,
-        { gasLimit: 5_000_000 }
-      );
+      // Estimate gas and add a 10% buffer per monskills `gas` skill guidelines
+      const requestArgs = {
+        account: this.account,
+        to: this.contractAddress,
+        data: encodeFunctionData({
+          abi: ATTESTATION_ABI,
+          functionName: 'batchAttest',
+          args: [vaultIds, contentHashes, stateHashes, opTypes, timestamps]
+        })
+      } as const;
 
-      const receipt = await tx.wait();
-      const txHash = receipt.hash;
-      const blockNumber = receipt.blockNumber;
+      const estimatedGas = await this.publicClient.estimateGas(requestArgs);
+      const gasLimit = estimatedGas + (estimatedGas / 10n); // 10% buffer
+
+      const txHash = await this.walletClient.sendTransaction({
+        ...requestArgs,
+        chain: null,
+        gas: gasLimit,
+      });
+
+      const receipt = await this.publicClient.waitForTransactionReceipt({ hash: txHash });
+      const blockNumber = Number(receipt.blockNumber);
 
       logger.info({ txHash, blockNumber, batchSize: batch.length }, 'Batch attested on Monad');
 

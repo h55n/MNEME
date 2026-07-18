@@ -1,0 +1,19 @@
+name: indexer
+description: MNEME indexer
+chains:
+  - id: 10143
+    rpc:
+      - url: https://testnet-rpc.monad.xyz
+    start_block: 0
+    contracts:
+      - name: AttestationAggregator
+        address:
+          - 0x9c36aC707F29f0EfBb147710A288e3c9e4069A93
+        handler: src/EventHandlers.ts
+        events:
+          - event: BatchAttested(uint256 indexed batchId, uint256 attestationCount, address indexed submitter, uint256 timestamp)
+          - event: OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
+          - event: SubmitterAuthorised(address indexed submitter, bool authorised)
+field_selection:
+  transaction_fields:
+    - hash

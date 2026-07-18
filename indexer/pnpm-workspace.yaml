@@ -1,0 +1,5 @@
+allowBuilds:
+  '@greenlabs/ppx-spice': set this to true or false
+  esbuild: true
+  gentype: set this to true or false
+  rescript: true

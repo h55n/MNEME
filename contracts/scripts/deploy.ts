@@ -34,10 +34,15 @@ async function main() {
   // Deploy MemoryMarket (requires USDC token address)
   // -------------------------------------------------------------------------
   console.log('\n[3/4] Deploying MemoryMarket...');
-  // On devnet/testnet: deploy a mock USDC; on mainnet: use real USDC
   let usdcAddress = process.env.USDC_TOKEN_ADDRESS;
+
+  if (!usdcAddress && network.chainId === 41454) { // Monad Mainnet (based on hardhat config)
+    console.log('  Monad Mainnet detected. Using canonical USDC address.');
+    usdcAddress = '0x754704Bc059F8C67012fEd69BC8A327a5aafb603';
+  }
+
   if (!usdcAddress) {
-    console.log('  No USDC address — deploying MockUSDC for testnet...');
+    console.log('  No USDC address — deploying MockUSDC for testnet/local...');
     const MockERC20 = await ethers.getContractFactory('MockERC20');
     const mockUsdc = await MockERC20.deploy('USD Coin', 'USDC', 6);
     await mockUsdc.waitForDeployment();

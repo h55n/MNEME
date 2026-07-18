@@ -1,0 +1,29 @@
+# Envio Indexer Setup Instructions
+
+To complete the Indexer Integration using Envio for Monad, you need to verify your smart contracts and scaffold the indexer locally.
+
+**Important Note:** The Envio `contract-import explorer` feature requires your contract to be verified on a block explorer. 
+
+1. **Verify your contract:**
+   Ensure `AttestationAggregator` is deployed and verified on the Monad Testnet explorer (`testnet.monadscan.com`).
+   *If you deployed using Hardhat, you may need a block explorer API key for verification.*
+
+2. **Scaffold the Indexer:**
+   Once verified, run the following command in the root `indexer` folder:
+   ```bash
+   npx envio@3.0.0-alpha.21 init contract-import explorer \
+     -b monad-testnet \
+     -c 0x9c36aC707F29f0EfBb147710A288e3c9e4069A93 \
+     -n AttestationAggregator \
+     -l typescript \
+     -d ./ -o ./ \
+     --all-events --single-contract --api-token ""
+   ```
+
+3. **Start the Indexer:**
+   ```bash
+   npm install
+   npm run start
+   ```
+
+Let me know once this is done!

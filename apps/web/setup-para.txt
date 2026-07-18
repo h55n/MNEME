@@ -1,0 +1,25 @@
+# Para Wallet Setup Instructions
+
+To complete the Wallet Integration using Para for embedded MPC wallets, you must execute the interactive CLI setup on your local machine.
+
+Run the following commands sequentially:
+
+1. **Install the Para CLI:**
+   ```bash
+   npm install -g @getpara/cli
+   ```
+
+2. **Login to Para (Interactive):**
+   ```bash
+   para login
+   ```
+   *This will open your browser for you to complete the OAuth authentication.*
+
+3. **Initialize Para in the web app:**
+   ```bash
+   cd apps/web
+   para init
+   ```
+   *Follow the CLI prompts to select your organisation and create a new project. Select the Next.js/React template if prompted.*
+
+Once you have completed these steps, let me know, and I will wire the resulting `ParaProvider` into your `apps/web/src/app/layout.tsx` to enable secure wallet logins on the dashboard!

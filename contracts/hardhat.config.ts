@@ -45,6 +45,21 @@ const config: HardhatUserConfig = {
     cache: './cache',
     artifacts: './artifacts',
   },
+  etherscan: {
+    apiKey: {
+      monadTestnet: 'empty',
+    },
+    customChains: [
+      {
+        network: 'monadTestnet',
+        chainId: 10143,
+        urls: {
+          apiURL: 'https://testnet-api.monadscan.com/api',
+          browserURL: 'https://testnet.monadscan.com',
+        },
+      },
+    ],
+  },
 };
 
 export default config;
