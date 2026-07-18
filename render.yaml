@@ -1,0 +1,46 @@
+services:
+  # API Service
+  - type: web
+    name: mneme-api
+    env: node
+    buildCommand: npm i && npx turbo run build --filter=@mneme/api
+    startCommand: npm run start --workspace=apps/api
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false # Set in Render dashboard (e.g., Neon connection string)
+      - key: REDIS_URL
+        sync: false # Set in Render dashboard (e.g., Upstash connection string)
+      - key: NEO4J_URI
+        sync: false # Optional: Set in Render dashboard
+      - key: NEO4J_USER
+        sync: false
+      - key: NEO4J_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: API_KEY_SALT
+        generateValue: true
+      - key: MONAD_RPC_URL
+        value: https://rpc-devnet.monad.xyz
+      - key: MONAD_PRIVATE_KEY
+        sync: false
+      - key: EXTRACTION_SERVICE_URL
+        fromService:
+          type: web
+          name: mneme-extraction
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: OPENAI_API_KEY
+        sync: false
+
+  # Python Extraction Service
+  - type: web
+    name: mneme-extraction
+    env: python
+    rootDir: apps/extraction
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false

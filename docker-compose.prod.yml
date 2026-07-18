@@ -1,0 +1,169 @@
+version: '3.9'
+
+# Production docker-compose — differs from development:
+# - No debug ports exposed for Neo4j
+# - Resource limits on all services
+# - Postgres uses production-grade config
+# - Health checks are stricter
+# - API runs with NODE_ENV=production
+# - Secrets injected via environment (use Docker Secrets or a secrets manager)
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: mneme-postgres-prod
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-mneme}
+      POSTGRES_USER: ${POSTGRES_USER:-mneme}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mneme_internal
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-mneme}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+
+  redis:
+    image: redis:7-alpine
+    container_name: mneme-redis-prod
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    networks:
+      - mneme_internal
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-a', '${REDIS_PASSWORD}', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  neo4j:
+    image: neo4j:5-community
+    container_name: mneme-neo4j-prod
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD}
+      NEO4J_PLUGINS: '["apoc"]'
+      NEO4J_dbms_security_procedures_unrestricted: apoc.*
+      NEO4J_dbms_memory_heap_max__size: 2G
+    volumes:
+      - neo4j_data:/data
+    networks:
+      - mneme_internal
+    # Note: No browser port (7474) exposed in production
+    healthcheck:
+      test: ['CMD-SHELL', 'cypher-shell -u neo4j -p ${NEO4J_PASSWORD} "RETURN 1"']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 3G
+
+  extraction:
+    build:
+      context: apps/extraction
+      dockerfile: Dockerfile
+    container_name: mneme-extraction-prod
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+    networks:
+      - mneme_internal
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: mneme-api-prod
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-mneme}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-mneme}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      NEO4J_URI: bolt://neo4j:7687
+      NEO4J_USER: neo4j
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      API_KEY_SALT: ${API_KEY_SALT}
+      API_PORT: 3001
+      MONAD_RPC_URL: ${MONAD_RPC_URL}
+      MONAD_PRIVATE_KEY: ${MONAD_PRIVATE_KEY}
+      VAULT_REGISTRY_ADDRESS: ${VAULT_REGISTRY_ADDRESS}
+      ATTESTATION_AGGREGATOR_ADDRESS: ${ATTESTATION_AGGREGATOR_ADDRESS}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      EXTRACTION_SERVICE_URL: http://extraction:8001
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://app.mneme.dev}
+    ports:
+      - '3001:3001'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - mneme_internal
+      - mneme_external
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: mneme-web-prod
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.mneme.dev/v1}
+      NODE_ENV: production
+    ports:
+      - '3000:3000'
+    depends_on:
+      - api
+    networks:
+      - mneme_external
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  neo4j_data:
+    driver: local
+
+networks:
+  mneme_internal:
+    internal: true      # Database network — not accessible from outside
+  mneme_external:
+    driver: bridge      # Public-facing network for API and web

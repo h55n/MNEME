@@ -1,0 +1,64 @@
+{{- if .Values.extraction.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mneme.fullname" . }}-extraction
+  labels:
+    {{- include "mneme.labels" . | nindent 4 }}
+    app.kubernetes.io/component: extraction
+spec:
+  replicas: {{ .Values.extraction.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "mneme.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: extraction
+  template:
+    metadata:
+      labels:
+        {{- include "mneme.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: extraction
+    spec:
+      containers:
+        - name: extraction
+          image: "{{ .Values.extraction.image.repository }}:{{ .Values.extraction.image.tag }}"
+          imagePullPolicy: {{ .Values.extraction.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.extraction.port }}
+          env:
+            {{- range $key, $secret := .Values.extraction.envSecrets }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret }}
+                  key: {{ $key }}
+            {{- end }}
+          resources:
+            {{- toYaml .Values.extraction.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.extraction.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.extraction.port }}
+            initialDelaySeconds: 30
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "mneme.fullname" . }}-extraction
+  labels:
+    {{- include "mneme.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.extraction.service.type }}
+  ports:
+    - port: {{ .Values.extraction.service.port }}
+      targetPort: {{ .Values.extraction.port }}
+  selector:
+    {{- include "mneme.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: extraction
+{{- end }}

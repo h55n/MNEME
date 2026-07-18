@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "mneme-memory": {
+      "command": "node",
+      "args": [
+        "d:/ANTIGRAVITY/mneme/apps/mcp/dist/index.js"
+      ],
+      "env": {
+        "MNEME_API_URL": "http://localhost:4000/v1",
+        "MNEME_API_KEY": "mnk_live_abc",
+        "MNEME_VAULT_ID": "vlt_123",
+        "MNEME_OPERATOR_PUBLIC_KEY": "0x123"
+      }
+    }
+  }
+}

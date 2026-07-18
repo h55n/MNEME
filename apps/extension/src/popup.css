@@ -1,0 +1,85 @@
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  margin: 0;
+  padding: 16px;
+  width: 320px;
+  color: #171717;
+  background: #ffffff;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.header h2 {
+  margin: 0 0 4px 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.header p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+input:focus {
+  outline: none;
+  border-color: #171717;
+}
+
+.help {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  color: #888;
+}
+
+button {
+  width: 100%;
+  background: #171717;
+  color: #ffffff;
+  border: none;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+button:hover {
+  background: #333;
+}
+
+.status-hidden {
+  display: none;
+}
+
+.status-visible {
+  display: block;
+  margin-top: 12px;
+  text-align: center;
+  color: #059669;
+  font-size: 14px;
+  font-weight: 500;
+}

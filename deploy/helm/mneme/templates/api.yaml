@@ -1,0 +1,88 @@
+{{- if .Values.api.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mneme.fullname" . }}-api
+  labels:
+    {{- include "mneme.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+spec:
+  replicas: {{ .Values.api.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "mneme.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: api
+  template:
+    metadata:
+      labels:
+        {{- include "mneme.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: api
+    spec:
+      containers:
+        - name: api
+          image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
+          imagePullPolicy: {{ .Values.api.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.api.port }}
+          env:
+            {{- range $key, $val := .Values.api.env }}
+            - name: {{ $key }}
+              value: {{ $val | quote }}
+            {{- end }}
+            {{- range $key, $secret := .Values.api.envSecrets }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret }}
+                  key: {{ $key }}
+            {{- end }}
+          livenessProbe:
+            {{- toYaml .Values.api.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.api.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.api.resources | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "mneme.fullname" . }}-api
+  labels:
+    {{- include "mneme.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.api.service.type }}
+  ports:
+    - port: {{ .Values.api.service.port }}
+      targetPort: {{ .Values.api.port }}
+  selector:
+    {{- include "mneme.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+{{- if .Values.api.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "mneme.fullname" . }}-api
+  annotations:
+    {{- toYaml .Values.api.ingress.annotations | nindent 4 }}
+spec:
+  ingressClassName: {{ .Values.api.ingress.className }}
+  rules:
+    {{- range .Values.api.ingress.hosts }}
+    - host: {{ .host }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ include "mneme.fullname" $ }}-api
+                port:
+                  number: {{ $.Values.api.service.port }}
+          {{- end }}
+    {{- end }}
+  tls:
+    {{- toYaml .Values.api.ingress.tls | nindent 4 }}
+{{- end }}
+{{- end }}

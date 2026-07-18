@@ -1,0 +1,47 @@
+{{- if .Values.migration.enabled }}
+# Kubernetes Job that runs database migrations before the API starts.
+# Uses helm.sh/hook so it runs before the API Deployment rolls out.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "mneme.fullname" . }}-migrate-{{ .Release.Revision }}
+  labels:
+    {{- include "mneme.labels" . | nindent 4 }}
+    app.kubernetes.io/component: migration
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        {{- include "mneme.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: migration
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
+          imagePullPolicy: {{ .Values.api.image.pullPolicy }}
+          command: ["node", "apps/api/dist/migrate.js"]
+          env:
+            - name: NODE_ENV
+              value: production
+            {{- range $key, $secret := .Values.api.envSecrets }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret }}
+                  key: {{ $key }}
+            {{- end }}
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+{{- end }}

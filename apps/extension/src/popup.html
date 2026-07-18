@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>MNEME</h2>
+      <p>Context Router</p>
+    </div>
+    
+    <div class="form-group">
+      <label>API URL</label>
+      <input type="text" id="apiUrl" placeholder="https://api.mneme.dev/v1">
+    </div>
+
+    <div class="form-group">
+      <label>API Key</label>
+      <input type="password" id="apiKey" placeholder="mnk_...">
+    </div>
+
+    <div class="form-group">
+      <label>Vault ID (Optional)</label>
+      <input type="text" id="vaultId" placeholder="vlt_...">
+      <p class="help">Defaults to the API Key's primary vault if empty.</p>
+    </div>
+
+    <div class="form-group">
+      <label>Budget (Tokens)</label>
+      <input type="number" id="budgetTokens" value="1000">
+    </div>
+
+    <button id="saveBtn">Save Configuration</button>
+    
+    <div id="status" class="status-hidden">Saved!</div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "name": "@mneme/contracts",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "compile": "npx hardhat compile",
+    "test": "npx hardhat test",
+    "deploy:devnet": "npx hardhat run scripts/deploy.ts --network monadDevnet",
+    "deploy:testnet": "npx hardhat run scripts/deploy.ts --network monadTestnet",
+    "deploy:mainnet": "npx hardhat run scripts/deploy.ts --network monadMainnet",
+    "coverage": "npx hardhat coverage"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.0",
+    "dotenv": "^16.4.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.1.0"
+  }
+}

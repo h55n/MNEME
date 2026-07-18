@@ -1,0 +1,169 @@
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+
+# ── API ────────────────────────────────────────────────────────────────────────
+api:
+  enabled: true
+  image:
+    repository: ghcr.io/mneme-dev/api
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  replicaCount: 2
+  port: 3001
+  env:
+    NODE_ENV: production
+    API_PORT: "3001"
+    CORS_ORIGIN: "https://app.mneme.dev"
+  envSecrets:
+    DATABASE_URL: mneme-secrets
+    REDIS_URL: mneme-secrets
+    NEO4J_URI: mneme-secrets
+    NEO4J_USER: mneme-secrets
+    NEO4J_PASSWORD: mneme-secrets
+    JWT_SECRET: mneme-secrets
+    API_KEY_SALT: mneme-secrets
+    MONAD_RPC_URL: mneme-secrets
+    MONAD_PRIVATE_KEY: mneme-secrets
+    VAULT_REGISTRY_ADDRESS: mneme-secrets
+    ATTESTATION_AGGREGATOR_ADDRESS: mneme-secrets
+    MEMORY_MARKET_ADDRESS: mneme-secrets
+    DELETION_PROVER_ADDRESS: mneme-secrets
+    OPENAI_API_KEY: mneme-secrets
+    ANTHROPIC_API_KEY: mneme-secrets
+    EXTRACTION_SERVICE_URL: mneme-secrets
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "1000m"
+      memory: "1Gi"
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 3001
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    failureThreshold: 3
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 3001
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    failureThreshold: 2
+  service:
+    type: ClusterIP
+    port: 3001
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+    hosts:
+      - host: api.mneme.dev
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: mneme-api-tls
+        hosts:
+          - api.mneme.dev
+
+# ── Web ────────────────────────────────────────────────────────────────────────
+web:
+  enabled: true
+  image:
+    repository: ghcr.io/mneme-dev/web
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  replicaCount: 2
+  port: 3000
+  env:
+    NEXT_PUBLIC_API_URL: https://api.mneme.dev/v1
+    NODE_ENV: production
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+  service:
+    type: ClusterIP
+    port: 3000
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts:
+      - host: app.mneme.dev
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: mneme-web-tls
+        hosts:
+          - app.mneme.dev
+
+# ── Extraction service ─────────────────────────────────────────────────────────
+extraction:
+  enabled: true
+  image:
+    repository: ghcr.io/mneme-dev/extraction
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  port: 8001
+  envSecrets:
+    ANTHROPIC_API_KEY: mneme-secrets
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+  service:
+    type: ClusterIP
+    port: 8001
+
+# ── Database Migration Job ─────────────────────────────────────────────────────
+# Runs as a Helm pre-install/pre-upgrade hook — before the API rolls out.
+migration:
+  enabled: true
+
+# ── Secrets ───────────────────────────────────────────────────────────────────
+# create: false  → use External Secrets Operator in production (recommended)
+# create: true   → Helm creates a plain Secret (local/staging only)
+secrets:
+  create: false
+  name: mneme-secrets
+  data: {}
+  # Example for local/staging (never commit real secrets):
+  # data:
+  #   DATABASE_URL: "postgresql://mneme:password@postgres:5432/mneme"
+  #   REDIS_URL: "redis://redis:6379"
+  #   JWT_SECRET: "..."
+  #   API_KEY_SALT: "..."
+  #   MONAD_RPC_URL: "https://testnet-rpc.monad.xyz"
+  #   MONAD_PRIVATE_KEY: "0x..."
+  #   VAULT_REGISTRY_ADDRESS: "0x19b31A7F2759Dac9FFe8Bf9C9D7e2C5446068b73"
+  #   ATTESTATION_AGGREGATOR_ADDRESS: "0x9c36aC707F29f0EfBb147710A288e3c9e4069A93"
+  #   MEMORY_MARKET_ADDRESS: "0x0EE8903784a4f4974003548e0682d484849c7E27"
+  #   DELETION_PROVER_ADDRESS: "0xF66260602E13e05EAcc56c238cD26587A3Cad9ea"
+  #   OPENAI_API_KEY: "sk-..."
+  #   ANTHROPIC_API_KEY: "sk-ant-..."
+  #   EXTRACTION_SERVICE_URL: "http://mneme-extraction:8001"
+
+# ── HPA ───────────────────────────────────────────────────────────────────────
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
