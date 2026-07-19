@@ -34,9 +34,8 @@
 
 | Name | Role |
 |---|---|
-| **Hassan Rehman** | Full-Stack & Blockchain Lead — REST API, Smart Contracts, MCP Integration |
-| **Mrunmayee Daware** | Frontend & Compliance UI — Dashboard, GDPR Flows, Memory Market |
-| **Tanishq Mhetras** | Protocol & Infrastructure — Solidity Contracts, Hardhat, Monad Testnet Deployment |
+| **Hassan Rehman** | Full-Stack & Blockchain Lead — REST API, Smart Contracts, MCP Integration, Hardhat, Monad Testnet Deployment  |
+| **Mrunmayee Daware** | Frontend & Compliance UI — Dashboard, GDPR Flows, Memory Market, Protocol & Infrastructure — Solidity Contracts |
 
 ---
 
