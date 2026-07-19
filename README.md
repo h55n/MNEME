@@ -446,6 +446,6 @@ MIT — see [LICENSE](LICENSE) for details.
 ---
 
 <div align="center">
-  <p>Built with ❤️ by <strong>Hassan Rehman</strong>, <strong>Mrunmayee Daware</strong>, and <strong>Tanishq Mhetras</strong></p>
+  <p>Built with ❤️ by <strong>Hassan Rehman</strong>, <strong>Mrunmayee Daware</strong></p>
   <p>Powered by <a href="https://monad.xyz">Monad</a> — the parallel EVM L1</p>
 </div>
