@@ -1,4 +1,5 @@
 # MNEME — Product Requirements Document
+
 ## Sovereign, Portable, Monetisable Memory Infrastructure for AI Agents
 
 **Version:** 1.0.0  
@@ -39,7 +40,7 @@
 
 AI agents are cognitively capable but institutionally amnesiac. Every major model provider — Anthropic, OpenAI, Google — has deliberately engineered memory lock-in: your agent's accumulated knowledge lives on their servers, in their format, under their control. Switch models or platforms and the memory is gone. This isn't an oversight; it's a business strategy.
 
-The consequence: agents can execute complex tasks but cannot *persist as entities*. They have no portable identity, no transferable history, no economic stake in what they've learned. Every new session, every model switch, every platform migration wipes the slate. The agent economy cannot scale on these terms.
+The consequence: agents can execute complex tasks but cannot _persist as entities_. They have no portable identity, no transferable history, no economic stake in what they've learned. Every new session, every model switch, every platform migration wipes the slate. The agent economy cannot scale on these terms.
 
 Existing solutions (Mem0, Zep, Letta, Cognee) solve persistence within their own ecosystems. None solves sovereignty. None provides portability across models and platforms. None creates an economic layer around the accumulated knowledge agents generate.
 
@@ -57,16 +58,16 @@ Monad is not decoration. Its 10,000 TPS throughput and sub-second finality enabl
 
 ### 1.3 Key Differentiators vs. Competition
 
-| Capability | Mem0 | Zep | Letta | Cognee | **MNEME** |
-|---|---|---|---|---|---|
-| Cross-model portability | ❌ | ❌ | Partial | ❌ | ✅ |
-| Operator-owned keys | ❌ | ❌ | ✅ (self-host) | ✅ (self-host) | ✅ (native) |
-| On-chain provenance | ❌ | ❌ | ❌ | ❌ | ✅ (Monad) |
-| Memory marketplace | ❌ | ❌ | ❌ | ❌ | ✅ |
-| Compliance audit trail | ❌ | Partial | ❌ | ❌ | ✅ |
-| MCP-native | Plugin | Plugin | Plugin | Plugin | **Core** |
-| Temporal knowledge graph | ❌ | ✅ | ❌ | ✅ | ✅ |
-| Pricing model | Per memory | Per episode | Per execution | Subscription | Per attestation + revenue share |
+| Capability               | Mem0       | Zep         | Letta          | Cognee         | **MNEME**                       |
+| ------------------------ | ---------- | ----------- | -------------- | -------------- | ------------------------------- |
+| Cross-model portability  | ❌         | ❌          | Partial        | ❌             | ✅                              |
+| Operator-owned keys      | ❌         | ❌          | ✅ (self-host) | ✅ (self-host) | ✅ (native)                     |
+| On-chain provenance      | ❌         | ❌          | ❌             | ❌             | ✅ (Monad)                      |
+| Memory marketplace       | ❌         | ❌          | ❌             | ❌             | ✅                              |
+| Compliance audit trail   | ❌         | Partial     | ❌             | ❌             | ✅                              |
+| MCP-native               | Plugin     | Plugin      | Plugin         | Plugin         | **Core**                        |
+| Temporal knowledge graph | ❌         | ✅          | ❌             | ✅             | ✅                              |
+| Pricing model            | Per memory | Per episode | Per execution  | Subscription   | Per attestation + revenue share |
 
 ---
 
@@ -74,7 +75,7 @@ Monad is not decoration. Its 10,000 TPS throughput and sub-second finality enabl
 
 ### 2.1 Vision Statement
 
-> *"Every AI agent deserves a memory it owns — portable across platforms, provable in court, valuable in the market."*
+> _"Every AI agent deserves a memory it owns — portable across platforms, provable in court, valuable in the market."_
 
 ### 2.2 Mission
 
@@ -120,6 +121,7 @@ Target the builder, not the end user. MNEME's customers are developers and opera
 ### 3.2 Competitor Deep Dive
 
 #### Mem0
+
 - **Position:** Most widely deployed, drop-in memory library
 - **Architecture:** Vector + LLM extraction (graph on paid Pro tier)
 - **Strengths:** 48K GitHub stars, $24M Series A, broadest framework support, AWS Agent SDK exclusive partnership, ~80ms p50 retrieval latency
@@ -128,6 +130,7 @@ Target the builder, not the end user. MNEME's customers are developers and opera
 - **MNEME Response:** Offer free MCP server that outperforms Mem0's free tier; target Mem0 users frustrated by the lock-in and the Pro paywall
 
 #### Zep / Graphiti
+
 - **Position:** Temporal reasoning specialist
 - **Architecture:** Temporal knowledge graph (validity windows per fact)
 - **Strengths:** 63.8% LongMemEval (vs Mem0's 49%), ~18.5% accuracy gain on time-sensitive queries, genuinely superior for "what was true on date X"
@@ -135,13 +138,15 @@ Target the builder, not the end user. MNEME's customers are developers and opera
 - **MNEME Response:** Implement temporal knowledge graph as core memory architecture (matching Zep's strength); combine with on-chain provenance (Zep's gap)
 
 #### Letta (formerly MemGPT)
+
 - **Position:** OS-inspired stateful agent runtime
 - **Architecture:** Three-tier (core memory = RAM, recall = cache, archival = disk), agent self-edits memory
 - **Strengths:** $10M seed at $70M valuation, fully self-hostable, pluggable backends, backed by Jeff Dean, best for long-running autonomous agents
 - **Weaknesses:** You adopt a runtime not a library (high switching cost), no temporal supersession, complex setup
-- **MNEME Response:** MNEME works *alongside* Letta — expose as MCP server that Letta agents can query, don't compete with the runtime layer
+- **MNEME Response:** MNEME works _alongside_ Letta — expose as MCP server that Letta agents can query, don't compete with the runtime layer
 
 #### Cognee
+
 - **Position:** Graph-native memory with knowledge graph pipeline
 - **Architecture:** Neo4j-backed graph with vector hybrid, Remember–Recall–Improve–Forget pipeline
 - **Strengths:** 500x pipeline growth, 1M+ runs/month, open-source, 70+ production companies
@@ -149,6 +154,7 @@ Target the builder, not the end user. MNEME's customers are developers and opera
 - **MNEME Response:** Offer Cognee-style graph depth with MNEME's sovereign ownership layer on top
 
 #### MemPalace (emerging)
+
 - **Position:** Local-first, verbatim storage, zero API calls
 - **Architecture:** Semantic index over structured local storage (people/projects as "wings")
 - **Strengths:** 54K GitHub stars (June 2026), 96.6% LongMemEval score, MIT licensed, zero cloud cost
@@ -160,6 +166,7 @@ Target the builder, not the end user. MNEME's customers are developers and opera
 The market has solved **persistence**. Nobody has solved **sovereignty + portability + monetisation**. That is MNEME's entire thesis confirmed by competitive research.
 
 Specific gaps:
+
 1. No competitor offers cryptographically-proven memory ownership
 2. No competitor offers cross-model memory portability as a first-class feature
 3. No competitor has a memory marketplace
@@ -171,71 +178,83 @@ Specific gaps:
 ## 4. User Personas
 
 ### Persona 1: Arjun — The Agent Builder (Primary)
+
 **Role:** Senior engineer at a Series A startup building an AI-powered legal ops product  
 **Tech sophistication:** High — comfortable with LLMs, vector DBs, APIs, some blockchain familiarity  
 **Current stack:** Claude API + LangGraph + Mem0 Cloud  
 **Pain points:**
+
 - Clients ask "what does your AI know about our company?" and he can't show them — it's all in Mem0's cloud
 - When Anthropic released a better model, switching cost a week's work because memory wasn't portable
 - Legal clients need audit trails; Mem0 doesn't provide them
 - Mem0's $249/mo Pro tier for graph features feels arbitrary
 
 **What he needs from MNEME:**
+
 - Drop-in replacement for Mem0 that works with his existing LangGraph setup
 - Exportable memory in an open format
 - Compliance-grade audit logs he can show clients
 - Predictable pricing
 
-**Quote:** *"I built six months of institutional knowledge into my agent. Now I'm scared to switch models because I'll lose it all."*
+**Quote:** _"I built six months of institutional knowledge into my agent. Now I'm scared to switch models because I'll lose it all."_
 
 ---
 
 ### Persona 2: Priya — The Enterprise AI Lead (Secondary)
+
 **Role:** Head of AI at a 5,000-person financial services firm  
 **Tech sophistication:** Medium-high — understands architecture, defers on implementation  
 **Current stack:** Azure OpenAI + internal tooling  
 **Pain points:**
+
 - Regulators asking "how do you know what your AI knew when it made that decision?"
 - Vendor lock-in is a board-level concern — they can't be dependent on one AI provider
 - GDPR/RBI compliance team blocks any cloud memory that they can't audit
 
 **What she needs from MNEME:**
+
 - Tamper-proof, on-chain audit trail of agent memory at decision points
 - Self-hostable infrastructure with enterprise SLAs
 - Data residency guarantees
 - SOC2 compliance
 
-**Quote:** *"We can't deploy an AI agent for loan decisions if we can't prove in court what it knew at the time."*
+**Quote:** _"We can't deploy an AI agent for loan decisions if we can't prove in court what it knew at the time."_
 
 ---
 
 ### Persona 3: Dev — The Indie Agent Operator (Secondary)
+
 **Role:** Solo developer building and selling multiple specialised AI agents  
 **Tech sophistication:** High — full-stack, knows crypto  
 **Current stack:** Various models, building on open-source frameworks  
 **Pain points:**
+
 - Each new agent he builds starts from zero — he can't reuse expertise from previous agents
 - His best-performing agent has accumulated valuable domain knowledge that lives nowhere portable
 - No way to monetise the knowledge his agents generate
 
 **What he needs from MNEME:**
+
 - Memory packs he can sell — his domain expertise packaged and priced
 - Cross-agent memory sharing for his own portfolio
 - Revenue sharing that's transparent and on-chain
 
-**Quote:** *"My coding agent has reviewed 10,000 PRs. That knowledge is worth something. Right now it just disappears."*
+**Quote:** _"My coding agent has reviewed 10,000 PRs. That knowledge is worth something. Right now it just disappears."_
 
 ---
 
 ### Persona 4: Maya — The Compliance Officer (Influencer)
+
 **Role:** Chief Compliance Officer at a fintech  
 **Tech sophistication:** Low on technical, high on risk/legal  
 **Pain points:**
+
 - AI decisions are black boxes; she can't explain them to regulators
 - No audit trail for what context AI agents had at decision time
 - GDPR consent tracking for any user data feeding into AI memory
 
 **What she needs from MNEME:**
+
 - Plain-language compliance dashboard
 - On-chain proof of memory state at any decision timestamp
 - GDPR-compliant memory deletion with proof of deletion
@@ -251,6 +270,7 @@ Specific gaps:
 **FR-002:** Vault SHALL persist across sessions, model switches, and platform migrations without any data loss or reformatting required.
 
 **FR-003:** System SHALL support three memory tiers:
+
 - **Episodic:** Raw interaction history, timestamped
 - **Semantic:** Extracted facts and entity relationships (temporal knowledge graph)
 - **Procedural:** Learned workflows, preferences, and behavioural patterns
@@ -258,6 +278,7 @@ Specific gaps:
 **FR-004:** Memory write operations SHALL complete within 100ms p95 for episodic storage. Semantic graph updates may be asynchronous (complete within 5 seconds).
 
 **FR-005:** Memory retrieval SHALL support:
+
 - Semantic similarity search
 - Temporal queries ("what did this agent know on date X?")
 - Entity-relationship traversal
@@ -274,6 +295,7 @@ Specific gaps:
 **FR-012:** System SHALL support concurrent multi-agent access to shared memory namespaces with conflict resolution.
 
 **FR-013:** MCP server SHALL support:
+
 - `memory_write` — store a memory with metadata
 - `memory_recall` — semantic + temporal retrieval
 - `memory_forget` — delete with on-chain proof
@@ -293,7 +315,7 @@ Specific gaps:
 
 **FR-023:** Monad smart contracts SHALL enforce operator key ownership for all write and delete operations.
 
-**FR-024:** System SHALL generate ZK proofs of memory state at any historical timestamp for compliance use cases.
+**FR-024:** System SHALL generate cryptographic SHA-256 hashes of memory state at any historical timestamp for compliance use cases.
 
 **FR-025:** On-chain gas costs per attestation SHALL not exceed $0.001 at Monad's current fee schedule.
 
@@ -304,6 +326,7 @@ Specific gaps:
 **FR-031:** Memory Pack creation SHALL run content through an automated PII/sensitive data detection pipeline before listing is permitted.
 
 **FR-032:** Every Memory Pack listed SHALL have:
+
 - Domain category tag
 - Source agent interaction count
 - Date range of accumulated experience
@@ -334,16 +357,16 @@ Specific gaps:
 
 ### 6.1 Performance
 
-| Metric | Target | Stretch |
-|---|---|---|
-| Memory write latency (p50) | <50ms | <20ms |
-| Memory write latency (p95) | <100ms | <50ms |
-| Memory retrieval latency (p50) | <80ms | <40ms |
-| Memory retrieval latency (p95) | <200ms | <100ms |
-| On-chain attestation confirmation | <2s (Monad) | <1s |
-| API availability | 99.9% | 99.99% |
-| Max concurrent agents per vault | 100 | 1,000 |
-| Memory pack ingest throughput | 10K memories/min | 100K memories/min |
+| Metric                            | Target           | Stretch           |
+| --------------------------------- | ---------------- | ----------------- |
+| Memory write latency (p50)        | <50ms            | <20ms             |
+| Memory write latency (p95)        | <100ms           | <50ms             |
+| Memory retrieval latency (p50)    | <80ms            | <40ms             |
+| Memory retrieval latency (p95)    | <200ms           | <100ms            |
+| On-chain attestation confirmation | <2s (Monad)      | <1s               |
+| API availability                  | 99.9%            | 99.99%            |
+| Max concurrent agents per vault   | 100              | 1,000             |
+| Memory pack ingest throughput     | 10K memories/min | 100K memories/min |
 
 ### 6.2 Scalability
 
@@ -374,9 +397,10 @@ Specific gaps:
 ### Epic 1: Sovereign Memory Vault
 
 **US-001: Create Agent Vault**  
-*As an agent operator, I want to create a sovereign memory vault for my agent so that all memories are owned by my keys, not a vendor's platform.*
+_As an agent operator, I want to create a sovereign memory vault for my agent so that all memories are owned by my keys, not a vendor's platform._
 
 Acceptance Criteria:
+
 - Operator provides a public key; system creates vault and registers DID on Monad
 - DID is resolvable via W3C DID resolution spec
 - Vault creation generates a Monad transaction confirming ownership
@@ -386,9 +410,10 @@ Acceptance Criteria:
 ---
 
 **US-002: Write Memory Across Sessions**  
-*As an agent, I want to write memories after each interaction so that context is preserved for the next session regardless of model or platform.*
+_As an agent, I want to write memories after each interaction so that context is preserved for the next session regardless of model or platform._
 
 Acceptance Criteria:
+
 - Memory write API accepts: content, type (episodic/semantic/procedural), timestamp, metadata tags
 - Write acknowledged within 100ms
 - Memory is retrievable in subsequent sessions with correct content
@@ -398,9 +423,10 @@ Acceptance Criteria:
 ---
 
 **US-003: Switch Models Without Memory Loss**  
-*As an agent operator, I want to switch from Claude to GPT mid-project and have the new model access full memory context so that model portability is real, not theoretical.*
+_As an agent operator, I want to switch from Claude to GPT mid-project and have the new model access full memory context so that model portability is real, not theoretical._
 
 Acceptance Criteria:
+
 - Same MCP endpoint works for Claude and GPT without configuration change
 - Memory retrieved by new model matches memory written by previous model
 - Semantic search works correctly across model boundaries
@@ -409,9 +435,10 @@ Acceptance Criteria:
 ---
 
 **US-004: Export Memory Vault**  
-*As an operator, I want to export my agent's complete memory vault in an open format so that I am never locked in to MNEME itself.*
+_As an operator, I want to export my agent's complete memory vault in an open format so that I am never locked in to MNEME itself._
 
 Acceptance Criteria:
+
 - Export produces a JSON-L file with all memories, metadata, and relationship graph
 - Export includes on-chain proof of completeness (hash of export matches on-chain registry)
 - Export completes within 60 seconds for vaults up to 100K memories
@@ -422,9 +449,10 @@ Acceptance Criteria:
 ### Epic 2: MCP Integration
 
 **US-010: Integrate via MCP in Under 10 Minutes**  
-*As a developer, I want to add MNEME memory to my existing agent with minimal code change so that adoption is frictionless.*
+_As a developer, I want to add MNEME memory to my existing agent with minimal code change so that adoption is frictionless._
 
 Acceptance Criteria:
+
 - npm/pip SDK install and MCP server configuration: under 5 lines of config
 - Working memory read/write in existing LangGraph agent: under 30 minutes
 - Documentation includes working code examples for Claude, GPT, Llama
@@ -435,9 +463,10 @@ Acceptance Criteria:
 ### Epic 3: Memory Market
 
 **US-020: List a Memory Pack**  
-*As an experienced agent operator, I want to package and sell my agent's domain knowledge so that others can bootstrap domain expertise rather than starting from zero.*
+_As an experienced agent operator, I want to package and sell my agent's domain knowledge so that others can bootstrap domain expertise rather than starting from zero._
 
 Acceptance Criteria:
+
 - Operator selects memory date range and domain tag
 - System runs automatic PII scan — listing blocked if PII detected
 - Operator sees anonymisation report before publishing
@@ -447,9 +476,10 @@ Acceptance Criteria:
 ---
 
 **US-021: Buy and Ingest a Memory Pack**  
-*As a new operator, I want to buy domain memory packs so that my agent starts with real-world expertise.*
+_As a new operator, I want to buy domain memory packs so that my agent starts with real-world expertise._
 
 Acceptance Criteria:
+
 - Browse marketplace by domain category and interaction count
 - Free sample query before purchase works correctly
 - Purchase completes via USDC on Monad
@@ -461,9 +491,10 @@ Acceptance Criteria:
 ### Epic 4: Compliance
 
 **US-030: Generate Compliance Report**  
-*As a compliance officer, I want an audit report showing exactly what my AI agent knew at any decision timestamp so that I can respond to regulators.*
+_As a compliance officer, I want an audit report showing exactly what my AI agent knew at any decision timestamp so that I can respond to regulators._
 
 Acceptance Criteria:
+
 - Input: agent DID + timestamp range
 - Output: PDF/JSON report with memory state, operation log, decision timestamps
 - Report includes on-chain verification links (viewable on Monad explorer)
@@ -473,9 +504,10 @@ Acceptance Criteria:
 ---
 
 **US-031: Prove Memory Deletion (GDPR)**  
-*As a data controller, I want cryptographic proof that a user's data has been permanently deleted from my agent's memory so that I can comply with GDPR Article 17.*
+_As a data controller, I want cryptographic proof that a user's data has been permanently deleted from my agent's memory so that I can comply with GDPR Article 17._
 
 Acceptance Criteria:
+
 - Operator submits deletion request with memory IDs or user identifier
 - Off-chain content deleted within 24 hours (verifiable by query returning empty)
 - On-chain deletion proof generated: tombstone record with deletion timestamp and operator signature
@@ -488,6 +520,7 @@ Acceptance Criteria:
 ### 8.1 Memory Vault — Technical Specification
 
 **Storage Architecture:**
+
 ```
 Layer 1 (Working Memory):    Redis — active session context, <1ms access
 Layer 2 (Episodic Store):    PostgreSQL + pgvector — timestamped facts, ~10ms access
@@ -497,6 +530,7 @@ Layer 5 (Provenance):        Monad blockchain — cryptographic fingerprints
 ```
 
 **Memory Extraction Pipeline:**
+
 1. Raw interaction received via MCP
 2. LLM extraction call (async) — identifies facts, entities, relationships
 3. Conflict resolution against existing graph (temporal supersession)
@@ -505,6 +539,7 @@ Layer 5 (Provenance):        Monad blockchain — cryptographic fingerprints
 6. Attestation confirmed → hash returned to operator
 
 **Temporal Knowledge Graph:**
+
 - Every fact stored as a graph edge with `valid_from` and `valid_until` timestamps
 - Cascade invalidation: when a contradicting fact arrives, system closes previous validity window
 - Temporal queries: "What did this agent know on 2026-01-15?" resolved via validity window traversal
@@ -512,6 +547,7 @@ Layer 5 (Provenance):        Monad blockchain — cryptographic fingerprints
 ### 8.2 Memory Market — Technical Specification
 
 **Anonymisation Pipeline:**
+
 1. Operator initiates pack creation with date range + domain tag
 2. System extracts semantic graph snapshot (not raw episodic logs)
 3. PII scan: named entity recognition for person names, contact info, financial identifiers
@@ -521,6 +557,7 @@ Layer 5 (Provenance):        Monad blockchain — cryptographic fingerprints
 7. Pack hash anchored on Monad (proves content integrity at listing time)
 
 **Smart Contract Specification (Monad):**
+
 ```solidity
 contract MemoryMarket {
     struct Pack {
@@ -531,7 +568,7 @@ contract MemoryMarket {
         string domainTag;         // Category
         uint256 listedAt;
     }
-    
+
     function listPack(bytes32 hash, uint256 price, ...) external;
     function purchasePack(uint256 packId) external;  // USDC transfer + event
     function withdrawRevenue() external;             // 80% to seller
@@ -541,20 +578,22 @@ contract MemoryMarket {
 ### 8.3 On-Chain Attestation — Technical Specification
 
 **Attestation Record Structure:**
+
 ```typescript
 interface MemoryAttestation {
-  agentDID: string;           // W3C DID
-  operatorAddress: string;    // Monad wallet
-  operationType: 'WRITE' | 'UPDATE' | 'DELETE' | 'EXPORT';
-  contentHash: string;        // SHA-256 of encrypted content
-  vaultStateHash: string;     // SHA-256 of full vault state post-operation
-  timestamp: number;          // Unix timestamp
-  blockNumber: number;        // Monad block
-  txHash: string;             // Monad transaction hash
+  agentDID: string; // W3C DID
+  operatorAddress: string; // Monad wallet
+  operationType: "WRITE" | "UPDATE" | "DELETE" | "EXPORT";
+  contentHash: string; // SHA-256 of encrypted content
+  vaultStateHash: string; // SHA-256 of full vault state post-operation
+  timestamp: number; // Unix timestamp
+  blockNumber: number; // Monad block
+  txHash: string; // Monad transaction hash
 }
 ```
 
 **Batching Strategy:**
+
 - Individual attestations batched into Monad transactions (up to 100 per tx)
 - Batch submitted every 10 seconds or when batch size reaches 100
 - Emergency flush on vault export or compliance report request
@@ -602,26 +641,31 @@ interface MemoryAttestation {
 ### 9.2 Service Architecture
 
 **Memory Service** — Core CRUD operations on memory vault
+
 - Written in: TypeScript (Node.js 22)
 - Owns: episodic store, working memory cache
 - Interfaces with: pgvector (semantic search), Redis (session cache)
 
 **Extraction Service** — LLM-powered memory extraction pipeline
+
 - Written in: Python 3.12 (for LLM ecosystem compatibility)
 - Owns: fact extraction, conflict resolution, graph updates
 - Interfaces with: Memory Service, Graph DB (Neo4j), configurable LLM endpoint
 
 **Attestation Service** — Monad blockchain integration
+
 - Written in: TypeScript
 - Owns: hash generation, batch aggregation, Monad transaction submission
 - Interfaces with: Monad RPC, Memory Service (hash triggers)
 
 **Market Service** — Memory Pack listing, discovery, purchase
+
 - Written in: TypeScript
 - Owns: pack management, PII scanning, smart contract interaction
 - Interfaces with: Monad (smart contract), Anonymisation pipeline
 
 **MCP Server** — Model Context Protocol endpoint
+
 - Written in: TypeScript
 - Owns: protocol compliance, tool registration, session management
 - Wraps: Memory Service API
@@ -629,24 +673,28 @@ interface MemoryAttestation {
 ### 9.3 Technology Stack
 
 **Backend:**
+
 - Runtime: Node.js 22 LTS (TypeScript) for primary services
 - Python 3.12 for ML/extraction pipeline
 - Framework: Fastify (Node) — chosen for performance over Express
 - ORM: Drizzle ORM (TypeScript-first, fast)
 
 **Databases:**
+
 - PostgreSQL 16 + pgvector extension (episodic memory + semantic search)
 - Neo4j 5.x Community / Enterprise (temporal knowledge graph)
 - Redis 7.x (working memory cache, session state)
 - AWS S3 / MinIO (archival storage, raw logs)
 
 **Blockchain:**
+
 - Network: Monad L1 (EVM-compatible)
 - Smart Contracts: Solidity 0.8.x
-- Web3 Library: ethers.js v6
+- Web3 Library: viem
 - DID Method: did:monad (custom DID method anchored on Monad)
 
 **Frontend:**
+
 - Framework: Next.js 15 (App Router)
 - Language: TypeScript
 - Styling: Tailwind CSS v4 + custom design system
@@ -654,6 +702,7 @@ interface MemoryAttestation {
 - Charts: Recharts
 
 **Infrastructure:**
+
 - Container: Docker + Kubernetes (K8s)
 - Orchestration: Helm charts for deployment
 - IaC: Terraform
@@ -661,6 +710,7 @@ interface MemoryAttestation {
 - Monitoring: Prometheus + Grafana + OpenTelemetry
 
 **Security:**
+
 - Auth: JWT + API Keys (REST); MCP OAuth 2.1
 - Encryption: AES-256-GCM (at rest), TLS 1.3 (transit)
 - Key Management: Operator-side (never server-side); enterprise HSM support
@@ -780,7 +830,7 @@ interface APIResponse<T> {
   success: boolean;
   data: T | null;
   error: {
-    code: string;       // e.g. "VAULT_NOT_FOUND"
+    code: string; // e.g. "VAULT_NOT_FOUND"
     message: string;
     details?: unknown;
   } | null;
@@ -793,10 +843,11 @@ interface APIResponse<T> {
 ```
 
 **Attestation fields** included on write/delete responses:
+
 ```typescript
 interface AttestationMeta {
   contentHash: string;
-  monadTxHash: string | null;   // null if batching pending
+  monadTxHash: string | null; // null if batching pending
   monadBlockNumber: number | null;
   attestedAt: string;
 }
@@ -971,6 +1022,7 @@ contracts/
 ```
 
 **VaultRegistry.sol (key functions):**
+
 ```solidity
 function registerVault(
     string calldata did,
@@ -991,6 +1043,7 @@ function destroyVault(
 ```
 
 **AttestationAggregator.sol:**
+
 ```solidity
 function batchAttest(
     bytes32[] calldata vaultIds,
@@ -1002,9 +1055,8 @@ function batchAttest(
 
 function verify(
     bytes32 vaultId,
-    bytes32 contentHash,
-    uint256 timestamp
-) external view returns (bool, uint256 blockNumber);
+    bytes32 contentHash
+) external view returns (bool exists, uint256 blockNumber);
 ```
 
 ### 12.3 DID Method Specification: `did:monad`
@@ -1018,6 +1070,7 @@ Example: did:monad:mainnet:0x742d35Cc6634C0532925a3b8D4C9D2bc1234abcd
 Resolution: DID Document stored in VaultRegistry contract, retrievable via universal resolver.
 
 DID Document includes:
+
 - `verificationMethod`: operator public keys
 - `service`: MNEME vault API endpoint
 - `controller`: operator address
@@ -1053,15 +1106,15 @@ class AttestationBatcher {
 
 ### 13.1 Threat Model
 
-| Threat | Likelihood | Impact | Mitigation |
-|---|---|---|---|
-| Operator key compromise | Medium | Critical | Key never touches servers; HSM support for enterprise |
-| Memory content breach | Low | High | AES-256-GCM encryption; zero-knowledge to platform |
-| PII leak in memory market pack | Medium | High | Multi-layer PII scan + anonymisation pipeline |
-| Smart contract exploit | Low | Critical | Formal verification; multi-sig on contract upgrades; bug bounty |
-| Monad RPC failure | Medium | Medium | Multi-provider fallback; offline queue with retry |
-| DDoS on API | Medium | Medium | Kong rate limiting; Cloudflare WAF |
-| Insider access to memories | Low | Critical | Encrypted content; keys never server-side |
+| Threat                         | Likelihood | Impact   | Mitigation                                                      |
+| ------------------------------ | ---------- | -------- | --------------------------------------------------------------- |
+| Operator key compromise        | Medium     | Critical | Key never touches servers; HSM support for enterprise           |
+| Memory content breach          | Low        | High     | AES-256-GCM encryption; zero-knowledge to platform              |
+| PII leak in memory market pack | Medium     | High     | Multi-layer PII scan + anonymisation pipeline                   |
+| Smart contract exploit         | Low        | Critical | Formal verification; multi-sig on contract upgrades; bug bounty |
+| Monad RPC failure              | Medium     | Medium   | Multi-provider fallback; offline queue with retry               |
+| DDoS on API                    | Medium     | Medium   | Kong rate limiting; Cloudflare WAF                              |
+| Insider access to memories     | Low        | Critical | Encrypted content; keys never server-side                       |
 
 ### 13.2 Encryption Architecture
 
@@ -1073,19 +1126,19 @@ Operator generates key pair (client-side, never transmitted)
 
 Memory content encryption:
   plaintext → AES-256-GCM (key derived from operator key + vault ID) → stored
-  
+
 MNEME servers store: encrypted ciphertext + IV only
 MNEME cannot decrypt: operator key never transmitted
 ```
 
-### 13.3 Zero-Knowledge Compliance Proofs
+### 13.3 Compliance Proofs
 
 For compliance reports that need to prove memory state without revealing content:
 
-- ZK proof system: Groth16 (proven, efficient)
-- Circuit: "Agent vault contained memory matching hash H at timestamp T"
-- Verifiable by regulator without accessing content
-- Implementation: snarkjs + circom
+- System: SHA-256 cryptographically secure hashing
+- Process: "Agent vault contained memory matching hash H at timestamp T"
+- Verifiable by regulator without accessing content (compare with on-chain hashes)
+- Implementation: Standard Node.js crypto primitives
 
 ### 13.4 API Security
 
@@ -1114,16 +1167,19 @@ For compliance reports that need to prove memory state without revealing content
 ### 14.2 Unit Tests
 
 **Memory Extraction Service:**
+
 - Fact extraction accuracy on benchmark dataset (target: >85% precision)
 - Temporal supersession logic (contradicting facts handled correctly)
 - PII detection coverage (GDPR test dataset)
 
 **Attestation Service:**
+
 - Hash consistency (same content → same hash)
 - Batch aggregation correctness
 - Monad RPC failure handling (queue, retry, no loss)
 
 **Smart Contracts (Foundry):**
+
 - VaultRegistry: ownership transfer, destruction
 - AttestationAggregator: batch correctness, verification
 - MemoryMarket: listing, purchase, revenue distribution
@@ -1146,6 +1202,7 @@ For compliance reports that need to prove memory state without revealing content
 ### 14.5 Monad Testnet Testing
 
 All smart contract interactions tested on Monad Devnet before mainnet:
+
 - Gas estimation for all contract functions
 - Batch attestation under load
 - Market contract edge cases (purchase race conditions, refunds)
@@ -1202,6 +1259,7 @@ Networking:
 ### 16.1 Key Metrics Dashboard
 
 **Business Metrics:**
+
 - Active agent vaults (DAU/MAU)
 - Memory writes per day
 - On-chain attestations per day
@@ -1209,6 +1267,7 @@ Networking:
 - MCP connection events by model type
 
 **Technical Metrics:**
+
 - Memory write latency (p50/p95/p99)
 - Memory retrieval latency (p50/p95/p99)
 - Monad RPC latency and confirmation times
@@ -1216,6 +1275,7 @@ Networking:
 - API error rate by endpoint
 
 **Business Health:**
+
 - Vault churn rate
 - Memory Pack listing rate
 - Pack purchase conversion rate
@@ -1223,14 +1283,14 @@ Networking:
 
 ### 16.2 Alerting Rules
 
-| Alert | Threshold | Severity |
-|---|---|---|
-| Memory write latency p95 > 500ms | 5 min sustained | P1 |
-| Monad RPC unavailable | >30 seconds | P1 |
-| Attestation queue depth > 10K | 10 min sustained | P2 |
-| API error rate > 1% | 5 min sustained | P2 |
-| PII scan failure | Any | P1 |
-| Smart contract event anomaly | Any | P1 |
+| Alert                            | Threshold        | Severity |
+| -------------------------------- | ---------------- | -------- |
+| Memory write latency p95 > 500ms | 5 min sustained  | P1       |
+| Monad RPC unavailable            | >30 seconds      | P1       |
+| Attestation queue depth > 10K    | 10 min sustained | P2       |
+| API error rate > 1%              | 5 min sustained  | P2       |
+| PII scan failure                 | Any              | P1       |
+| Smart contract event anomaly     | Any              | P1       |
 
 ---
 
@@ -1279,9 +1339,11 @@ Mitigation: MCP is an open standard now adopted by Linux Foundation (AAIF, Dec 2
 ## 18. Phase-Wise Development Roadmap
 
 ### Phase 0: Foundation (Weeks 1–4)
+
 **Goal:** Codebase scaffold, infrastructure, team alignment
 
 Deliverables:
+
 - Monorepo setup (Turborepo): `/apps/api`, `/apps/mcp`, `/apps/web`, `/packages/sdk`, `/contracts`
 - CI/CD pipeline (GitHub Actions): lint, test, build, deploy to staging
 - Monad Devnet connection: wallet setup, first test transaction
@@ -1293,9 +1355,11 @@ Exit Criteria: Local dev environment boots in <5 minutes. Hello World on Monad D
 ---
 
 ### Phase 1: Core Vault MVP (Weeks 5–10)
+
 **Goal:** Working sovereign vault with MCP server
 
 Deliverables:
+
 - `VaultRegistry.sol` deployed to Monad Devnet
 - Memory write/read/delete API (episodic tier only)
 - AES-256-GCM encryption with operator-side keys
@@ -1309,9 +1373,11 @@ Exit Criteria: Claude agent writes memory, switches to GPT via same MCP endpoint
 ---
 
 ### Phase 2: Semantic Intelligence (Weeks 11–16)
+
 **Goal:** Temporal knowledge graph + cross-model portability demo
 
 Deliverables:
+
 - Python extraction service: LLM-based fact extraction pipeline
 - Neo4j integration: entity-relationship graph with temporal validity windows
 - Temporal query API: `memory_inspect` at historical timestamp
@@ -1325,9 +1391,11 @@ Exit Criteria: Temporal query demo: "What did the agent know about [entity] on [
 ---
 
 ### Phase 3: Memory Market Alpha (Weeks 17–22)
+
 **Goal:** First Memory Market transactions on testnet
 
 Deliverables:
+
 - `MemoryMarket.sol` + `RevenueDistributor.sol` deployed to Monad Testnet
 - Anonymisation pipeline: NER-based PII scan + differential privacy
 - Pack creation UI: date range selector, domain tag, PII report viewer
@@ -1340,10 +1408,12 @@ Exit Criteria: Complete end-to-end: operator creates pack → listed → another
 ---
 
 ### Phase 4: Enterprise & Compliance (Weeks 23–28)
+
 **Goal:** Enterprise-ready compliance features
 
 Deliverables:
-- ZK proof generation for compliance reports
+
+- Cryptographic hashing (SHA-256) for compliance reports
 - `DeletionProver.sol` for GDPR tombstones
 - Compliance Report PDF generator
 - Enterprise SSO (SAML/OIDC)
@@ -1352,14 +1422,16 @@ Deliverables:
 - Enterprise dashboard with compliance panel
 - SLA documentation + enterprise onboarding guide
 
-Exit Criteria: Compliance officer persona can generate audit report → verify against Monad explorer → download PDF with ZK proof → submit to regulator.
+Exit Criteria: Compliance officer persona can generate audit report → verify against Monad explorer → download PDF with hash proof → submit to regulator.
 
 ---
 
 ### Phase 5: Production Hardening & Launch (Weeks 29–34)
+
 **Goal:** Production-grade, publicly launched
 
 Deliverables:
+
 - Load testing: 10K concurrent agents
 - Smart contract mainnet deployment (Monad Mainnet)
 - Security audit (trails, penetration test)
@@ -1374,9 +1446,11 @@ Exit Criteria: 100 agent vaults live on mainnet. First real Memory Market transa
 ---
 
 ### Phase 6: Growth & Ecosystem (Weeks 35–52)
+
 **Goal:** Network effects, ecosystem partnerships
 
 Deliverables:
+
 - Native integrations: LangGraph plugin, CrewAI plugin, AutoGen plugin
 - Memory Market: mobile-optimised marketplace
 - Agent analytics: memory usage patterns, retrieval quality scores
@@ -1390,6 +1464,7 @@ Deliverables:
 ## 19. Success Metrics & KPIs
 
 ### 19.1 Phase 1 Metrics (End of Week 10)
+
 - [ ] 50 agent vaults created by beta testers
 - [ ] 10,000 memory writes processed
 - [ ] 1,000 on-chain attestations confirmed on Monad Devnet
@@ -1397,6 +1472,7 @@ Deliverables:
 - [ ] SDK installs: 200+
 
 ### 19.2 Phase 3 Metrics (End of Week 22)
+
 - [ ] 500 active vaults
 - [ ] 10 Memory Packs listed
 - [ ] First Memory Market transaction on testnet
@@ -1404,6 +1480,7 @@ Deliverables:
 - [ ] LongMemEval benchmark: MNEME scores >75% (target: beat Mem0's 49%)
 
 ### 19.3 6-Month Metrics (End of Week 26)
+
 - [ ] 1,000 active agent vaults
 - [ ] 500,000 on-chain attestations (Monad Mainnet)
 - [ ] 50 Memory Packs listed
@@ -1412,6 +1489,7 @@ Deliverables:
 - [ ] Developer NPS: >50
 
 ### 19.4 12-Month Metrics
+
 - [ ] 10,000 active agent vaults
 - [ ] 5M+ on-chain attestations
 - [ ] $50,000 monthly Memory Market GMV
@@ -1430,7 +1508,8 @@ This single metric captures product-market fit better than any other: it require
 ## 20. Architecture & Flow Diagrams
 
 ### 20.1 System Architecture Diagram
-*(See: `docs/diagrams/system-architecture.mermaid`)*
+
+_(See: `docs/diagrams/system-architecture.mermaid`)_
 
 ### 20.2 Memory Write Sequence Diagram
 
@@ -1514,19 +1593,19 @@ memory_packs ──< pack_purchases
 
 ## Appendix B: Glossary
 
-| Term | Definition |
-|---|---|
-| DID | Decentralised Identifier (W3C standard) — a globally unique identifier for an agent, not controlled by any central authority |
-| Attestation | A cryptographic fingerprint of a memory operation, anchored on Monad blockchain |
-| Memory Pack | An anonymised, marketable snapshot of an agent's accumulated domain knowledge |
-| MCP | Model Context Protocol — open standard for tool integration with LLMs |
-| Vault State Hash | A Merkle root of all current memories in a vault — a single hash proving the complete memory state |
-| Temporal Supersession | When a new fact contradicts an old one, the old fact's validity window is closed |
-| PII | Personally Identifiable Information — must be removed before any memory pack is listed |
-| Provenance | Proof that a memory pack was derived from real agent interactions, not synthetically generated |
-| Sovereign | Owned and controlled by the operator, with no dependency on any platform or vendor |
+| Term                  | Definition                                                                                                                   |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| DID                   | Decentralised Identifier (W3C standard) — a globally unique identifier for an agent, not controlled by any central authority |
+| Attestation           | A cryptographic fingerprint of a memory operation, anchored on Monad blockchain                                              |
+| Memory Pack           | An anonymised, marketable snapshot of an agent's accumulated domain knowledge                                                |
+| MCP                   | Model Context Protocol — open standard for tool integration with LLMs                                                        |
+| Vault State Hash      | A Merkle root of all current memories in a vault — a single hash proving the complete memory state                           |
+| Temporal Supersession | When a new fact contradicts an old one, the old fact's validity window is closed                                             |
+| PII                   | Personally Identifiable Information — must be removed before any memory pack is listed                                       |
+| Provenance            | Proof that a memory pack was derived from real agent interactions, not synthetically generated                               |
+| Sovereign             | Owned and controlled by the operator, with no dependency on any platform or vendor                                           |
 
 ---
 
-*Document maintained by MNEME Product Team. Last updated: July 2026.*  
-*Next review: October 2026 (post-Phase 2 completion).*
+_Document maintained by MNEME Product Team. Last updated: July 2026._  
+_Next review: October 2026 (post-Phase 2 completion)._

@@ -130,6 +130,34 @@ const DEMO_AUDIT_LOG = [
   },
 ];
 
+const DEMO_GRAPH_DATA = {
+  nodes: [
+    { id: 'Agent', group: 1, label: 'Agent Vault', val: 20 },
+    { id: 'Dark Mode', group: 2, label: 'Dark Mode', val: 10 },
+    { id: 'Accessibility', group: 2, label: 'Accessibility', val: 10 },
+    { id: 'Monad', group: 3, label: 'Monad Testnet', val: 15 },
+    { id: 'Smart Contracts', group: 3, label: 'Smart Contracts', val: 10 },
+    { id: 'DeFi Trading', group: 4, label: 'DeFi Trading', val: 15 },
+    { id: 'RSI Strategy', group: 4, label: 'RSI Strategy', val: 10 },
+    { id: 'Acme Corp', group: 5, label: 'Acme Corp', val: 10 },
+    { id: 'Sarah Chen', group: 5, label: 'Sarah Chen', val: 5 },
+    { id: 'Python', group: 6, label: 'Python', val: 10 },
+    { id: 'Pydantic', group: 6, label: 'Pydantic', val: 5 },
+  ],
+  links: [
+    { source: 'Agent', target: 'Dark Mode', label: 'PREFERS' },
+    { source: 'Dark Mode', target: 'Accessibility', label: 'RELATES_TO' },
+    { source: 'Agent', target: 'Monad', label: 'KNOWS' },
+    { source: 'Monad', target: 'Smart Contracts', label: 'HAS' },
+    { source: 'Agent', target: 'DeFi Trading', label: 'EXECUTES' },
+    { source: 'DeFi Trading', target: 'RSI Strategy', label: 'USES' },
+    { source: 'Agent', target: 'Acme Corp', label: 'MANAGES' },
+    { source: 'Acme Corp', target: 'Sarah Chen', label: 'CONTACT' },
+    { source: 'Agent', target: 'Python', label: 'SKILL' },
+    { source: 'Python', target: 'Pydantic', label: 'BEST_PRACTICE' },
+  ],
+};
+
 // ── In-memory session state (survives within a tab session) ────────────────────
 
 const _sessionMemories: any[] = [];
@@ -172,14 +200,19 @@ async function handleMockRequest<T>(method: string, path: string, body?: any): P
   const isMemoryPath = path.includes('/memories');
   const isRecall = path.includes('/memories/recall');
   const isInspect = path.includes('/memories/inspect');
+  const isGraph = path.includes('/graph');
   const isDelete = path.match(/\/memories\/[^/]+$/) && method === 'DELETE';
 
-  if (isMemoryPath && !isRecall && !isInspect && !isDelete && method === 'GET') {
+  if (isGraph && method === 'GET') {
+    return DEMO_GRAPH_DATA as unknown as T;
+  }
+
+  if (isMemoryPath && !isRecall && !isInspect && !isDelete && !isGraph && method === 'GET') {
     const all = [...DEMO_MEMORIES, ..._sessionMemories];
     return { items: all, total: all.length, hasMore: false, page: 1 } as unknown as T;
   }
 
-  if (isMemoryPath && !isRecall && !isInspect && !isDelete && method === 'POST') {
+  if (isMemoryPath && !isRecall && !isInspect && !isDelete && !isGraph && method === 'POST') {
     const newMem = {
       id: `mem_${Date.now()}`,
       ...body,
@@ -375,6 +408,9 @@ export const memoryApi = {
 
   delete: (vaultId: string, memoryId: string) =>
     request<any>('DELETE', `/vaults/${vaultId}/memories/${memoryId}`),
+
+  graph: (vaultId: string) =>
+    request<any>('GET', `/vaults/${vaultId}/graph`),
 };
 
 

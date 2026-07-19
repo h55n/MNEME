@@ -7,8 +7,11 @@ import {
   Card, CardHeader, CardTitle, Button, Input, Textarea, Badge,
   Select, EmptyState, Spinner, MonoHash
 } from '@/components/ui';
-import { Brain, Search, Plus, Trash2, Clock } from 'lucide-react';
+import { Brain, Search, Plus, Trash2, Clock, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
+import dynamic from 'next/dynamic';
+
+const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), { ssr: false });
 
 const TYPE_OPTIONS = [
   { value: 'episodic', label: 'Episodic — interaction event' },
@@ -19,7 +22,7 @@ const TYPE_OPTIONS = [
 export default function MemoriesPage() {
   const { vaultId, operatorAddress } = useAuthStore();
   const qc = useQueryClient();
-  const [tab, setTab] = useState<'browse' | 'write' | 'recall' | 'inspect'>('browse');
+  const [tab, setTab] = useState<'browse' | 'write' | 'recall' | 'inspect' | 'graph'>('browse');
   const [page, setPage] = useState(1);
 
   // Write form
@@ -38,6 +41,12 @@ export default function MemoriesPage() {
     queryKey: ['memories', vaultId, page],
     queryFn: () => memoryApi.list(vaultId!, page, 20),
     enabled: !!vaultId,
+  });
+
+  const graphQ = useQuery({
+    queryKey: ['graph', vaultId],
+    queryFn: () => memoryApi.graph(vaultId!),
+    enabled: !!vaultId && tab === 'graph',
   });
 
   const writeMut = useMutation({
@@ -94,6 +103,7 @@ export default function MemoriesPage() {
     { id: 'write', label: 'Write' },
     { id: 'recall', label: 'Recall' },
     { id: 'inspect', label: 'Temporal Inspect' },
+    { id: 'graph', label: 'Knowledge Graph' },
   ] as const;
 
   return (
@@ -306,6 +316,93 @@ export default function MemoriesPage() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        </Card>
+      )}
+
+      {/* Knowledge Graph */}
+      {tab === 'graph' && (
+        <Card className="flex flex-col h-[600px] overflow-hidden">
+          <CardHeader className="shrink-0 flex flex-row items-center justify-between pb-2">
+            <div>
+              <CardTitle>Knowledge Graph</CardTitle>
+              <p className="text-body-sm text-neutral-500 mt-1">
+                Visualizing entity relationships extracted from memories.
+              </p>
+            </div>
+            {graphQ.isFetching && <Spinner />}
+          </CardHeader>
+          <div className="flex-1 bg-surface relative min-h-0">
+            {graphQ.isLoading ? (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Spinner />
+              </div>
+            ) : graphQ.data ? (
+              <div className="absolute inset-0">
+                <ForceGraph2D
+                  graphData={graphQ.data}
+                  width={800}
+                  height={500}
+                  nodeAutoColorBy="group"
+                  nodeCanvasObject={(node: any, ctx, globalScale) => {
+                    const label = node.label;
+                    const fontSize = 12 / globalScale;
+                    ctx.font = `${fontSize}px Sans-Serif`;
+                    const textWidth = ctx.measureText(label).width;
+                    const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2);
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                    ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1]);
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = node.color || '#fff';
+                    ctx.fillText(label, node.x, node.y);
+                    node.__bckgDimensions = bckgDimensions;
+                  }}
+                  nodePointerAreaPaint={(node: any, color, ctx) => {
+                    ctx.fillStyle = color;
+                    const bckgDimensions = node.__bckgDimensions;
+                    bckgDimensions && ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1]);
+                  }}
+                  linkColor={() => 'rgba(255,255,255,0.2)'}
+                  linkDirectionalArrowLength={3.5}
+                  linkDirectionalArrowRelPos={1}
+                  linkCanvasObjectMode={() => 'after'}
+                  linkCanvasObject={(link: any, ctx, globalScale) => {
+                    const MAX_FONT_SIZE = 4;
+                    const LABEL_NODE_MARGIN = 15;
+                    const start = link.source;
+                    const end = link.target;
+                    
+                    if (typeof start !== 'object' || typeof end !== 'object') return;
+                    
+                    const textPos = {
+                      x: start.x + (end.x - start.x) / 2,
+                      y: start.y + (end.y - start.y) / 2
+                    };
+                    
+                    const relLink = { x: end.x - start.x, y: end.y - start.y };
+                    let textAngle = Math.atan2(relLink.y, relLink.x);
+                    if (textAngle > Math.PI / 2) textAngle = -(Math.PI - textAngle);
+                    if (textAngle < -Math.PI / 2) textAngle = -(Math.PI + textAngle);
+                    
+                    const fontSize = 10 / globalScale;
+                    ctx.font = `${fontSize}px Sans-Serif`;
+                    ctx.save();
+                    ctx.translate(textPos.x, textPos.y);
+                    ctx.rotate(textAngle);
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                    ctx.fillText(link.label, 0, 0);
+                    ctx.restore();
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center text-neutral-500">
+                Failed to load graph data
               </div>
             )}
           </div>

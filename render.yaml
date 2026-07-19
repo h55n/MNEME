@@ -1,46 +1,76 @@
 services:
-  # API Service
+  # ── Redis (Managed Cache & Rate Limiting) ─────────────────────────
+  - type: redis
+    name: mneme-redis
+    plan: free
+
+  # ── Extraction Service (Python LLM Pipeline) ──────────────────────
+  - type: web
+    name: mneme-extraction
+    env: docker
+    region: ohio
+    plan: starter
+    dockerContext: apps/extraction
+    dockerfilePath: apps/extraction/Dockerfile
+    envVars:
+      - key: NVIDIA_API_KEY
+        sync: false
+
+  # ── API Service (Node.js Backend) ─────────────────────────────────
   - type: web
     name: mneme-api
-    env: node
-    buildCommand: npm i && npx turbo run build --filter=@mneme/api
-    startCommand: npm run start --workspace=apps/api
+    env: docker
+    region: ohio
+    plan: starter
+    dockerContext: .
+    dockerfilePath: apps/api/Dockerfile
     envVars:
-      - key: NODE_ENV
-        value: production
+      # Database Connections
       - key: DATABASE_URL
-        sync: false # Set in Render dashboard (e.g., Neon connection string)
-      - key: REDIS_URL
-        sync: false # Set in Render dashboard (e.g., Upstash connection string)
+        sync: false
       - key: NEO4J_URI
-        sync: false # Optional: Set in Render dashboard
+        sync: false
       - key: NEO4J_USER
         sync: false
       - key: NEO4J_PASSWORD
         sync: false
-      - key: JWT_SECRET
-        generateValue: true
-      - key: API_KEY_SALT
-        generateValue: true
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: mneme-redis
+          property: connectionString
+      
+      # Blockchains & Smart Contracts
       - key: MONAD_RPC_URL
-        value: https://rpc-devnet.monad.xyz
+        sync: false
       - key: MONAD_PRIVATE_KEY
         sync: false
+      - key: ATTESTATION_AGGREGATOR_ADDRESS
+        sync: false
+      
+      # Internal Microservices
       - key: EXTRACTION_SERVICE_URL
-        fromService:
-          type: web
-          name: mneme-extraction
-          envVarKey: RENDER_EXTERNAL_URL
+        value: "http://mneme-extraction:8001"
+      
+      # API Keys & Auth
+      - key: ANTHROPIC_API_KEY
+        sync: false
       - key: OPENAI_API_KEY
         sync: false
+      - key: JWT_SECRET
+        generateValue: true
 
-  # Python Extraction Service
+  # ── Web Frontend (Next.js Dashboard) ──────────────────────────────
   - type: web
-    name: mneme-extraction
-    env: python
-    rootDir: apps/extraction
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    name: mneme-web
+    env: docker
+    region: ohio
+    plan: starter
+    dockerContext: .
+    dockerfilePath: apps/web/Dockerfile
     envVars:
-      - key: NVIDIA_API_KEY
-        sync: false
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: mneme-api
+          envVarKey: RENDER_EXTERNAL_URL
