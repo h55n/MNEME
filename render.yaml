@@ -73,4 +73,4 @@ services:
         fromService:
           type: web
           name: mneme-api
-          envVarKey: RENDER_EXTERNAL_URL
+          property: url
