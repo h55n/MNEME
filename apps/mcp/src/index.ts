@@ -358,7 +358,7 @@ async function main() {
 
           for (let i = 0; i < memories.length; i += MAX_BATCH) {
             const batch = memories.slice(i, i + MAX_BATCH);
-            const r = await apiCall('POST', `/vaults/${VAULT_ID}/memories/batch`, { memories: batch });
+            const r = await apiCall('POST', `/vaults/${VAULT_ID}/memories/batch`, { memories: batch }) as { data: { imported: number; failed: number } };
             imported += r.data.imported;
             failed += r.data.failed;
           }
