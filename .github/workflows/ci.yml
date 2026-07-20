@@ -73,7 +73,7 @@ jobs:
       DATABASE_URL: postgresql://mneme:password@localhost:5432/mneme_test
       REDIS_URL: redis://localhost:6379
       NODE_ENV: test
-      ENCRYPTION_SECRET: "test-encryption-secret-minimum-32-chars-long-123"
+      ENCRYPTION_SECRET: ${{ secrets.ENCRYPTION_SECRET }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
