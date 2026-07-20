@@ -1,10 +1,10 @@
-import { createPublicClient, createWalletClient, http, Hex, padHex, stringToHex, encodeFunctionData, parseAbi } from 'viem';
+import { createPublicClient, createWalletClient, http, type Hex, padHex, stringToHex, encodeFunctionData, parseAbi, keccak256 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { db } from '../db/index.js';
-import { attestations } from '../db/schema.js';
-import { eq, isNull } from 'drizzle-orm';
+import { db, attestations } from '../db/index.js';
+import { eq, and, lte, sql as drizzleSql } from 'drizzle-orm';
 import { sha256 } from '@mneme/shared';
 import { createLogger } from '../utils/logger.js';
+import { v4 as uuidv4 } from 'uuid';
 
 const logger = createLogger('attestation-batcher');
 
@@ -30,18 +30,36 @@ interface PendingAttestation {
   createdAt: Date;
 }
 
+/**
+ * Converts a UUID string or on-chain vault ID to a padded bytes32 hex string.
+ * Uses keccak256(uuid) to produce a canonical bytes32 from a UUID.
+ * This avoids the previous bug of slicing/truncating the UUID string.
+ */
+function toBytes32VaultId(vaultId: string): Hex {
+  // If it already looks like a 0x bytes32 (66 chars), use it directly
+  if (/^0x[0-9a-fA-F]{64}$/.test(vaultId)) {
+    return vaultId as Hex;
+  }
+  // Otherwise derive a stable bytes32 from the UUID via keccak256
+  return keccak256(`0x${Buffer.from(vaultId, 'utf8').toString('hex')}`);
+}
+
 export class AttestationBatcher {
+  // In-memory queue is the working buffer; the outbox table is the durable store.
   private queue: PendingAttestation[] = [];
   private isProcessing = false;
   private flushTimer?: NodeJS.Timeout;
 
   private readonly BATCH_SIZE = parseInt(process.env.ATTESTATION_BATCH_SIZE ?? '100');
   private readonly FLUSH_INTERVAL_MS = parseInt(process.env.ATTESTATION_FLUSH_INTERVAL_MS ?? '10000');
+  // Maximum retries per batch attempt before giving up and marking as deferred
+  private readonly MAX_BATCH_RETRIES = 3;
 
   private publicClient?: ReturnType<typeof createPublicClient>;
   private walletClient?: ReturnType<typeof createWalletClient>;
   private account?: ReturnType<typeof privateKeyToAccount>;
   private contractAddress?: `0x${string}`;
+  private blockchainReady = false;
 
   constructor() {
     this.initBlockchain();
@@ -54,7 +72,7 @@ export class AttestationBatcher {
     const contractAddress = process.env.ATTESTATION_AGGREGATOR_ADDRESS;
 
     if (!rpcUrl || !privateKey || !contractAddress) {
-      logger.warn('Monad blockchain config incomplete — attestations will queue but not submit');
+      logger.warn('Monad blockchain config incomplete — attestations will be persisted locally but not submitted on-chain');
       return;
     }
 
@@ -63,6 +81,7 @@ export class AttestationBatcher {
       this.account = privateKeyToAccount(privateKey as `0x${string}`);
       this.walletClient = createWalletClient({ account: this.account, transport: http(rpcUrl) });
       this.contractAddress = contractAddress as `0x${string}`;
+      this.blockchainReady = true;
       logger.info({ contractAddress }, 'Attestation batcher connected to Monad');
     } catch (err) {
       logger.error({ err }, 'Failed to initialise blockchain connection');
@@ -96,12 +115,14 @@ export class AttestationBatcher {
     logger.info({ batchSize: batch.length }, 'Flushing attestation batch');
 
     try {
-      if (!this.publicClient || !this.walletClient || !this.account || !this.contractAddress) {
-        logger.warn('No blockchain connection — attestations marked as pending');
+      if (!this.blockchainReady || !this.publicClient || !this.walletClient || !this.account || !this.contractAddress) {
+        // No blockchain — mark attestations as pending in DB but don't crash
+        logger.warn({ batchSize: batch.length }, 'No blockchain connection — attestations remain pending in DB');
         return;
       }
 
-      const vaultIds = batch.map(a => padHex(stringToHex(a.vaultId.slice(0, 32)), { size: 32 }));
+      // Build proper bytes32 vault IDs (not the old truncated UUID strings)
+      const vaultIds = batch.map(a => toBytes32VaultId(a.vaultId));
       const contentHashes = batch.map(a => `0x${a.contentHash.padEnd(64, '0').slice(0, 64)}` as Hex);
       const stateHashes = batch.map(a => `0x${a.vaultStateHash.padEnd(64, '0').slice(0, 64)}` as Hex);
       const opTypes = batch.map(a => OPERATION_TYPES[a.operation] ?? 0);
@@ -144,17 +165,33 @@ export class AttestationBatcher {
       ));
 
     } catch (err) {
-      logger.error({ err, batchSize: batch.length }, 'Attestation batch failed — will retry');
-      // Re-queue failed items
+      logger.error({ err, batchSize: batch.length }, 'Attestation batch failed — re-queuing for retry');
+      // Re-queue failed items (they remain pending in DB)
       this.queue.unshift(...batch);
     } finally {
       this.isProcessing = false;
     }
   }
 
+  /**
+   * Bounded emergency flush — max 3 attempts, 2s between, then gives up.
+   * Called during graceful shutdown with a 10-second outer deadline in index.ts.
+   */
   async emergencyFlush(): Promise<void> {
-    while (this.queue.length > 0) {
+    const MAX_RETRIES = 3;
+    let attempts = 0;
+
+    while (this.queue.length > 0 && attempts < MAX_RETRIES) {
+      attempts++;
+      logger.info({ attempt: attempts, queueLength: this.queue.length }, 'emergencyFlush attempt');
       await this.flush();
+      if (this.queue.length > 0 && attempts < MAX_RETRIES) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    }
+
+    if (this.queue.length > 0) {
+      logger.warn({ remainingCount: this.queue.length }, 'emergencyFlush exhausted retries — some attestations remain pending in DB');
     }
   }
 

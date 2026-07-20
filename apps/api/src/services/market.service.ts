@@ -2,9 +2,23 @@ import { db, memoryPacks, packPurchases, memories } from '../db/index.js';
 import { eq, and, isNull, gte, lte, sql } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { sha256, decrypt, encrypt, deriveVaultKey } from '@mneme/shared';
-import { createHash } from 'crypto';
 import type { CreatePackInput, AnonymisationReport, MemoryPack as MemoryPackType } from '@mneme/shared';
 import { createLogger } from '../utils/logger.js';
+
+/**
+ * Returns the server-side encryption secret, throwing at call-time if absent.
+ * This ensures the application fails loudly rather than silently using a weak fallback.
+ */
+function getEncryptionSecret(): string {
+  const secret = process.env.ENCRYPTION_SECRET;
+  if (!secret || secret.length < 32) {
+    throw new Error(
+      'ENCRYPTION_SECRET env var is missing or too short (min 32 chars). ' +
+      'Set it in your .env file. Do NOT use a hardcoded fallback.'
+    );
+  }
+  return secret;
+}
 
 const logger = createLogger('market-service');
 
@@ -39,7 +53,6 @@ export class MarketService {
     vaultId: string,
     sellerAddress: string,
     input: CreatePackInput,
-    operatorPublicKey: string,
   ): Promise<{ packId: string; anonymisationReport: AnonymisationReport; piiDetected: boolean }> {
 
     // Fetch memories in date range
@@ -56,8 +69,9 @@ export class MarketService {
       throw new Error('No memories found in specified date range');
     }
 
-    // Decrypt memory content for PII scanning (Option A)
-    const vaultKey = deriveVaultKey(operatorPublicKey, vaultId);
+    // Decrypt memory content for PII scanning
+    const encryptionSecret = getEncryptionSecret();
+    const vaultKey = deriveVaultKey(encryptionSecret, vaultId);
     const plaintexts: string[] = [];
     for (const row of memoryRows) {
       try {
@@ -79,10 +93,10 @@ export class MarketService {
       memoryRows.map(m => m.contentHash).sort().join('')
     );
 
-    // Prepare escrow encrypted contents
+    // Prepare escrow encrypted contents (encrypted with per-pack server-side key)
     if (passed) {
       const enrichedPlaintexts = memoryRows.map((row, i) => ({
-        plaintext: plaintexts[i],
+        plaintext: plaintexts[i] ?? '',
         type: row.type,
         importance: row.importance,
         tags: row.tags,
@@ -91,11 +105,13 @@ export class MarketService {
         validUntil: row.validUntil,
         contentHash: row.contentHash,
       }));
-      
-      const serverKey = createHash('sha256').update(process.env.JWT_SECRET || 'mneme-fallback-secret-key-12345').digest();
-      const encryptedPayload = encrypt(JSON.stringify(enrichedPlaintexts), serverKey);
-      
-      // Inject into report securely
+
+      // Derive a pack-specific escrow key from the server secret + vaultId
+      // This is separate from individual memory vault keys
+      const escrowKey = deriveVaultKey(encryptionSecret, `pack-escrow:${vaultId}`);
+      const encryptedPayload = encrypt(JSON.stringify(enrichedPlaintexts), escrowKey);
+
+      // Inject into report — stripped from API responses in toPackType()
       (report as any)._encryptedContents = encryptedPayload;
     }
 

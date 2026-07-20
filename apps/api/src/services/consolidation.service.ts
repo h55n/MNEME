@@ -6,13 +6,22 @@ import { createLogger } from '../utils/logger.js';
 
 const logger = createLogger('consolidation-service');
 
+function getEncryptionSecret(): string {
+  const secret = process.env.ENCRYPTION_SECRET;
+  if (!secret || secret.length < 32) {
+    throw new Error('ENCRYPTION_SECRET is missing or too short — cannot decrypt memories for consolidation.');
+  }
+  return secret;
+}
+
+
 export class ConsolidationService {
   /**
    * Consolidates episodic memories from a given session into a new Temporal Segment.
    * Generates a summary and prunes "dead" memories.
    */
-  async consolidateSession(vaultId: string, sessionId: string, operatorPublicKey: string): Promise<void> {
-    const vaultKey = deriveVaultKey(operatorPublicKey, vaultId);
+  async consolidateSession(vaultId: string, sessionId: string): Promise<void> {
+    const vaultKey = deriveVaultKey(getEncryptionSecret(), vaultId);
 
     try {
       // 1. Fetch all episodic memories for the session

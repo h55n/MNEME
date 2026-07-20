@@ -54,6 +54,57 @@ const ListQuerySchema = z.object({
 export async function memoryRoutes(fastify: FastifyInstance) {
   const VAULT_PREFIX = '/vaults/:vaultId/memories';
 
+  // ── POST /vaults/:vaultId/memories/batch — atomic batch import ─────────────
+  const BatchImportSchema = z.object({
+    memories: z.array(WriteMemorySchema).min(1).max(500),
+  });
+
+  fastify.post(`${VAULT_PREFIX}/batch`,
+    { preHandler: [authMiddleware, requireVaultMatch()] },
+    async (request, reply) => {
+      const { vaultId } = request.params as { vaultId: string };
+      const body = BatchImportSchema.safeParse(request.body);
+      if (!body.success) {
+        return reply.status(400).send(errorResponse({
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid batch import input',
+          details: body.error.flatten(),
+        }));
+      }
+
+      const items = body.data.memories;
+      const results: string[] = [];
+      const errors: Array<{ index: number; message: string }> = [];
+
+      // Process each memory individually — errors are collected, not thrown
+      for (let i = 0; i < items.length; i++) {
+        try {
+          const input = {
+            content:     items[i].content,
+            type:        items[i].type ?? 'episodic',
+            hintType:    items[i].hint_type,
+            taskScope:   items[i].task_scope,
+            tags:        items[i].tags,
+            importance:  items[i].importance,
+            sessionId:   items[i].sessionId,
+            sourceModel: items[i].sourceModel ?? 'batch-import',
+          };
+          const result = await memoryService.write(vaultId, input);
+          results.push(result.memory.id);
+        } catch (err: any) {
+          errors.push({ index: i, message: err.message });
+        }
+      }
+
+      return reply.status(errors.length === items.length ? 400 : 201).send(successResponse({
+        imported: results.length,
+        failed: errors.length,
+        memoryIds: results,
+        errors,
+      }));
+    }
+  );
+
   // ── POST /vaults/:vaultId/memories — write memory ─────────────────────────
   fastify.post(VAULT_PREFIX,
     { preHandler: [authMiddleware, requireVaultMatch()] },
@@ -80,7 +131,7 @@ export async function memoryRoutes(fastify: FastifyInstance) {
         sourceModel: body.data.sourceModel,
       };
 
-      const result = await memoryService.write(vaultId, input, request.operatorPublicKey!);
+      const result = await memoryService.write(vaultId, input);
       return reply.status(201).send(successResponse({
         ...result,
         // Expose classification metadata to caller
@@ -99,7 +150,7 @@ export async function memoryRoutes(fastify: FastifyInstance) {
       if (!query.success) {
         return reply.status(400).send(errorResponse({ code: 'VALIDATION_ERROR', message: 'Invalid query params' }));
       }
-      const result = await memoryService.list(vaultId, query.data.page, query.data.limit, request.operatorPublicKey!);
+      const result = await memoryService.list(vaultId, query.data.page, query.data.limit);
       return reply.send(successResponse(result));
     }
   );
@@ -132,7 +183,7 @@ export async function memoryRoutes(fastify: FastifyInstance) {
         taskType:       body.data.task_type,
       };
 
-      const result = await memoryService.recall(vaultId, input, request.operatorPublicKey!);
+      const result = await memoryService.recall(vaultId, input);
       return reply.send(successResponse(result));
     }
   );
@@ -146,7 +197,7 @@ export async function memoryRoutes(fastify: FastifyInstance) {
       if (!body.success) {
         return reply.status(400).send(errorResponse({ code: 'VALIDATION_ERROR', message: 'Invalid inspect input' }));
       }
-      const result = await memoryService.inspect(vaultId, body.data, request.operatorPublicKey!);
+      const result = await memoryService.inspect(vaultId, body.data);
       return reply.send(successResponse(result));
     }
   );
@@ -157,7 +208,7 @@ export async function memoryRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { vaultId, memoryId } = request.params as { vaultId: string; memoryId: string };
       try {
-        const result = await memoryService.delete(vaultId, memoryId, request.operatorPublicKey!);
+        const result = await memoryService.delete(vaultId, memoryId);
         return reply.send(successResponse(result));
       } catch (err: any) {
         if (err.message === 'MEMORY_NOT_FOUND' || err.message === 'MEMORY_DELETED') {
@@ -174,8 +225,26 @@ export async function memoryRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { vaultId, sessionId } = request.params as { vaultId: string; sessionId: string };
       try {
-        await consolidationService.consolidateSession(vaultId, sessionId, request.operatorPublicKey!);
+        await consolidationService.consolidateSession(vaultId, sessionId);
         return reply.send(successResponse({ success: true }));
+      } catch (err: any) {
+        return reply.status(500).send(errorResponse({ code: 'INTERNAL_ERROR', message: err.message }));
+      }
+    }
+  );
+
+  // ── GET /vaults/:vaultId/graph — knowledge graph for the vault ────────────
+  // Called by the frontend's graph visualisation panel.
+  // Returns { nodes: [...], links: [...] } using Neo4j when available, or
+  // a tag co-occurrence graph built from PostgreSQL as a fallback.
+  fastify.get('/vaults/:vaultId/graph',
+    { preHandler: [authMiddleware, requireVaultMatch()] },
+    async (request, reply) => {
+      const { vaultId } = request.params as { vaultId: string };
+      try {
+        const { graphService } = await import('../services/graph.service.js');
+        const graph = await graphService.getVaultGraph(vaultId);
+        return reply.send(successResponse(graph));
       } catch (err: any) {
         return reply.status(500).send(errorResponse({ code: 'INTERNAL_ERROR', message: err.message }));
       }

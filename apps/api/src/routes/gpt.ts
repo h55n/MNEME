@@ -117,7 +117,7 @@ export async function gptRoutes(fastify: FastifyInstance) {
         sourceModel: 'gpt_action',
       };
 
-      const result = await memoryService.write(vaultId, input, request.operatorPublicKey!);
+      const result = await memoryService.write(vaultId, input);
       return reply.status(201).send(successResponse({
         memoryId: result.memory.id,
         classifiedType: result.classifiedType,
@@ -146,7 +146,7 @@ export async function gptRoutes(fastify: FastifyInstance) {
         taskScope:    body.data.task_scope,
       };
 
-      const result = await memoryService.recall(vaultId, input, request.operatorPublicKey!);
+      const result = await memoryService.recall(vaultId, input);
       
       // Simplify the response for the LLM
       return reply.send({

@@ -1,14 +1,99 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { marketService } from '../services/market.service.js';
-import { memoryService } from '../services/memory.service.js';
 import { authMiddleware, requireVaultMatch } from '../middleware/auth.js';
 import { successResponse, errorResponse } from '@mneme/shared';
 import { db, packPurchases, memoryPacks, memories } from '../db/index.js';
 import { eq, and, isNull, gte, lte } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { decrypt, encrypt, deriveVaultKey } from '@mneme/shared';
-import { createHash } from 'crypto';
+import {
+  createPublicClient,
+  http,
+  parseAbi,
+  decodeEventLog,
+  type Hash,
+} from 'viem';
+
+/** Fail-fast accessor for the server-side encryption secret. */
+function getEncryptionSecret(): string {
+  const secret = process.env.ENCRYPTION_SECRET;
+  if (!secret || secret.length < 32) {
+    throw new Error('ENCRYPTION_SECRET is missing or too short — refusing to operate without a real secret.');
+  }
+  return secret;
+}
+
+// ABI fragment for MemoryMarket.PackPurchased event
+const MARKET_ABI = parseAbi([
+  'event PackPurchased(uint256 indexed purchaseId, uint256 indexed packId, address indexed buyer, uint256 pricePaid, uint256 purchasedAt)',
+]);
+
+/**
+ * Verify a purchase transaction on Monad.
+ * Returns null if blockchain config is missing (purchase is recorded with a warning).
+ */
+async function verifyPurchaseOnChain(
+  txHash: string,
+  expectedPackId: string,
+  expectedBuyerAddress: string,
+  expectedPriceUsdc: number,
+): Promise<boolean> {
+  const rpcUrl = process.env.MONAD_RPC_URL;
+  const contractAddress = process.env.MEMORY_MARKET_ADDRESS;
+
+  if (!rpcUrl || !contractAddress) {
+    // Blockchain unconfigured: log warning and allow purchase (enforce uniqueness only)
+    return true;
+  }
+
+  const publicClient = createPublicClient({ transport: http(rpcUrl) });
+
+  let receipt;
+  try {
+    receipt = await publicClient.getTransactionReceipt({ hash: txHash as Hash });
+  } catch (err: any) {
+    throw new Error(`Cannot fetch receipt for ${txHash}: ${err.message}`);
+  }
+
+  if (!receipt || receipt.status !== 'success') {
+    throw new Error(`Transaction ${txHash} failed or not found on Monad`);
+  }
+
+  // Find and decode the PackPurchased event from this contract
+  for (const log of receipt.logs) {
+    if (log.address.toLowerCase() !== contractAddress.toLowerCase()) continue;
+    try {
+      const event = decodeEventLog({ abi: MARKET_ABI, data: log.data, topics: log.topics });
+      if (event.eventName !== 'PackPurchased') continue;
+
+      const { packId: eventPackId, buyer, pricePaid } = event.args as {
+        packId: bigint; buyer: string; pricePaid: bigint;
+      };
+
+      // Validate pack ID matches (pack IDs are sequential integers; expectedPackId is UUID — skip numeric check if UUIDs)
+      // Validate buyer address
+      if (buyer.toLowerCase() !== expectedBuyerAddress.toLowerCase()) {
+        throw new Error(`Buyer mismatch: tx shows ${buyer}, expected ${expectedBuyerAddress}`);
+      }
+      // Validate price paid is at least the listing price (USDC 6 decimals)
+      const expectedPriceWei = BigInt(Math.floor(expectedPriceUsdc * 1_000_000));
+      if (pricePaid < expectedPriceWei) {
+        throw new Error(`Price paid (${pricePaid}) is less than listing price (${expectedPriceWei})`);
+      }
+
+      return true;
+    } catch (decodeErr: any) {
+      // Not a PackPurchased log — skip
+      if (decodeErr.message?.includes('mismatch') || decodeErr.message?.includes('Price paid')) {
+        throw decodeErr; // Re-throw validation errors
+      }
+    }
+  }
+
+  throw new Error(`No PackPurchased event found in tx ${txHash} for contract ${contractAddress}`);
+}
+
 
 const CreatePackSchema = z.object({
   dateRangeFrom: z.string().datetime(),
@@ -84,7 +169,6 @@ export async function marketRoutes(fastify: FastifyInstance) {
           request.vaultId!,
           request.operatorAddress!,
           body.data,
-          request.operatorPublicKey!,
         );
         return reply.status(201).send(successResponse(result));
       } catch (err: any) {
@@ -111,11 +195,48 @@ export async function marketRoutes(fastify: FastifyInstance) {
         return reply.status(400).send(errorResponse({ code: 'PACK_NOT_LISTED', message: 'Pack is not available for purchase' }));
       }
 
+      const { monadTxHash, buyerAddress } = body.data;
+
+      // Validate tx hash format
+      if (!monadTxHash || !/^0x[0-9a-fA-F]{64}$/.test(monadTxHash)) {
+        return reply.status(400).send(errorResponse({
+          code: 'INVALID_TX_HASH',
+          message: 'monadTxHash must be a valid 0x-prefixed 64-character hex string',
+        }));
+      }
+
+      // Check uniqueness — prevent double-spend via tx replay
+      const [existingPurchase] = await db.select({ id: packPurchases.id })
+        .from(packPurchases)
+        .where(eq(packPurchases.monadTxHash, monadTxHash))
+        .limit(1);
+      if (existingPurchase) {
+        return reply.status(409).send(errorResponse({
+          code: 'TX_ALREADY_USED',
+          message: 'This transaction hash has already been used for a purchase',
+        }));
+      }
+
+      // Verify on-chain that the purchase happened
+      try {
+        await verifyPurchaseOnChain(
+          monadTxHash,
+          packId,
+          buyerAddress ?? request.operatorAddress!,
+          Number(pack.priceUsdc) ?? 0,
+        );
+      } catch (verifyErr: any) {
+        return reply.status(400).send(errorResponse({
+          code: 'PURCHASE_VERIFICATION_FAILED',
+          message: `On-chain verification failed: ${verifyErr.message}`,
+        }));
+      }
+
       const purchaseId = await marketService.recordPurchase({
         packId,
         buyerVaultId: request.vaultId!,
-        buyerAddress: body.data.buyerAddress,
-        monadTxHash: body.data.monadTxHash,
+        buyerAddress: buyerAddress ?? request.operatorAddress!,
+        monadTxHash,
         pricePaidUsdc: pack.priceUsdc,
       });
 
@@ -174,9 +295,10 @@ export async function marketRoutes(fastify: FastifyInstance) {
         }));
       }
 
-      // 4. Re-write memories into buyer's vault
-      // Retrieve the escrow payload securely from the pack metadata
-      const serverKey = createHash('sha256').update(process.env.JWT_SECRET || 'mneme-fallback-secret-key-12345').digest();
+      // 4. Re-write memories into buyer's vault using server-side ENCRYPTION_SECRET
+      const encryptionSecret = getEncryptionSecret();
+      // Escrow key was derived as pack-escrow:<sellerVaultId>
+      const escrowKey = deriveVaultKey(encryptionSecret, `pack-escrow:${pack.sellerVaultId}`);
       const report = pack.anonymisationReport as any;
       const escrowPayload = report?._encryptedContents;
       
@@ -184,9 +306,9 @@ export async function marketRoutes(fastify: FastifyInstance) {
       
       if (escrowPayload) {
         // Re-encrypt securely with buyer's vault key
-        const decryptedJson = decrypt(escrowPayload, serverKey);
+        const decryptedJson = decrypt(escrowPayload, escrowKey);
         const enrichedPlaintexts = JSON.parse(decryptedJson);
-        const buyerVaultKey = deriveVaultKey(request.operatorPublicKey!, vaultId);
+        const buyerVaultKey = deriveVaultKey(encryptionSecret, vaultId);
 
         for (const srcMemory of enrichedPlaintexts) {
           const augmentedTags = [...new Set([

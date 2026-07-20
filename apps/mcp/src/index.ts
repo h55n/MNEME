@@ -351,18 +351,23 @@ async function main() {
           const input = ImportSchema.parse(args);
           // Transform imported data to MNEME format and batch-write
           const memories = transformImport(input.format, input.data);
-          const results = [];
-          for (const memory of memories) {
-            const r = await apiCall('POST', `/vaults/${VAULT_ID}/memories`, memory);
-            results.push(r);
+          // Split into batches of 500 (API limit)
+          const MAX_BATCH = 500;
+          let imported = 0;
+          let failed = 0;
+
+          for (let i = 0; i < memories.length; i += MAX_BATCH) {
+            const batch = memories.slice(i, i + MAX_BATCH);
+            const r = await apiCall('POST', `/vaults/${VAULT_ID}/memories/batch`, { memories: batch });
+            imported += r.data.imported;
+            failed += r.data.failed;
           }
+
           return {
-            content: [
-              {
-                type: 'text',
-                text: JSON.stringify({ imported: results.length, results }, null, 2),
-              },
-            ],
+            content: [{
+              type: 'text',
+              text: `Successfully imported ${imported} memories. Failed: ${failed}.`
+            }]
           };
         }
 

@@ -60,8 +60,7 @@ describe('MemoryService Resilience Tests', () => {
           importance: 0.9,
           sourceModel: 'gpt-4o',
           sessionId: 'session-123'
-        },
-        'operator-public-key'
+        }
       );
     } catch (e) {
       // It should catch the error and queue it to Redis

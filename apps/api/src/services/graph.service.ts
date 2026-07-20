@@ -1,6 +1,9 @@
 import neo4j, { type Driver, type Session } from 'neo4j-driver';
 import { createLogger } from '../utils/logger.js';
 import type { GraphFact } from '@mneme/shared';
+import { db } from '../db/index.js';
+import { memories } from '../db/index.js';
+import { eq, and, isNull, sql } from 'drizzle-orm';
 
 const logger = createLogger('graph-service');
 
@@ -252,6 +255,37 @@ export class GraphService {
   }
 
   /**
+   * Get all active facts in this vault.
+   */
+  async getVaultFacts(vaultId: string): Promise<GraphFact[]> {
+    const result = await this.withSession(async (session) => {
+      const res = await session.run(`
+        MATCH (subject:Entity {vaultId: $vaultId})-[r:KNOWS]->(object:Entity)
+        WHERE r.vaultId = $vaultId
+          AND r.validUntil IS NULL
+        RETURN subject.label AS subject, r.factContent AS predicate,
+               object.label AS object, r.validFrom AS validFrom,
+               r.validUntil AS validUntil, r.confidence AS confidence,
+               r.sourceMemoryId AS sourceMemoryId
+        ORDER BY r.validFrom DESC
+        LIMIT 1000
+      `, { vaultId });
+
+      return res.records.map(r => ({
+        subject: r.get('subject'),
+        predicate: r.get('predicate'),
+        object: r.get('object'),
+        validFrom: r.get('validFrom')?.toString() ?? '',
+        validUntil: r.get('validUntil')?.toString(),
+        confidence: r.get('confidence'),
+        sourceMemoryId: r.get('sourceMemoryId'),
+      })) as GraphFact[];
+    });
+
+    return result ?? [];
+  }
+
+  /**
    * Get all facts about a specific entity label in this vault.
    */
   async getEntityFacts(vaultId: string, entityLabel: string): Promise<GraphFact[]> {
@@ -278,6 +312,93 @@ export class GraphService {
     });
 
     return result ?? [];
+  }
+
+  /**
+   * Returns a graph representation of the vault's knowledge for visualisation.
+   * Nodes are entities or memory tags; links are relationships or tag co-occurrences.
+   *
+   * - If Neo4j is available: returns the entity-relationship graph from Cypher.
+   * - If Neo4j is unavailable: returns a tag co-occurrence graph from PostgreSQL.
+   */
+  async getVaultGraph(vaultId: string): Promise<{
+    nodes: Array<{ id: string; label: string; group: string; val: number }>;
+    links: Array<{ source: string; target: string; label: string }>;
+  }> {
+    // Try Neo4j first
+    if (this._available) {
+      try {
+        const facts = await this.getVaultFacts(vaultId);
+        const nodeMap = new Map<string, { id: string; label: string; group: string; val: number }>();
+        const links: Array<{ source: string; target: string; label: string }> = [];
+
+        for (const fact of facts) {
+          if (!nodeMap.has(fact.subject)) {
+            nodeMap.set(fact.subject, { id: fact.subject, label: fact.subject, group: 'entity', val: 1 });
+          } else {
+            nodeMap.get(fact.subject)!.val++;
+          }
+          if (!nodeMap.has(fact.object)) {
+            nodeMap.set(fact.object, { id: fact.object, label: fact.object, group: 'entity', val: 1 });
+          } else {
+            nodeMap.get(fact.object)!.val++;
+          }
+          links.push({ source: fact.subject, target: fact.object, label: fact.predicate });
+        }
+
+        // Cap to top-50 nodes by val for visualisation performance
+        const nodes = [...nodeMap.values()]
+          .sort((a, b) => b.val - a.val)
+          .slice(0, 50);
+        const nodeIds = new Set(nodes.map(n => n.id));
+        const filteredLinks = links.filter(l => nodeIds.has(l.source) && nodeIds.has(l.target)).slice(0, 150);
+
+        return { nodes, links: filteredLinks };
+      } catch (err) {
+        logger.warn({ err }, 'Neo4j graph query failed — falling back to tag co-occurrence graph');
+      }
+    }
+
+    // Fallback: tag co-occurrence from PostgreSQL
+    const rows = await db.select({ tags: memories.tags })
+      .from(memories)
+      .where(and(eq(memories.vaultId, vaultId), isNull(memories.deletedAt)))
+      .limit(500);
+
+    // Count tag occurrences
+    const tagCount = new Map<string, number>();
+    const coOccurrence = new Map<string, number>();
+
+    for (const row of rows) {
+      const tags = (row.tags ?? []).filter(Boolean).slice(0, 10);
+      for (const tag of tags) {
+        tagCount.set(tag, (tagCount.get(tag) ?? 0) + 1);
+      }
+      // Co-occurrence pairs
+      for (let i = 0; i < tags.length; i++) {
+        for (let j = i + 1; j < tags.length; j++) {
+          const key = [tags[i], tags[j]].sort().join(':::');
+          coOccurrence.set(key, (coOccurrence.get(key) ?? 0) + 1);
+        }
+      }
+    }
+
+    const nodes = [...tagCount.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 50)
+      .map(([tag, count]) => ({ id: tag, label: tag, group: 'tag', val: count }));
+
+    const nodeIds = new Set(nodes.map(n => n.id));
+    const links = [...coOccurrence.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 150)
+      .flatMap(([key, count]) => {
+        const [a, b] = key.split(':::');
+        if (!nodeIds.has(a) || !nodeIds.has(b)) return [];
+        return [{ source: a, target: b, label: `co-occurs (${count})` }];
+      });
+
+    return { nodes, links };
   }
 
   /** Close the driver on graceful shutdown */

@@ -25,6 +25,19 @@ import { createLogger } from '../utils/logger.js';
 
 const logger = createLogger('memory-service');
 
+/** Fail-fast accessor for the server-side encryption secret. */
+function getEncryptionSecret(): string {
+  const secret = process.env.ENCRYPTION_SECRET;
+  if (!secret || secret.length < 32) {
+    throw new Error(
+      'ENCRYPTION_SECRET env var is missing or too short (min 32 chars). ' +
+      'Refusing to encrypt/decrypt without a real server secret.'
+    );
+  }
+  return secret;
+}
+
+
 export const RETRIEVAL_STRATEGY = {
   episodic: {
     weights: { similarity: 0.3, recency: 0.5, importance: 0.2 },
@@ -62,11 +75,10 @@ export class MemoryService {
   async write(
     vaultId: string,
     input: WriteMemoryInput,
-    operatorPublicKey: string,
   ): Promise<{ memory: MemoryType; contentHash: string; attestationId: string; classifiedType: string; hintTypeUsed: boolean }> {
 
-    // Derive vault encryption key
-    const vaultKey = deriveVaultKey(operatorPublicKey, vaultId);
+    // Derive vault encryption key from server-controlled secret
+    const vaultKey = deriveVaultKey(getEncryptionSecret(), vaultId);
 
     // ── Phase 1: Classify memory type ──────────────────────────────────────
     const classification = classifierService.classify(input.content, input.hintType);
@@ -230,9 +242,8 @@ export class MemoryService {
   async recall(
     vaultId: string,
     input: RecallMemoryInput,
-    operatorPublicKey: string,
   ): Promise<RecallResult> {
-    return recallService.recall(vaultId, input, operatorPublicKey);
+    return recallService.recall(vaultId, input);
   }
 
   // -------------------------------------------------------------------------
@@ -242,10 +253,9 @@ export class MemoryService {
   async inspect(
     vaultId: string,
     input: MemoryInspectInput,
-    operatorPublicKey: string,
   ): Promise<RecallResult> {
     const targetTime = new Date(input.timestamp);
-    const vaultKey = deriveVaultKey(operatorPublicKey, vaultId);
+    const vaultKey = deriveVaultKey(getEncryptionSecret(), vaultId);
 
     // Memories valid AT the target timestamp
     const rows = await db.execute(sql`
@@ -288,7 +298,6 @@ export class MemoryService {
   async delete(
     vaultId: string,
     memoryId: string,
-    operatorPublicKey: string,
   ): Promise<{ contentHash: string; attestationId: string }> {
 
     const [memory] = await db.select()
@@ -336,10 +345,9 @@ export class MemoryService {
 
   async export(
     vaultId: string,
-    operatorPublicKey: string,
   ): Promise<{ memories: MemoryType[]; vaultStateHash: string; exportedAt: string }> {
 
-    const vaultKey = deriveVaultKey(operatorPublicKey, vaultId);
+    const vaultKey = deriveVaultKey(getEncryptionSecret(), vaultId);
 
     const rows = await db.select()
       .from(memories)
@@ -385,8 +393,8 @@ export class MemoryService {
   // List with pagination
   // -------------------------------------------------------------------------
 
-  async list(vaultId: string, page: number, limit: number, operatorPublicKey: string) {
-    const vaultKey = deriveVaultKey(operatorPublicKey, vaultId);
+  async list(vaultId: string, page: number, limit: number) {
+    const vaultKey = deriveVaultKey(getEncryptionSecret(), vaultId);
     const offset = (page - 1) * limit;
 
     const rows = await db.select()

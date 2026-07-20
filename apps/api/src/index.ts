@@ -3,6 +3,8 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
 import { vaultRoutes } from './routes/vaults.js';
 import { memoryRoutes } from './routes/memories.js';
 import { marketRoutes } from './routes/market.js';
@@ -23,6 +25,38 @@ const PORT = parseInt(process.env.API_PORT ?? '3001');
 const HOST = process.env.HOST ?? '0.0.0.0';
 const API_PREFIX = '/v1';
 const VERSION = '1.0.0';
+
+// ── Startup environment validation ────────────────────────────────────────────
+// Fail loudly before accepting any traffic if required secrets are missing.
+
+function validateEnvironment(): void {
+  const errors: string[] = [];
+
+  if (!process.env.ENCRYPTION_SECRET || process.env.ENCRYPTION_SECRET.length < 32) {
+    errors.push('ENCRYPTION_SECRET is missing or shorter than 32 characters. Generate one with: openssl rand -hex 32');
+  }
+  if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+    errors.push('JWT_SECRET is missing or shorter than 32 characters. Generate one with: openssl rand -hex 32');
+  }
+  if (!process.env.DATABASE_URL) {
+    errors.push('DATABASE_URL is required.');
+  }
+  if (process.env.NODE_ENV === 'production' && (!process.env.CORS_ORIGIN || process.env.CORS_ORIGIN === '*')) {
+    errors.push(
+      'CORS_ORIGIN must be set to a specific origin in production (not "*"). ' +
+      'Wildcard CORS with Bearer credentials is a security risk.'
+    );
+  }
+
+  if (errors.length > 0) {
+    console.error('\n[MNEME] ❌ Environment validation failed:');
+    errors.forEach(e => console.error(`  • ${e}`));
+    console.error('\nFix the above issues and restart the server.\n');
+    process.exit(1);
+  }
+}
+
+validateEnvironment();
 
 // ── Dependency health checks ──────────────────────────────────────────────────
 
@@ -138,10 +172,12 @@ async function bootstrap() {
 
   // ── Plugins ───────────────────────────────────────────────────────────────
   await fastify.register(cors, {
-    origin: process.env.CORS_ORIGIN ?? '*',
+    // In production: require an explicit allowlist. In dev: allow * for convenience.
+    origin: process.env.CORS_ORIGIN ?? (process.env.NODE_ENV !== 'production' ? '*' : false),
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Operator-Public-Key', 'X-Request-ID'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
     exposedHeaders: ['X-Request-ID'],
+    credentials: true,
   });
 
   await fastify.register(helmet, {
@@ -155,6 +191,30 @@ async function bootstrap() {
     keyGenerator: (request) => {
       return request.headers.authorization?.split(' ')[1]?.slice(0, 16) ?? request.ip;
     },
+  });
+
+  // ── Swagger / OpenAPI docs ─────────────────────────────────────────────────
+  await fastify.register(swagger, {
+    openapi: {
+      openapi: '3.0.3',
+      info: {
+        title: 'MNEME API',
+        description: 'Sovereign, portable, monetisable memory infrastructure for AI agents.',
+        version: VERSION,
+      },
+      servers: [{ url: `http://localhost:${PORT}${API_PREFIX}` }],
+      components: {
+        securitySchemes: {
+          bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'API Key' },
+        },
+      },
+      security: [{ bearerAuth: [] }],
+    },
+  });
+  await fastify.register(swaggerUi, {
+    routePrefix: `${API_PREFIX}/docs`,
+    uiConfig: { docExpansion: 'list', deepLinking: true },
+    staticCSP: true,
   });
 
   // ── Request ID propagation ────────────────────────────────────────────────
@@ -240,7 +300,18 @@ async function bootstrap() {
   // ── Graceful shutdown ─────────────────────────────────────────────────────
   const shutdown = async (signal: string) => {
     logger.info({ signal }, 'Shutdown signal received');
-    await attestationBatcher.emergencyFlush();
+    // Bounded flush: give attestation batcher at most 10 seconds before forcing exit
+    const flushTimeout = setTimeout(() => {
+      logger.warn('emergencyFlush timed out after 10s — exiting anyway');
+      process.exit(0);
+    }, 10_000);
+    try {
+      await attestationBatcher.emergencyFlush();
+    } catch (err) {
+      logger.error({ err }, 'emergencyFlush error during shutdown');
+    } finally {
+      clearTimeout(flushTimeout);
+    }
     await graphService.close();
     await fastify.close();
     process.exit(0);

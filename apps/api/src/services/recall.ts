@@ -19,6 +19,15 @@ import { graphService } from './graph.service.js';
 import { createLogger } from '../utils/logger.js';
 import { encoding_for_model, type Tiktoken } from 'tiktoken';
 
+function getEncryptionSecret(): string {
+  const secret = process.env.ENCRYPTION_SECRET;
+  if (!secret || secret.length < 32) {
+    throw new Error('ENCRYPTION_SECRET is missing or too short — cannot decrypt memories for recall.');
+  }
+  return secret;
+}
+
+
 const logger = createLogger('recall-service');
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -206,13 +215,12 @@ export class RecallService {
   async recall(
     vaultId: string,
     input: RecallMemoryInput,
-    operatorPublicKey: string,
   ): Promise<RecallResult> {
 
     const taskType: TaskType = input.taskType ?? 'general';
     const budgetTokens = input.budgetTokens ?? DEFAULT_BUDGET_TOKENS;
     const limit = input.limit ?? 50; // Fetch more candidates than we'll return
-    const vaultKey = deriveVaultKey(operatorPublicKey, vaultId);
+    const vaultKey = deriveVaultKey(getEncryptionSecret(), vaultId);
 
     // ── Generate HyDE Query & Embed ─────────────────────────────────────────
     let queryEmbedding: number[] | null = null;

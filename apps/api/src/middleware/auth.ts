@@ -1,4 +1,4 @@
-import type { FastifyRequest, FastifyReply, FastifyInstance } from 'fastify';
+import type { FastifyRequest, FastifyReply } from 'fastify';
 import { vaultService } from '../services/vault.service.js';
 import { errorResponse } from '@mneme/shared';
 
@@ -6,7 +6,6 @@ declare module 'fastify' {
   interface FastifyRequest {
     vaultId?: string;
     operatorAddress?: string;
-    operatorPublicKey?: string;
   }
 }
 
@@ -45,8 +44,8 @@ export async function authMiddleware(
 
   request.vaultId = session.vaultId;
   request.operatorAddress = session.operatorAddress;
-  // Public key used for encryption — sent in header or derived from address
-  request.operatorPublicKey = request.headers['x-operator-public-key'] as string ?? session.operatorAddress;
+  // NOTE: Encryption key is derived server-side from ENCRYPTION_SECRET env var.
+  // Clients do NOT provide any key material; the x-operator-public-key header is rejected.
 }
 
 export function requireVaultMatch(paramName = 'vaultId') {

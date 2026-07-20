@@ -1,4 +1,4 @@
-import { createHash, randomBytes, createCipheriv, createDecipheriv } from 'crypto';
+import { createHash, createHmac, randomBytes, createCipheriv, createDecipheriv } from 'crypto';
 import type { APIResponse, APIError, ResponseMeta } from './types.js';
 import { MNEME_VERSION, API_VERSION } from './constants.js';
 
@@ -59,12 +59,28 @@ export function decrypt(payload: EncryptedPayload, key: Buffer): string {
   return decrypted.toString('utf8');
 }
 
-export function deriveVaultKey(operatorPublicKey: string, vaultId: string): Buffer {
-  // Deterministic key derivation — operator key + vault ID → 256-bit key
-  return createHash('sha256')
-    .update(operatorPublicKey)
-    .update(vaultId)
+/**
+ * Derives a per-vault AES-256 encryption key using HKDF-SHA256.
+ *
+ * @param serverSecret - A high-entropy secret from ENCRYPTION_SECRET env var (≥32 chars).
+ *                       Must NOT be the operator's public address or any other public value.
+ * @param vaultId      - The vault UUID used as HKDF info, scoping the key to one vault.
+ * @returns 32-byte Buffer suitable for AES-256-GCM.
+ */
+export function deriveVaultKey(serverSecret: string, vaultId: string): Buffer {
+  // HKDF-SHA256: extract then expand
+  // salt  = sha256(vaultId) — deterministic, vault-scoped
+  // info  = 'mneme-vault-key' — domain separation
+  // ikm   = serverSecret — the actual secret material
+  const salt = createHash('sha256').update(vaultId).digest();
+  const prk = createHmac('sha256', salt).update(serverSecret).digest();
+  // Single expand step (OKM length = 32 bytes, counter byte = 0x01)
+  const info = Buffer.from('mneme-vault-key');
+  const okm = createHmac('sha256', prk)
+    .update(info)
+    .update(Buffer.from([0x01]))
     .digest();
+  return okm; // 32 bytes — perfect for AES-256
 }
 
 // ============================================================

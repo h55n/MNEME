@@ -50,7 +50,10 @@ services:
       
       # Internal Microservices
       - key: EXTRACTION_SERVICE_URL
-        value: "http://mneme-extraction:8001"
+        fromService:
+          type: web
+          name: mneme-extraction
+          property: url
       
       # API Keys & Auth
       - key: ANTHROPIC_API_KEY

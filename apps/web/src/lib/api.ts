@@ -1,7 +1,14 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
 
-// Demo mode: always active when no explicit API URL is configured (Vercel deployment)
-const DEMO_MODE = !process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL === '';
+// Demo mode: only active in non-production environments when no API URL is configured.
+// In production, this is a hard block — demo data must never silently mask an outage.
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+const DEMO_MODE = !IS_PRODUCTION && (!process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL === '');
+
+if (IS_PRODUCTION && (!process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL === '')) {
+  // In production with no API URL, we let the requests fail visibly rather than silently serving demo data.
+  console.error('[MNEME] NEXT_PUBLIC_API_URL is not set in a production build. API requests will fail visibly.');
+}
 
 // ── Demo Fixtures ──────────────────────────────────────────────────────────────
 
@@ -302,8 +309,10 @@ async function handleMockRequest<T>(method: string, path: string, body?: any): P
 function getApiKey(): string {
   if (typeof window === 'undefined') return '';
   try {
-    const session = JSON.parse(localStorage.getItem('mneme-session') ?? '{}');
-    return session?.state?.apiKey ?? '';
+    // The API key is stored in-memory only (not in localStorage for security).
+    // Read it from the Zustand store state directly.
+    const { useAuthStore } = require('@/store');
+    return useAuthStore.getState().apiKey ?? '';
   } catch {
     return '';
   }
@@ -355,8 +364,9 @@ async function request<T>(
 
     return (data?.data ?? data) as T;
   } catch (err: any) {
-    // Network errors, CORS, etc — fall back to demo
-    if (
+    // In production: surface errors visibly — never silently fall back to demo data.
+    // In development: fall back to demo mode for network errors to allow offline development.
+    const isNetworkError = (
       err.name === 'TypeError' ||
       err.name === 'AbortError' ||
       err.message?.includes('fetch') ||
@@ -364,8 +374,9 @@ async function request<T>(
       err.message?.includes('Failed to fetch') ||
       err.message?.includes('CORS') ||
       err.message?.includes('network')
-    ) {
-      console.info(`[MNEME Demo Mode] ${method} ${path} — ${err.message}`);
+    );
+    if (!IS_PRODUCTION && isNetworkError) {
+      console.warn(`[MNEME Dev Demo] ${method} ${path} — ${err.message}. Falling back to demo data.`);
       return handleMockRequest<T>(method, path, body);
     }
     throw err;

@@ -51,7 +51,7 @@ export async function complianceRoutes(fastify: FastifyInstance) {
       }
 
       try {
-        const proof = await complianceService.eraseGdpr(vaultId, body.data, request.operatorPublicKey!);
+        const proof = await complianceService.eraseGdpr(vaultId, body.data);
         return reply.send(successResponse(proof));
       } catch (err: any) {
         return reply.status(400).send(errorResponse({ code: 'INTERNAL_ERROR', message: err.message }));

@@ -60,7 +60,7 @@ export async function vaultRoutes(fastify: FastifyInstance) {
     { preHandler: [authMiddleware, requireVaultMatch()] },
     async (request, reply) => {
       const { vaultId } = request.params as { vaultId: string };
-      const result = await memoryService.export(vaultId, request.operatorPublicKey!);
+      const result = await memoryService.export(vaultId);
       return reply.send(successResponse(result));
     }
   );
@@ -86,7 +86,7 @@ export async function vaultRoutes(fastify: FastifyInstance) {
         budgetTokens: query.data.maxTokens,
         budgetStrategy: 'flexible', // Phase 3 token budget strategy
         taskType: 'general',
-      }, request.operatorPublicKey!);
+      });
 
       // Format as an injected system prompt string
       const prompt = `[MNEME SOVEREIGN MEMORY]\n` +
