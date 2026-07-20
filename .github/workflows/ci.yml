@@ -84,7 +84,7 @@ jobs:
       - run: npm run build --workspace=packages/shared
 
       - name: Run migrations on test database
-        run: npm run db:migrate:run
+        run: npm run db:migrate:run --workspace=apps/api
         env:
           DATABASE_URL: postgresql://mneme:password@localhost:5432/mneme_test
 

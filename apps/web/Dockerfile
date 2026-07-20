@@ -3,10 +3,10 @@ WORKDIR /app
 RUN apk add --no-cache libc6-compat
 
 FROM base AS deps
-COPY package.json turbo.json ./
+COPY package.json package-lock.json turbo.json ./
 COPY packages/shared/package.json ./packages/shared/
 COPY apps/web/package.json ./apps/web/
-RUN npm install
+RUN npm ci
 
 FROM deps AS builder
 COPY tsconfig.base.json ./
