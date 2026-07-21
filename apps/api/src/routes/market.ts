@@ -43,7 +43,10 @@ async function verifyPurchaseOnChain(
   const contractAddress = process.env.MEMORY_MARKET_ADDRESS;
 
   if (!rpcUrl || !contractAddress) {
-    // Blockchain unconfigured: log warning and allow purchase (enforce uniqueness only)
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('MONAD_RPC_URL or MEMORY_MARKET_ADDRESS not configured in production — cannot verify purchase');
+    }
+    // Blockchain unconfigured in dev mode: log warning and allow purchase
     return true;
   }
 

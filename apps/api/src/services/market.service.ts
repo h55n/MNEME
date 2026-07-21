@@ -77,8 +77,11 @@ async function verifyPurchaseOnChain(packId: string, buyerAddress: string): Prom
   const rpcUrl = process.env.MONAD_RPC_URL;
   const contractAddress = process.env.MEMORY_MARKET_ADDRESS;
 
-  // Allow bypass if no blockchain config is set (e.g. local dev mode without chain)
-  if (!rpcUrl || !contractAddress) return true;
+  // Fail-closed in production if blockchain config is missing
+  if (!rpcUrl || !contractAddress) {
+    if (process.env.NODE_ENV === 'production') return false;
+    return true;
+  }
 
   const publicClient = createPublicClient({ transport: http(rpcUrl) });
   try {

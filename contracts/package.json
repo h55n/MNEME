@@ -8,6 +8,7 @@
     "deploy:devnet": "npx hardhat run scripts/deploy.ts --network monadDevnet",
     "deploy:testnet": "npx hardhat run scripts/deploy.ts --network monadTestnet",
     "deploy:mainnet": "npx hardhat run scripts/deploy.ts --network monadMainnet",
+    "verify": "npx hardhat run scripts/verify.ts",
     "coverage": "npx hardhat coverage"
   },
   "devDependencies": {
