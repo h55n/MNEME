@@ -4,24 +4,12 @@ services:
     name: mneme-redis
     plan: free
 
-  # ── Extraction Service (Python LLM Pipeline) ──────────────────────
-  - type: web
-    name: mneme-extraction
-    env: docker
-    region: ohio
-    plan: starter
-    dockerContext: apps/extraction
-    dockerfilePath: apps/extraction/Dockerfile
-    envVars:
-      - key: NVIDIA_API_KEY
-        sync: false
-
   # ── API Service (Node.js Backend) ─────────────────────────────────
   - type: web
     name: mneme-api
     env: docker
     region: ohio
-    plan: starter
+    plan: free
     dockerContext: .
     dockerfilePath: apps/api/Dockerfile
     envVars:
@@ -39,7 +27,7 @@ services:
           type: redis
           name: mneme-redis
           property: connectionString
-      
+
       # Blockchains & Smart Contracts
       - key: MONAD_RPC_URL
         sync: false
@@ -47,18 +35,19 @@ services:
         sync: false
       - key: ATTESTATION_AGGREGATOR_ADDRESS
         sync: false
-      
-      # Internal Microservices
+      - key: DELETION_PROVER_ADDRESS
+        sync: false
+
+      # Internal Microservices (optional — API degrades gracefully without it)
       - key: EXTRACTION_SERVICE_URL
-        fromService:
-          type: web
-          name: mneme-extraction
-          property: url
-      
+        sync: false
+
       # API Keys & Auth
       - key: ANTHROPIC_API_KEY
         sync: false
       - key: OPENAI_API_KEY
+        sync: false
+      - key: NVIDIA_API_KEY
         sync: false
       - key: JWT_SECRET
         generateValue: true
@@ -70,7 +59,7 @@ services:
     name: mneme-web
     env: docker
     region: ohio
-    plan: starter
+    plan: free
     dockerContext: .
     dockerfilePath: apps/web/Dockerfile
     envVars:

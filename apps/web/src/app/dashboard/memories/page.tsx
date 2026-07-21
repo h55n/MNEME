@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/store';
 import { memoryApi } from '@/lib/api';
@@ -7,7 +7,7 @@ import {
   Card, CardHeader, CardTitle, Button, Input, Textarea, Badge,
   Select, EmptyState, Spinner, MonoHash
 } from '@/components/ui';
-import { Brain, Search, Plus, Trash2, Clock, Share2 } from 'lucide-react';
+import { Brain, Search, Trash2, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
 
@@ -20,10 +20,34 @@ const TYPE_OPTIONS = [
 ];
 
 export default function MemoriesPage() {
-  const { vaultId, operatorAddress } = useAuthStore();
+  const { vaultId } = useAuthStore();
   const qc = useQueryClient();
   const [tab, setTab] = useState<'browse' | 'write' | 'recall' | 'inspect' | 'graph'>('browse');
   const [page, setPage] = useState(1);
+
+  // Dynamic graph container sizing via ResizeObserver
+  const graphContainerRef = useRef<HTMLDivElement>(null);
+  const [graphDimensions, setGraphDimensions] = useState({ width: 800, height: 480 });
+
+  useEffect(() => {
+    const container = graphContainerRef.current;
+    if (!container) return;
+    const observer = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        if (width > 0 && height > 0) {
+          setGraphDimensions({ width: Math.floor(width), height: Math.floor(height) });
+        }
+      }
+    });
+    observer.observe(container);
+    // Set initial size
+    setGraphDimensions({
+      width: Math.floor(container.clientWidth) || 800,
+      height: Math.floor(container.clientHeight) || 480,
+    });
+    return () => observer.disconnect();
+  }, [tab]); // re-measure when switching to graph tab
 
   // Write form
   const [writeForm, setWriteForm] = useState({ content: '', type: 'episodic', tags: '', importance: '0.5' });
@@ -334,7 +358,7 @@ export default function MemoriesPage() {
             </div>
             {graphQ.isFetching && <Spinner />}
           </CardHeader>
-          <div className="flex-1 bg-surface relative min-h-0">
+          <div ref={graphContainerRef} className="flex-1 bg-surface relative min-h-0">
             {graphQ.isLoading ? (
               <div className="absolute inset-0 flex items-center justify-center">
                 <Spinner />
@@ -343,8 +367,8 @@ export default function MemoriesPage() {
               <div className="absolute inset-0">
                 <ForceGraph2D
                   graphData={graphQ.data}
-                  width={800}
-                  height={500}
+                  width={graphDimensions.width}
+                  height={graphDimensions.height}
                   nodeAutoColorBy="group"
                   nodeCanvasObject={(node: any, ctx, globalScale) => {
                     const label = node.label;
@@ -370,23 +394,21 @@ export default function MemoriesPage() {
                   linkDirectionalArrowRelPos={1}
                   linkCanvasObjectMode={() => 'after'}
                   linkCanvasObject={(link: any, ctx, globalScale) => {
-                    const MAX_FONT_SIZE = 4;
-                    const LABEL_NODE_MARGIN = 15;
                     const start = link.source;
                     const end = link.target;
-                    
+
                     if (typeof start !== 'object' || typeof end !== 'object') return;
-                    
+
                     const textPos = {
                       x: start.x + (end.x - start.x) / 2,
                       y: start.y + (end.y - start.y) / 2
                     };
-                    
+
                     const relLink = { x: end.x - start.x, y: end.y - start.y };
                     let textAngle = Math.atan2(relLink.y, relLink.x);
                     if (textAngle > Math.PI / 2) textAngle = -(Math.PI - textAngle);
                     if (textAngle < -Math.PI / 2) textAngle = -(Math.PI + textAngle);
-                    
+
                     const fontSize = 10 / globalScale;
                     ctx.font = `${fontSize}px Sans-Serif`;
                     ctx.save();
