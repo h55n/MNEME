@@ -18,29 +18,45 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ secrets.GCP_CREDENTIALS != '' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Check GCP Credentials Secret
+        id: check_credentials
+        run: |
+          if [ -z "$GCP_CREDENTIALS" ]; then
+            echo "::warning::GCP_CREDENTIALS secret is not set in GitHub repository settings. Skipping Google Cloud Run deployment."
+            echo "has_credentials=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_credentials=true" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
+
       - name: Authenticate to Google Cloud
+        if: steps.check_credentials.outputs.has_credentials == 'true'
         id: auth
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
       - name: Set up Cloud SDK
+        if: steps.check_credentials.outputs.has_credentials == 'true'
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Configure Docker for GCR
+        if: steps.check_credentials.outputs.has_credentials == 'true'
         run: gcloud auth configure-docker
 
       - name: Build and Push Docker image
+        if: steps.check_credentials.outputs.has_credentials == 'true'
         run: |
           docker build -f apps/api/Dockerfile -t ${{ env.IMAGE }}:${{ github.sha }} .
           docker push ${{ env.IMAGE }}:${{ github.sha }}
 
       - name: Deploy to Cloud Run
+        if: steps.check_credentials.outputs.has_credentials == 'true'
         uses: google-github-actions/deploy-cloudrun@v2
         with:
           service: ${{ env.SERVICE }}
