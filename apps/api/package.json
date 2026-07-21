@@ -10,8 +10,8 @@
     "start": "node dist/index.js",
     "test": "vitest run",
     "lint": "eslint src --ext .ts",
-    "db:migrate": "drizzle-kit migrate",
-    "db:migrate:run": "drizzle-kit migrate",
+    "db:migrate": "drizzle-kit generate",
+    "db:migrate:run": "tsx src/migrate.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio"
   },
