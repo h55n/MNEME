@@ -18,6 +18,7 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    if: ${{ secrets.GCP_CREDENTIALS != '' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
