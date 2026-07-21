@@ -21,7 +21,7 @@ import { v4 as uuidv4 } from 'uuid';
 import cron from 'node-cron';
 import { decayJob } from './jobs/decay.job.js';
 
-const PORT = parseInt(process.env.API_PORT ?? '3001');
+const PORT = parseInt(process.env.PORT ?? process.env.API_PORT ?? '3001');
 const HOST = process.env.HOST ?? '0.0.0.0';
 const API_PREFIX = '/v1';
 const VERSION = '1.0.0';

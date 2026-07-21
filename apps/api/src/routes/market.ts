@@ -141,6 +141,15 @@ export async function marketRoutes(fastify: FastifyInstance) {
     }
   );
 
+  // ── GET /market/purchases — buyer's purchased packs ─────────────────────────
+  fastify.get('/market/purchases',
+    { preHandler: [authMiddleware] },
+    async (request, reply) => {
+      const packs = await marketService.getPurchasedPacks(request.vaultId!);
+      return reply.send(successResponse(packs));
+    }
+  );
+
   // ── GET /market/packs/:packId — pack detail ────────────────────────────────
   fastify.get('/market/packs/:packId', async (request, reply) => {
     const { packId } = request.params as { packId: string };

@@ -33,7 +33,7 @@ export default function SettingsPage() {
       "command": "npx",
       "args": ["-y", "@mneme/mcp"],
       "env": {
-        "MNEME_API_URL": "https://mneme-five.vercel.app/api/v1",
+        "MNEME_API_URL": "${process.env.NEXT_PUBLIC_API_URL ?? 'https://mneme-api.your-domain.com/v1'}",
         "MNEME_API_KEY": "${apiKey ?? 'mnk_live_your-api-key'}",
         "MNEME_VAULT_ID": "${vaultId ?? 'vlt_your-vault-id'}",
         "MNEME_OPERATOR_PUBLIC_KEY": "${operatorAddress ?? '0x...'}"

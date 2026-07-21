@@ -11,6 +11,58 @@ const logger = createLogger('vault-service');
 
 const API_KEY_CACHE_TTL = 60; // seconds
 
+import { createPublicClient, createWalletClient, http, encodeFunctionData, parseAbi, keccak256, type Hex } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
+
+const VAULT_REGISTRY_ABI = parseAbi([
+  'function registerVault(bytes32 vaultId, address operator)',
+]);
+
+function toBytes32VaultId(vaultId: string): Hex {
+  if (/^0x[0-9a-fA-F]{64}$/.test(vaultId)) {
+    return vaultId as Hex;
+  }
+  return keccak256(`0x${Buffer.from(vaultId, 'utf8').toString('hex')}`);
+}
+
+async function registerVaultOnChain(vaultId: string, operatorAddress: string) {
+  const rpcUrl = process.env.MONAD_RPC_URL;
+  const privateKey = process.env.MONAD_PRIVATE_KEY;
+  const contractAddress = process.env.VAULT_REGISTRY_ADDRESS;
+
+  if (!rpcUrl || !privateKey || !contractAddress) {
+    logger.warn('Monad blockchain config incomplete — Vault will not be registered on-chain');
+    return;
+  }
+
+  const publicClient = createPublicClient({ transport: http(rpcUrl) });
+  const account = privateKeyToAccount(privateKey as `0x${string}`);
+  const walletClient = createWalletClient({ account, transport: http(rpcUrl) });
+
+  const requestArgs = {
+    account,
+    to: contractAddress as `0x${string}`,
+    data: encodeFunctionData({
+      abi: VAULT_REGISTRY_ABI,
+      functionName: 'registerVault',
+      args: [toBytes32VaultId(vaultId), operatorAddress as `0x${string}`]
+    })
+  } as const;
+  
+  try {
+    const estimatedGas = await publicClient.estimateGas(requestArgs);
+    const gasLimit = estimatedGas + (estimatedGas / 10n);
+    const txHash = await walletClient.sendTransaction({
+      ...requestArgs,
+      chain: null,
+      gas: gasLimit,
+    });
+    logger.info({ vaultId, txHash }, 'Vault registered on Monad');
+  } catch (err) {
+    logger.error({ err }, 'Failed to register vault on-chain');
+  }
+}
+
 export class VaultService {
 
   async create(input: {
@@ -44,6 +96,9 @@ export class VaultService {
     });
 
     logger.info({ vaultId: vault.id, did: vault.did }, 'Vault created');
+    
+    // Wire on-chain registration (async, don't block response)
+    registerVaultOnChain(vault.id, input.operatorAddress).catch(() => {});
 
     return {
       vault: this.toVaultType(vault),

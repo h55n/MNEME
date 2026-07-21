@@ -5,12 +5,13 @@ import { clsx } from 'clsx';
 import { useAuthStore } from '@/store';
 import {
   Database, Brain, Shield, Settings,
-  LogOut
+  LogOut, Store
 } from 'lucide-react';
 
 const NAV = [
   { label: 'Vault', href: '/dashboard', icon: Database },
   { label: 'Memories', href: '/dashboard/memories', icon: Brain },
+  { label: 'Market', href: '/dashboard/market', icon: Store },
   { label: 'Compliance', href: '/dashboard/compliance', icon: Shield },
   { label: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];

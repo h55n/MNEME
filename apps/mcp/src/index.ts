@@ -229,6 +229,18 @@ const TOOL_DEFINITIONS = [
       required: ['format', 'data'],
     },
   },
+  {
+    name: 'memory_list',
+    description:
+      'List all memories stored in the vault, with optional pagination.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        page: { type: 'number', description: 'Page number (default: 1)' },
+        limit: { type: 'number', description: 'Memories per page (default: 20)' },
+      },
+    },
+  },
 ];
 
 // ── Server ────────────────────────────────────────────────────────────────────
@@ -358,9 +370,9 @@ async function main() {
 
           for (let i = 0; i < memories.length; i += MAX_BATCH) {
             const batch = memories.slice(i, i + MAX_BATCH);
-            const r = await apiCall('POST', `/vaults/${VAULT_ID}/memories/batch`, { memories: batch }) as { data: { imported: number; failed: number } };
-            imported += r.data.imported;
-            failed += r.data.failed;
+            const r = await apiCall('POST', `/vaults/${VAULT_ID}/memories/batch`, { memories: batch }) as { imported: number; failed: number };
+            imported += r.imported;
+            failed += r.failed;
           }
 
           return {
@@ -368,6 +380,20 @@ async function main() {
               type: 'text',
               text: `Successfully imported ${imported} memories. Failed: ${failed}.`
             }]
+          };
+        }
+
+        // ── memory_list ─────────────────────────────────────────────────
+        case 'memory_list': {
+          const input = (args as { page?: number; limit?: number }) ?? {};
+          const result = await apiCall('GET', `/vaults/${VAULT_ID}/memories?page=${input.page ?? 1}&limit=${input.limit ?? 20}`);
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
           };
         }
 

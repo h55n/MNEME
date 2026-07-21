@@ -22,6 +22,79 @@ function getEncryptionSecret(): string {
 
 const logger = createLogger('market-service');
 
+import { createPublicClient, createWalletClient, http, encodeFunctionData, parseAbi, keccak256, type Hex } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
+
+const MARKET_ABI = parseAbi([
+  'function listPack(bytes32 packId, uint256 priceUsdc)',
+  'function getPurchaseReceipt(bytes32 packId, address buyer) view returns (bool)'
+]);
+
+function toBytes32PackId(packId: string): Hex {
+  if (/^0x[0-9a-fA-F]{64}$/.test(packId)) return packId as Hex;
+  return keccak256(`0x${Buffer.from(packId, 'utf8').toString('hex')}`);
+}
+
+async function listPackOnChain(packId: string, priceUsdc: string) {
+  const rpcUrl = process.env.MONAD_RPC_URL;
+  const privateKey = process.env.MONAD_PRIVATE_KEY;
+  const contractAddress = process.env.MEMORY_MARKET_ADDRESS;
+
+  if (!rpcUrl || !privateKey || !contractAddress) {
+    logger.warn('Monad blockchain config incomplete — Pack will not be listed on-chain');
+    return;
+  }
+
+  const publicClient = createPublicClient({ transport: http(rpcUrl) });
+  const account = privateKeyToAccount(privateKey as `0x${string}`);
+  const walletClient = createWalletClient({ account, transport: http(rpcUrl) });
+
+  const requestArgs = {
+    account,
+    to: contractAddress as `0x${string}`,
+    data: encodeFunctionData({
+      abi: MARKET_ABI,
+      functionName: 'listPack',
+      args: [toBytes32PackId(packId), BigInt(priceUsdc || 0)]
+    })
+  } as const;
+  
+  try {
+    const estimatedGas = await publicClient.estimateGas(requestArgs);
+    const gasLimit = estimatedGas + (estimatedGas / 10n);
+    await walletClient.sendTransaction({
+      ...requestArgs,
+      chain: null,
+      gas: gasLimit,
+    });
+    logger.info({ packId }, 'Pack listed on Monad');
+  } catch (err) {
+    logger.error({ err }, 'Failed to list pack on-chain');
+  }
+}
+
+async function verifyPurchaseOnChain(packId: string, buyerAddress: string): Promise<boolean> {
+  const rpcUrl = process.env.MONAD_RPC_URL;
+  const contractAddress = process.env.MEMORY_MARKET_ADDRESS;
+
+  // Allow bypass if no blockchain config is set (e.g. local dev mode without chain)
+  if (!rpcUrl || !contractAddress) return true;
+
+  const publicClient = createPublicClient({ transport: http(rpcUrl) });
+  try {
+    const receipt = await publicClient.readContract({
+      address: contractAddress as `0x${string}`,
+      abi: MARKET_ABI,
+      functionName: 'getPurchaseReceipt',
+      args: [toBytes32PackId(packId), buyerAddress as `0x${string}`]
+    });
+    return receipt as boolean;
+  } catch (err) {
+    logger.error({ err }, 'Failed to verify purchase on-chain');
+    return false;
+  }
+}
+
 // ── PII Patterns ──────────────────────────────────────────────────────────────
 
 interface PiiMatch {
@@ -135,6 +208,10 @@ export class MarketService {
 
     logger.info({ packId: pack.id, piiPassed: passed, interactionCount: memoryRows.length }, 'Pack created');
 
+    if (passed) {
+      listPackOnChain(pack.id, input.priceUsdc).catch(() => {});
+    }
+
     return {
       packId: pack.id,
       anonymisationReport: report,
@@ -188,6 +265,11 @@ export class MarketService {
     pricePaidUsdc: string;
   }): Promise<string> {
 
+    const verified = await verifyPurchaseOnChain(input.packId, input.buyerAddress);
+    if (!verified) {
+      throw new Error('On-chain purchase verification failed');
+    }
+
     const [purchase] = await db.insert(packPurchases).values({
       id: uuidv4(),
       packId: input.packId,
@@ -210,6 +292,14 @@ export class MarketService {
       .from(memoryPacks)
       .where(eq(memoryPacks.sellerVaultId, sellerVaultId));
     return rows.map(this.toPackType);
+  }
+
+  async getPurchasedPacks(buyerVaultId: string): Promise<MemoryPackType[]> {
+    const rows = await db.select({ pack: memoryPacks })
+      .from(packPurchases)
+      .innerJoin(memoryPacks, eq(packPurchases.packId, memoryPacks.id))
+      .where(eq(packPurchases.buyerVaultId, buyerVaultId));
+    return rows.map(r => this.toPackType(r.pack));
   }
 
   // ── Public plaintext scan (Option B endpoint) ─────────────────────────────

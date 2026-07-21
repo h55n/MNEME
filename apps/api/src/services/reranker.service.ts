@@ -18,7 +18,7 @@ interface RerankResponse {
 
 export class RerankerService {
   private get baseUrl(): string {
-    return process.env.EXTRACTION_API_URL ?? 'http://localhost:8001';
+    return process.env.EXTRACTION_SERVICE_URL ?? process.env.EXTRACTION_API_URL ?? 'http://localhost:8001';
   }
 
   async rerank(query: string, documents: RerankDocument[], topN?: number): Promise<RerankResult[]> {

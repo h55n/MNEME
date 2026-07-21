@@ -301,6 +301,63 @@ async function handleMockRequest<T>(method: string, path: string, body?: any): P
     } as unknown as T;
   }
 
+  // ── Market ─────────────────────────────────────────────────────────
+  if (path.includes('/market')) {
+    if (path.includes('/market/purchases')) {
+      return { items: [], total: 0 } as unknown as T;
+    }
+    if (path.includes('/market/packs/my')) {
+      return { items: [], total: 0 } as unknown as T;
+    }
+    if (path.includes('/market/packs') && method === 'GET') {
+      return {
+        items: [
+          {
+            id: 'pack_demo_001',
+            sellerVaultId: 'vlt_demo_01',
+            sellerAddress: '0x742d35Cc6634C0532925a3b8D4C9E3B9a1C2F0d4',
+            domainTag: 'defi-trading',
+            title: 'DeFi High-Frequency Trading Patterns',
+            description: 'Curated dataset of 450+ verified RSI momentum & liquidity arbitrage executions on Monad testnet.',
+            interactionCount: 452,
+            dateRangeFrom: new Date(Date.now() - 86400000 * 30).toISOString(),
+            dateRangeTo: new Date().toISOString(),
+            priceUsdc: '50.00',
+            contentHash: '0x8f4b2e...',
+            piiScanPassed: true,
+            status: 'listed',
+            listedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+            purchaseCount: 14,
+          },
+          {
+            id: 'pack_demo_002',
+            sellerVaultId: 'vlt_demo_02',
+            sellerAddress: '0x1234567890123456789012345678901234567890',
+            domainTag: 'solidity-audit',
+            title: 'Smart Contract Audit & Vulnerability Patterns',
+            description: 'Comprehensive vulnerability database & AST node representations for Solidity 0.8+ reentrancy guards.',
+            interactionCount: 1280,
+            dateRangeFrom: new Date(Date.now() - 86400000 * 60).toISOString(),
+            dateRangeTo: new Date().toISOString(),
+            priceUsdc: '120.00',
+            contentHash: '0x3a1c9e...',
+            piiScanPassed: true,
+            status: 'listed',
+            listedAt: new Date(Date.now() - 86400000 * 5).toISOString(),
+            purchaseCount: 29,
+          }
+        ],
+        total: 2
+      } as unknown as T;
+    }
+    if (path.includes('/market/packs') && method === 'POST') {
+      return { packId: `pack_${Date.now()}`, piiDetected: false } as unknown as T;
+    }
+    if (path.includes('/purchase') && method === 'POST') {
+      return { purchaseId: `pur_${Date.now()}` } as unknown as T;
+    }
+  }
+
   return { success: true } as unknown as T;
 }
 
@@ -425,6 +482,38 @@ export const memoryApi = {
 };
 
 
+
+// ── Market API ─────────────────────────────────────────────────────────────────
+
+export const marketApi = {
+  listPacks: () =>
+    request<any>('GET', '/market/packs'),
+
+  getPurchasedPacks: () =>
+    request<any>('GET', '/market/purchases'),
+
+  getSellerPacks: () =>
+    request<any>('GET', '/market/packs/my'),
+
+  createPack: (body: {
+    domainTag: string;
+    title: string;
+    description?: string;
+    priceUsdc: string;
+    dateRangeFrom: string;
+    dateRangeTo: string;
+  }) =>
+    request<any>('POST', '/market/packs', body),
+
+  purchasePack: (packId: string, body: { monadTxHash: string; buyerAddress?: string }) =>
+    request<any>('POST', `/market/packs/${packId}/purchase`, body),
+
+  scanPack: (contents: string[]) =>
+    request<any>('POST', '/market/packs/scan', { contents }),
+
+  ingestPack: (vaultId: string, packId: string) =>
+    request<any>('POST', `/vaults/${vaultId}/ingest/${packId}`),
+};
 
 // ── Compliance API ─────────────────────────────────────────────────────────────
 

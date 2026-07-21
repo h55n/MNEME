@@ -131,20 +131,25 @@ export default function MemoriesPage() {
   ] as const;
 
   return (
-    <div className="p-8 max-w-4xl">
-      <div className="mb-6">
-        <h1 className="text-display mb-1">Memories</h1>
-        <p className="text-body-md text-neutral-500">Manage the agent's sovereign memory vault.</p>
+    <div className="p-8 max-w-4xl animate-fade-in">
+      <div className="mb-8">
+        <h1 className="text-display mb-2 flex items-center gap-3">
+          <div className="p-2 bg-primary/10 text-primary-foreground rounded-xl border border-primary/20">
+            <Brain className="w-6 h-6" />
+          </div>
+          Memories
+        </h1>
+        <p className="text-body-lg text-neutral-400">Manage the agent's sovereign memory vault.</p>
       </div>
 
       {/* Tab nav */}
-      <div className="flex gap-0 border border-secondary rounded-lg p-1 mb-6 w-fit">
+      <div className="flex gap-1 bg-surface/50 backdrop-blur-md border border-border rounded-xl p-1.5 mb-8 w-fit shadow-sm">
         {TABS.map(t => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`px-4 h-8 text-label-md rounded-md transition-colors ${
-              tab === t.id ? 'bg-primary text-white' : 'text-neutral-500 hover:text-on-surface'
+            className={`px-4 h-9 text-label-md font-medium rounded-lg transition-all duration-300 ${
+              tab === t.id ? 'bg-primary text-primary-foreground shadow-sm' : 'text-neutral-400 hover:text-on-surface hover:bg-surface-hover'
             }`}
           >
             {t.label}
@@ -171,24 +176,24 @@ export default function MemoriesPage() {
             />
           ) : (
             <>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {memoriesQ.data?.items?.map((m: any) => (
-                  <div key={m.id} className="border border-secondary rounded-lg p-3">
-                    <div className="flex items-start justify-between gap-3">
+                  <div key={m.id} className="bg-surface/40 backdrop-blur-sm border border-border rounded-xl p-5 hover:border-neutral-700 hover:shadow-md transition-all duration-300 group">
+                    <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <Badge>{m.type}</Badge>
+                        <div className="flex items-center gap-2 mb-3 flex-wrap">
+                          <Badge variant="outline">{m.type}</Badge>
                           <Badge variant="default">
-                            {(m.importance * 100).toFixed(0)}% importance
+                            {(m.importance * 100).toFixed(0)}% imp.
                           </Badge>
                           {m.tags?.map((tag: string) => (
                             <Badge key={tag} variant="orange">{tag}</Badge>
                           ))}
                         </div>
-                        <p className="text-body-md text-on-surface line-clamp-3">{m.content}</p>
-                        <div className="flex items-center gap-3 mt-2">
+                        <p className="text-body-lg text-on-surface leading-relaxed line-clamp-3">{m.content}</p>
+                        <div className="flex items-center gap-4 mt-4">
                           <MonoHash hash={m.contentHash} />
-                          <span className="text-body-sm text-neutral-400">
+                          <span className="text-body-sm font-mono text-neutral-500 tracking-tight">
                             {new Date(m.createdAt).toLocaleString()}
                           </span>
                         </div>
@@ -196,7 +201,7 @@ export default function MemoriesPage() {
                       <button
                         onClick={() => deleteMut.mutate(m.id)}
                         disabled={deleteMut.isPending}
-                        className="p-1.5 text-neutral-400 hover:text-error transition-colors rounded"
+                        className="p-2 text-neutral-500 hover:text-error hover:bg-error/10 transition-colors rounded-lg opacity-0 group-hover:opacity-100 focus:opacity-100"
                         title="Delete memory"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -223,13 +228,16 @@ export default function MemoriesPage() {
 
       {/* Write */}
       {tab === 'write' && (
-        <Card>
-          <CardHeader><CardTitle>Write Memory</CardTitle></CardHeader>
-          <div className="space-y-4">
+        <Card className="max-w-2xl animate-slide-up">
+          <CardHeader>
+            <CardTitle>Write Memory</CardTitle>
+            <p className="text-body-sm text-neutral-400">Information saved here is cryptographically attested on Monad Testnet.</p>
+          </CardHeader>
+          <div className="space-y-5">
             <Textarea
               label="Content"
-              placeholder="What should this agent remember?"
-              rows={5}
+              placeholder="What should this agent remember? e.g. The user prefers concise answers without bullet points."
+              rows={4}
               value={writeForm.content}
               onChange={e => setWriteForm(f => ({ ...f, content: e.target.value }))}
             />
@@ -241,7 +249,7 @@ export default function MemoriesPage() {
             />
             <Input
               label="Tags (comma-separated)"
-              placeholder="finance, client-xyz, q3"
+              placeholder="e.g. core-preference, client-b"
               value={writeForm.tags}
               onChange={e => setWriteForm(f => ({ ...f, tags: e.target.value }))}
             />
@@ -254,8 +262,8 @@ export default function MemoriesPage() {
               value={writeForm.importance}
               onChange={e => setWriteForm(f => ({ ...f, importance: e.target.value }))}
             />
-            <Button onClick={handleWrite} loading={writeMut.isPending} disabled={!writeForm.content.trim()}>
-              Store & Attest
+            <Button className="w-full mt-2" size="lg" onClick={handleWrite} loading={writeMut.isPending} disabled={!writeForm.content.trim()}>
+              Store & Attest Memory
             </Button>
           </div>
         </Card>
@@ -348,17 +356,17 @@ export default function MemoriesPage() {
 
       {/* Knowledge Graph */}
       {tab === 'graph' && (
-        <Card className="flex flex-col h-[600px] overflow-hidden">
-          <CardHeader className="shrink-0 flex flex-row items-center justify-between pb-2">
+        <Card className="flex flex-col h-[650px] overflow-hidden animate-slide-up border-border shadow-md">
+          <CardHeader className="shrink-0 flex flex-row items-center justify-between pb-4 border-b border-border">
             <div>
               <CardTitle>Knowledge Graph</CardTitle>
-              <p className="text-body-sm text-neutral-500 mt-1">
+              <p className="text-body-sm text-neutral-400 mt-1">
                 Visualizing entity relationships extracted from memories.
               </p>
             </div>
             {graphQ.isFetching && <Spinner />}
           </CardHeader>
-          <div ref={graphContainerRef} className="flex-1 bg-surface relative min-h-0">
+          <div ref={graphContainerRef} className="flex-1 bg-[#050505] relative min-h-0 rounded-b-2xl">
             {graphQ.isLoading ? (
               <div className="absolute inset-0 flex items-center justify-center">
                 <Spinner />
