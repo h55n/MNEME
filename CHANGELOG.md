@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - 2026-07-21
+
+### Added
+- **Google Cloud Run Deployment Workflow**: Added `.github/workflows/deploy-api.yml` for automated Google Cloud Run API deployment on pushes to `main`, including step-level secret validation.
+- **Buyer Purchases API & UI**: Added `GET /market/purchases` (`getPurchasedPacks`) endpoint in `apps/api` and updated `apps/web` to fetch and display owned knowledge packs.
+- **List New Pack UI Modal**: Added an interactive "List New Pack" modal in `apps/web/src/app/dashboard/market/page.tsx` for listing custom knowledge packs.
+- **Contract Verification Script**: Created `contracts/scripts/verify.ts` and registered the `npm run verify` command in `contracts/package.json` to verify deployed contracts on Monad networks.
+- **Astryx UI System Integration**: Upgraded UI components (`apps/web/src/components/ui/index.tsx`, Market page, Memories page) with modern Astryx-styled tokens, glassmorphism, and framer-motion animations.
+
+### Changed
+- **On-Chain Vault & Pack Registration**: Wired `registerVaultOnChain()` in `vault.service.ts` and `listPackOnChain()` in `market.service.ts` to asynchronously record vaults and packs on Monad testnet.
+- **Market API Wiring & Types**: Corrected field mappings in `MarketPage` (`title`, `sellerAddress`, `priceUsdc`, `interactionCount`) and updated `apps/web/src/lib/api.ts` `marketApi` definitions to match backend routes.
+- **Fail-Closed Market Verification**: Enforced fail-closed verification in `verifyPurchaseOnChain` when running in production (`NODE_ENV === 'production'`), rejecting unverified transactions if RPC config is missing.
+- **CI Pipeline Gating**: Updated `.github/workflows/ci.yml` `docker` job to depend on `test-contracts`, ensuring all 12 Hardhat smart contract tests pass prior to container pushes.
+- **Docker & Compose Environment**: Added 32+ character `ENCRYPTION_SECRET` to `docker-compose.yml` and `docker-compose.prod.yml`, updated `JWT_SECRET` length, and injected production contract variables.
+- **Extraction Service URL Unification**: Unified `EXTRACTION_SERVICE_URL` and `EXTRACTION_API_URL` environment fallbacks in `reranker.service.ts` and `extraction.service.ts`.
+
+### Fixed
+- **MCP Server Fixes**: Added `memory_list` tool to `@mneme/mcp` server and fixed `memory_import` return payload handling (`r.imported` instead of `r.data.imported`).
+- **Render Blueprint Migration**: Removed legacy `render.yaml` blueprint in favor of Google Cloud Run, and removed Render fallback URLs from settings page.
+- **GitHub Actions YAML Syntax**: Fixed GitHub Actions job-level `if:` syntax error (`Unrecognized named-value: secrets`) by moving secret validation to step-level outputs.
+
 ## [Unreleased] - 2026-07-20
 
 ### Added
