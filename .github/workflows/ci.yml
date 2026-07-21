@@ -180,6 +180,10 @@ jobs:
     # Wait for ALL validation to pass before pushing images
     needs: [build, test-api, test-classifier, validate-migrations]
     if: github.ref == 'refs/heads/main'
+    # continue-on-error: GHCR push requires a one-time package visibility setup.
+    # See: https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions
+    # Once the first package is published manually, remove this line.
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
