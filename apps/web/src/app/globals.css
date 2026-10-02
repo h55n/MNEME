@@ -16,6 +16,11 @@
   box-sizing: border-box;
 }
 
+/* Always render light, even when the device or browser forces dark mode. */
+html {
+  color-scheme: only light;
+}
+
 body {
   font-family: system-ui, ui-sans-serif, sans-serif;
   background: var(--color-surface);
