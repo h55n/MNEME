@@ -6,7 +6,7 @@
   <p><strong>Portable · Monetisable · Cryptographically Verifiable AI Agent Memory</strong></p>
 
   <p>
-    <a href="https://mneme-five.vercel.app"><strong>🌐 Live Demo</strong></a>
+    <a href="https://mneme-six.vercel.app"><strong>🌐 Live Demo</strong></a>
     &nbsp;·&nbsp;
     <a href="https://testnet.monadexplorer.com/">Monad Explorer</a>
     &nbsp;·&nbsp;
@@ -73,7 +73,7 @@
 
 ## 🎥 Live Demo
 
-**Production URL:** [https://mneme-five.vercel.app](https://mneme-five.vercel.app)
+**Production URL:** [https://mneme-six.vercel.app](https://mneme-six.vercel.app)
 
 > Click **"⚡ Try Demo (no wallet needed)"** on the landing page to instantly launch with pre-loaded demo data — no MetaMask or sign-up required.
 
