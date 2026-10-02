@@ -366,7 +366,7 @@ export default function MemoriesPage() {
             </div>
             {graphQ.isFetching && <Spinner />}
           </CardHeader>
-          <div ref={graphContainerRef} className="flex-1 bg-[#050505] relative min-h-0 rounded-b-2xl">
+          <div ref={graphContainerRef} className="flex-1 bg-neutral-100 relative min-h-0 rounded-b-2xl">
             {graphQ.isLoading ? (
               <div className="absolute inset-0 flex items-center justify-center">
                 <Spinner />
@@ -384,11 +384,11 @@ export default function MemoriesPage() {
                     ctx.font = `${fontSize}px Sans-Serif`;
                     const textWidth = ctx.measureText(label).width;
                     const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2);
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
                     ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1]);
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.fillStyle = node.color || '#fff';
+                    ctx.fillStyle = node.color || '#111';
                     ctx.fillText(label, node.x, node.y);
                     node.__bckgDimensions = bckgDimensions;
                   }}
@@ -397,7 +397,7 @@ export default function MemoriesPage() {
                     const bckgDimensions = node.__bckgDimensions;
                     bckgDimensions && ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1]);
                   }}
-                  linkColor={() => 'rgba(255,255,255,0.2)'}
+                  linkColor={() => 'rgba(0,0,0,0.18)'}
                   linkDirectionalArrowLength={3.5}
                   linkDirectionalArrowRelPos={1}
                   linkCanvasObjectMode={() => 'after'}
@@ -424,7 +424,7 @@ export default function MemoriesPage() {
                     ctx.rotate(textAngle);
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
                     ctx.fillText(link.label, 0, 0);
                     ctx.restore();
                   }}

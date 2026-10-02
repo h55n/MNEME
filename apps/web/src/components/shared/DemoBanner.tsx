@@ -16,19 +16,20 @@ export function DemoBanner() {
         position: 'sticky',
         top: 0,
         zIndex: 9999,
-        background: 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)',
-        color: '#1c1917',
-        padding: '8px 16px',
+        background: '#FFF7ED',
+        color: '#9A3412',
+        padding: '7px 16px',
         display: 'flex',
         alignItems: 'center',
+        justifyContent: 'center',
         gap: '8px',
-        fontSize: '13px',
-        fontWeight: 600,
-        borderBottom: '2px solid #b45309',
+        fontSize: '12.5px',
+        fontWeight: 500,
+        borderBottom: '1px solid #FED7AA',
         letterSpacing: '0.01em',
       }}
     >
-      <span style={{ fontSize: '16px' }}>⚡</span>
+      <span style={{ width: 6, height: 6, borderRadius: 9999, background: '#F08300', display: 'inline-block' }} />
       <span>
         <strong>DEMO MODE</strong> — Sample data only. Nothing here is real or saved.
       </span>
