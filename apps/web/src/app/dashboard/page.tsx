@@ -112,18 +112,18 @@ export default function DashboardPage() {
         ) : (
           <div className="space-y-2">
             {(auditQ.data?.items ?? auditQ.data ?? []).map((a: any) => (
-              <div key={a.id} className="flex items-center justify-between py-2 border-b border-secondary last:border-0">
+              <div key={a.id} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between py-3 border-b border-secondary last:border-0">
                 <div className="flex items-center gap-3">
                   <Badge variant={a.operation === 'DELETE' ? 'error' : a.operation === 'EXPORT' ? 'orange' : 'default'}>
                     {a.operation}
                   </Badge>
                   <MonoHash hash={a.contentHash} />
                 </div>
-                <div className="flex items-center gap-3 text-right">
+                <div className="flex flex-wrap items-center gap-3 sm:text-right">
                   {a.monadTxHash ? (
-                    <Badge variant="success">On-chain</Badge>
+                    <Badge variant="success" className="whitespace-nowrap">On-chain</Badge>
                   ) : (
-                    <Badge>Pending</Badge>
+                    <Badge className="whitespace-nowrap">Pending</Badge>
                   )}
                   <span className="text-body-sm text-neutral-400">
                     {new Date(a.createdAt).toLocaleString()}

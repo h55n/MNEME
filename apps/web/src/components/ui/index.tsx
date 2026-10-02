@@ -246,7 +246,7 @@ export function Spinner({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
 export function MonoHash({ hash, truncate = true }: { hash: string; truncate?: boolean }) {
   const display = truncate ? `${hash.slice(0, 8)}...${hash.slice(-6)}` : hash;
   return (
-    <span className="font-mono text-label-sm text-neutral-400 select-all tracking-tight bg-secondary/50 px-1.5 py-0.5 rounded" title={hash}>
+    <span className="font-mono text-label-sm text-neutral-600 select-all tracking-tight bg-secondary px-1.5 py-0.5 rounded" title={hash}>
       {display}
     </span>
   );

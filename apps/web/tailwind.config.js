@@ -10,7 +10,7 @@ module.exports = {
           foreground: '#ffffff',
         },
         secondary: {
-          DEFAULT: 'rgba(0, 0, 0, 0.04)',
+          DEFAULT: '#f1f1f3',
           foreground: '#111111',
           border: 'rgba(0, 0, 0, 0.08)',
         },
