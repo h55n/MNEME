@@ -5,6 +5,7 @@ import '@getpara/react-sdk/styles.css';
 import { Environment, ParaProvider } from '@getpara/react-sdk';
 import { http } from 'wagmi';
 import { monad, monadTestnet } from 'wagmi/chains';
+import { DEMO_MODE } from '@/lib/demo';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
@@ -15,6 +16,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
       },
     },
   }));
+
+  // The demo has no wallet login, and the Para SDK throws on load without an API key.
+  if (DEMO_MODE && !process.env.NEXT_PUBLIC_PARA_API_KEY) {
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
