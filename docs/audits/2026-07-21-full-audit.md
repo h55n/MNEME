@@ -1,9 +1,9 @@
 # MNEME — Full Repository Audit (Updated)
 
 **Date:** 2026-07-21 (second pass)  
-**Scope:** `D:\ANTIGRAVITY\mneme` — read-only source audit, no code changes  
+**Scope:** local checkout — read-only source audit, no code changes  
 **Verified:** Hardhat contract tests re-run locally — **12/12 passing**  
-**Supersedes:** Previous `audit.md` content and corrects optimistic claims in `audit_report.md`
+**Supersedes:** Previous `2026-07-21-full-audit.md` content and corrects optimistic claims in `2026-07-21-audit-report.md`
 
 ---
 
@@ -606,7 +606,7 @@ The **single biggest remaining product gap** is the **broken Memory Market web �
 
 For hosting, **Google Cloud Run + Neon + Upstash** remains the safest free alternative to Render. **Openship** is viable if you self-host on a VPS and want unified Docker deploy management, but its managed cloud is not ready yet.
 
-This audit replaced all prior `audit.md` content. No repository code was modified.
+This audit replaced all prior `2026-07-21-full-audit.md` content. No repository code was modified.
 
 ---
 
