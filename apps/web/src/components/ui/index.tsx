@@ -13,7 +13,7 @@ interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'ref'> {
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = 'primary', size = 'md', loading, children, className, disabled, ...props }, ref) => {
-    const base = 'inline-flex items-center justify-center font-sans font-medium transition-colors duration-300 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50';
+    const base = 'inline-flex items-center justify-center font-sans font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50';
 
     const variants = {
       primary: 'bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-glow rounded-lg',
@@ -33,7 +33,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <motion.button
         ref={ref}
-        whileTap={{ scale: 0.98 }}
+        whileTap={{ scale: 0.97 }}
+        whileHover={variant === 'link' ? undefined : { y: -1 }}
         disabled={disabled || loading}
         className={clsx(base, variants[variant], variant !== 'link' && sizes[size], className)}
         {...props}
@@ -62,8 +63,8 @@ export function Card({ children, className }: CardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       className={clsx(
-        'bg-surface/60 backdrop-blur-xl border border-secondary rounded-2xl p-6',
-        'transition-all duration-300 hover:shadow-md hover:border-border hover:bg-surface-hover',
+        'bg-white border border-border rounded-2xl p-6 shadow-sm',
+        'transition-all duration-300 hover:shadow hover:-translate-y-0.5',
         className
       )}
     >
@@ -102,7 +103,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       <input
         ref={ref}
         className={clsx(
-          'h-10 px-3 bg-surface/50 backdrop-blur-md border border-border rounded-lg text-body-md text-on-surface',
+          'h-10 px-3 bg-white border border-border rounded-lg text-body-md text-on-surface',
           'placeholder:text-neutral-500 focus:outline-none focus:border-ring focus:ring-1 focus:ring-ring transition-all duration-200 shadow-sm',
           error && 'border-error focus:border-error focus:ring-error',
           className
@@ -129,7 +130,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       <textarea
         ref={ref}
         className={clsx(
-          'px-3 py-2 bg-surface/50 backdrop-blur-md border border-border rounded-lg text-body-md text-on-surface',
+          'px-3 py-2 bg-white border border-border rounded-lg text-body-md text-on-surface',
           'placeholder:text-neutral-500 focus:outline-none focus:border-ring focus:ring-1 focus:ring-ring transition-all duration-200 resize-none shadow-sm',
           error && 'border-error focus:border-error focus:ring-error',
           className
@@ -181,7 +182,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       <select
         ref={ref}
         className={clsx(
-          'h-10 px-3 bg-surface/50 backdrop-blur-md border border-border rounded-lg text-body-md text-on-surface',
+          'h-10 px-3 bg-white border border-border rounded-lg text-body-md text-on-surface',
           'focus:outline-none focus:border-ring focus:ring-1 focus:ring-ring transition-all duration-200 shadow-sm appearance-none',
           error && 'border-error focus:border-error focus:ring-error',
           className
@@ -218,7 +219,7 @@ export function EmptyState({ icon, title, description, action }: {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.4 }}
-      className="flex flex-col items-center justify-center py-20 px-4 gap-4 text-center border border-dashed border-border rounded-2xl bg-surface/30 backdrop-blur-sm"
+      className="flex flex-col items-center justify-center py-20 px-4 gap-4 text-center border border-dashed border-border rounded-2xl bg-neutral-100/60"
     >
       {icon && <div className="text-neutral-500 mb-2">{icon}</div>}
       <h3 className="text-headline-sm font-semibold text-on-surface">{title}</h3>

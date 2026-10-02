@@ -88,7 +88,7 @@ export default function HomePage() {
           {/* Feature row */}
           <div className="grid grid-cols-3 gap-4 mb-12">
             {FEATURES.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="text-center p-4 rounded-xl hover:bg-white/5 hover:scale-105 transition-all duration-300">
+              <div key={title} className="text-center p-4 rounded-xl hover:bg-secondary hover:-translate-y-0.5 transition-all duration-300">
                 <Icon className="w-6 h-6 mx-auto mb-2 text-neutral-300" />
                 <p className="text-headline-sm mb-1">{title}</p>
                 <p className="text-body-sm text-neutral-500">{desc}</p>

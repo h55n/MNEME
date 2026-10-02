@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: 0 0; }
+}
+
 :root {
   --color-primary: #171717;
   --color-secondary: #E5E7EB;
@@ -19,6 +24,34 @@
 /* Always render light, even when the device or browser forces dark mode. */
 html {
   color-scheme: only light;
+}
+
+::selection {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+a, button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f1f1f3 25%, #e6e6ea 37%, #f1f1f3 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 body {

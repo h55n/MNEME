@@ -44,7 +44,7 @@ export function Sidebar() {
     </header>
     {open && (
       <div
-        className="md:hidden fixed inset-0 z-30 bg-black/40"
+        className="md:hidden fixed inset-0 z-30 bg-black/30 backdrop-blur-sm animate-fade-in"
         onClick={() => setOpen(false)}
         aria-hidden="true"
       />
@@ -72,10 +72,10 @@ export function Sidebar() {
               key={href}
               href={href}
               className={clsx(
-                'flex items-center gap-2.5 px-3 h-9 rounded-md text-label-md transition-colors',
+                'group flex items-center gap-2.5 px-3 h-9 rounded-lg text-label-md transition-all duration-200',
                 active
-                  ? 'bg-primary text-white'
-                  : 'text-on-surface hover:bg-secondary/60'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'text-neutral-600 hover:bg-secondary hover:text-on-surface hover:translate-x-0.5'
               )}
             >
               <Icon className="w-4 h-4 shrink-0" />
