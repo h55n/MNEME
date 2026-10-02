@@ -440,6 +440,7 @@ For example, Codex generated the entire Drizzle ORM schema and the viem contract
 - **48-hour timelock:** Treasury parameter changes in `MemoryMarket.sol`
 - **ECDSA verification:** Operator signature checks on all vault operations
 - **PII scanning:** Regex pass required before market pack listing
+- **Known limitation:** `POST /market/packs/scan` receives plaintext. The operator decrypts memories locally and sends the content to the API for PII scanning; the API does not store it. Scanning encrypted content server-side is not implemented.
 
 > [!WARNING]
 > Set strong passwords for `POSTGRES_PASSWORD`, `REDIS_PASSWORD`, `NEO4J_AUTH` in `.env` before running `docker-compose.prod.yml`.
