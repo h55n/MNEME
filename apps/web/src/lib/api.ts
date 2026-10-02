@@ -1,11 +1,11 @@
+import { DEMO_MODE, IS_PRODUCTION } from './demo';
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
 
-// Demo mode: only active in non-production environments when no API URL is configured.
-// In production, this is a hard block — demo data must never silently mask an outage.
-const IS_PRODUCTION = process.env.NODE_ENV === 'production';
-const DEMO_MODE = !IS_PRODUCTION && (!process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL === '');
+// Demo mode: see lib/demo.ts. In production it only turns on with an explicit
+// NEXT_PUBLIC_DEMO_MODE=true, so demo data never silently masks an outage.
 
-if (IS_PRODUCTION && (!process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL === '')) {
+if (IS_PRODUCTION && !DEMO_MODE && !process.env.NEXT_PUBLIC_API_URL) {
   // In production with no API URL, we let the requests fail visibly rather than silently serving demo data.
   console.error('[MNEME] NEXT_PUBLIC_API_URL is not set in a production build. API requests will fail visibly.');
 }

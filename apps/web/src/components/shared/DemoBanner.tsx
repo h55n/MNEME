@@ -5,7 +5,7 @@
  * This banner is intentionally hard to miss so users don't mistake simulated data
  * for real production data.
  *
- * Only renders in development builds (DEMO_MODE is blocked in production).
+ * Renders whenever demo mode is on (see lib/demo.ts).
  */
 export function DemoBanner() {
   return (
@@ -30,10 +30,7 @@ export function DemoBanner() {
     >
       <span style={{ fontSize: '16px' }}>⚡</span>
       <span>
-        <strong>DEMO MODE</strong> — No backend connected. All data is simulated and not persisted.
-        Set <code style={{ background: 'rgba(0,0,0,0.12)', padding: '1px 4px', borderRadius: 3 }}>
-          NEXT_PUBLIC_API_URL
-        </code> to connect a real MNEME API.
+        <strong>DEMO MODE</strong> — Sample data only. Nothing here is real or saved.
       </span>
     </div>
   );
