@@ -1,11 +1,12 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { clsx } from 'clsx';
 import { useAuthStore } from '@/store';
 import {
   Database, Brain, Shield, Settings,
-  LogOut, Store
+  LogOut, Store, Menu, X
 } from 'lucide-react';
 
 const NAV = [
@@ -19,9 +20,42 @@ const NAV = [
 export function Sidebar() {
   const pathname = usePathname();
   const { vaultName, operatorAddress, plan, clearSession } = useAuthStore();
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
   return (
-    <aside className="w-56 shrink-0 border-r border-secondary bg-surface flex flex-col h-screen sticky top-0">
+    <>
+    <header className="md:hidden sticky top-0 z-30 flex items-center justify-between h-14 px-4 border-b border-secondary bg-surface">
+      <Link href="/" className="block">
+        <img src="/mneme.svg" alt="mneme." className="h-7 w-auto" />
+      </Link>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-label={open ? 'Close navigation' : 'Open navigation'}
+        aria-expanded={open}
+        className="flex items-center justify-center w-9 h-9 rounded-md hover:bg-secondary/60 transition-colors"
+      >
+        {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+      </button>
+    </header>
+    {open && (
+      <div
+        className="md:hidden fixed inset-0 z-30 bg-black/40"
+        onClick={() => setOpen(false)}
+        aria-hidden="true"
+      />
+    )}
+    <aside
+      className={clsx(
+        'w-56 shrink-0 border-r border-secondary bg-surface flex flex-col h-screen',
+        'fixed inset-y-0 left-0 z-40 transition-transform md:sticky md:top-0 md:z-auto md:translate-x-0',
+        open ? 'translate-x-0' : '-translate-x-full'
+      )}
+    >
       {/* Logo */}
       <div className="px-5 py-4 border-b border-secondary">
         <Link href="/" className="block">
@@ -80,5 +114,6 @@ export function Sidebar() {
         </button>
       </div>
     </aside>
+    </>
   );
 }
