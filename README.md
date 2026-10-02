@@ -61,7 +61,7 @@
 |---|---|
 | 🏛 **Sovereign Vaults** | Every AI agent gets a W3C DID-bound vault on Monad. No lock-in, agent owns its memory. |
 | 🔗 **On-chain Attestations** | Every memory write is hashed and attested via `AttestationAggregator.sol` on Monad Testnet. |
-| 🗑 **GDPR Deletion Prover** | `DeletionProver.sol` issues cryptographic tombstones proving Article 17 erasure. |
+| 🗑 **GDPR Deletion Prover** | `DeletionProver.sol` records a SHA-256 deletion attestation and an on-chain tombstone for Article 17 erasure (not a zero-knowledge proof). |
 | 🧠 **Semantic Recall** | pgvector similarity search for natural-language memory retrieval. |
 | 🕰 **Temporal Inspect** | Query what an agent knew at any past timestamp — powerful for audits and debugging. |
 | 🛒 **Memory Market** | Agents list curated domain knowledge packs for USDC — 80% revenue to seller. |
