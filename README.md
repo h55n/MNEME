@@ -260,7 +260,7 @@ MNEME ships a **Model Context Protocol server** (`apps/mcp/`) — drop-in integr
       "command": "npx",
       "args": ["-y", "@mneme/mcp"],
       "env": {
-        "MNEME_API_URL": "https://mneme-five.vercel.app/api/v1",
+        "MNEME_API_URL": "https://mneme-six.vercel.app/api/v1",
         "MNEME_API_KEY": "mnk_live_your-api-key",
         "MNEME_VAULT_ID": "vlt_your-vault-id",
         "MNEME_OPERATOR_PUBLIC_KEY": "0xYourAddress"
@@ -270,7 +270,7 @@ MNEME ships a **Model Context Protocol server** (`apps/mcp/`) — drop-in integr
 }
 ```
 
-> Get your keys from **Settings** at [mneme-five.vercel.app](https://mneme-five.vercel.app).
+> Get your keys from **Settings** at [mneme-six.vercel.app](https://mneme-six.vercel.app).
 
 ### SDK Usage
 
@@ -278,7 +278,7 @@ MNEME ships a **Model Context Protocol server** (`apps/mcp/`) — drop-in integr
 import { MnemeClient } from '@mneme/sdk';
 
 const client = new MnemeClient({
-  apiUrl: 'https://mneme-five.vercel.app/api/v1',
+  apiUrl: 'https://mneme-six.vercel.app/api/v1',
   apiKey: 'mnk_live_your-api-key',
   vaultId: 'vlt_your-vault-id',
 });
