@@ -16,7 +16,6 @@
   </p>
 
   <p>
-    <img src="https://img.shields.io/badge/Built_with-Codex-000?style=for-the-badge&logo=openai" alt="Built with Codex" />
     <img src="https://img.shields.io/badge/Network-Monad_Testnet-7c3aed?style=for-the-badge&logo=web3dotjs" alt="Monad Testnet" />
     <img src="https://img.shields.io/badge/ChainID-10143-blueviolet?style=for-the-badge" alt="Chain ID" />
     <img src="https://img.shields.io/badge/License-MIT-22c55e?style=for-the-badge" alt="MIT" />
