@@ -1,0 +1,86 @@
+'use client';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useMutation } from '@tanstack/react-query';
+import { ArrowRight } from 'lucide-react';
+import { toast } from 'sonner';
+import { vaultApi } from '@/lib/api';
+import { useAuthStore } from '@/store';
+import { Button, Input } from '@/components/ui';
+
+const DEMO_ADDRESS = '0x742d35Cc6634C0532925a3b8D4C9E3B9a1C2F0d4';
+
+export function StartVault() {
+  const router = useRouter();
+  const { setSession } = useAuthStore();
+  const [form, setForm] = useState({ operatorAddress: '', name: '' });
+
+  const createMut = useMutation({
+    mutationFn: (input: { operatorAddress: string; name?: string }) =>
+      vaultApi.create({ operatorAddress: input.operatorAddress, name: input.name || undefined, plan: 'free' }),
+    onSuccess: (data) => {
+      setSession({
+        vaultId: data.vault.id,
+        apiKey: data.apiKey,
+        operatorAddress: data.vault.operatorAddress,
+        vaultName: data.vault.name,
+        plan: data.vault.plan,
+      });
+      toast.success('Vault created. Store your API key somewhere safe.');
+      router.push('/dashboard');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  return (
+    <section id="start" className="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-24 scroll-mt-16">
+      <div className="rounded-3xl bg-primary text-primary-foreground px-6 sm:px-12 py-12 sm:py-16 grid lg:grid-cols-2 gap-10 items-center">
+        <div>
+          <h2 className="text-[28px] leading-[34px] sm:text-[40px] sm:leading-[46px] font-medium tracking-[-0.02em]">
+            Give your agent a memory it keeps.
+          </h2>
+          <p className="mt-4 text-body-lg text-neutral-300 max-w-md">
+            Create a vault in under a minute. Free tier, 1,000 memories a month, no credit card.
+          </p>
+        </div>
+        <form
+          className="rounded-2xl bg-white text-on-surface p-5 sm:p-6 space-y-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (form.operatorAddress.trim()) createMut.mutate(form);
+          }}
+        >
+          <Input
+            label="Operator address (wallet or identifier)"
+            placeholder="0x742d35Cc... or you@email.com"
+            value={form.operatorAddress}
+            onChange={(e) => setForm((f) => ({ ...f, operatorAddress: e.target.value }))}
+          />
+          <Input
+            label="Vault name (optional)"
+            placeholder="My legal agent"
+            value={form.name}
+            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+          />
+          <Button type="submit" className="w-full" loading={createMut.isPending} disabled={!form.operatorAddress.trim()}>
+            Create vault <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-1/2"
+              disabled={createMut.isPending}
+              onClick={() => createMut.mutate({ operatorAddress: DEMO_ADDRESS, name: 'Demo Agent Vault' })}
+            >
+              Try the demo
+            </Button>
+            <Button type="button" variant="secondary" className="w-1/2" onClick={() => router.push('/login')}>
+              Log in
+            </Button>
+          </div>
+        </form>
+      </div>
+    </section>
+  );
+}
