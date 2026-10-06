@@ -17,8 +17,8 @@ export function Hero() {
         {['top-4 left-4', 'top-4 right-4', 'bottom-14 left-4', 'bottom-14 right-4'].map((p) => (
           <span key={p} aria-hidden="true" className={'absolute font-mono text-[14px] leading-none text-[#F1EEE7]/35 ' + p}>+</span>
         ))}
-        <div className="flex-1 flex items-center justify-center px-6 pt-20 pb-6 lg:px-12">
-          <MemoryBrain className="w-full max-w-[860px] aspect-[5/4]" />
+        <div className="flex-1 flex items-center justify-center px-3 pt-20 pb-6 lg:px-6">
+          <MemoryBrain className="w-full max-w-[980px] aspect-[5/4]" />
         </div>
         <div className="h-12 border-t border-white/15 px-5 sm:px-8 flex items-center justify-between gap-4 font-mono uppercase text-[11px] text-[#F1EEE7]/60">
           <ul className="flex flex-wrap gap-x-5 gap-y-1">
