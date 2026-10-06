@@ -30,7 +30,7 @@ export function Sidebar() {
     <>
     <header className="md:hidden sticky top-0 z-30 flex items-center justify-between h-14 px-4 border-b border-secondary bg-surface">
       <Link href="/" className="block">
-        <img src="/mneme.svg" alt="mneme." className="h-7 w-auto" />
+        <span className="font-display text-[26px] leading-none text-on-surface">mneme<span className="text-tertiary">.</span></span>
       </Link>
       <button
         type="button"
@@ -59,7 +59,7 @@ export function Sidebar() {
       {/* Logo */}
       <div className="px-5 py-4 border-b border-secondary">
         <Link href="/" className="block">
-          <img src="/mneme.svg" alt="mneme." className="h-8 w-auto" />
+          <span className="font-display text-[30px] leading-none text-on-surface">mneme<span className="text-tertiary">.</span></span>
         </Link>
       </div>
 

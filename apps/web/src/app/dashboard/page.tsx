@@ -66,11 +66,11 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-5 sm:p-8 max-w-5xl">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-1">
-          <h1 className="text-display">{vaultName ?? 'My Vault'}</h1>
+          <h1 className="font-display text-[44px] leading-none tracking-tight">{vaultName ?? 'My Vault'}</h1>
           <Badge variant="orange">Active</Badge>
         </div>
         <p className="text-body-md text-neutral-500">
@@ -80,14 +80,14 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats grid */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         {stats.map(({ label, value, icon: Icon, href }) => (
           <Link key={label} href={href}>
             <Card className="hover:border-primary/30 transition-colors cursor-pointer">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-label-sm text-neutral-500 mb-1">{label}</p>
-                  <p className="text-headline-lg">
+                  <p className="mono text-[11px] uppercase tracking-[0.08em] text-neutral-500 mb-2 pr-6">{label}</p>
+                  <p className="font-display text-[40px] leading-none">
                     {memoriesQ.isLoading || auditQ.isLoading
                       ? <Spinner size="sm" />
                       : value}
@@ -108,7 +108,7 @@ export default function DashboardPage() {
         {auditQ.isLoading ? (
           <div className="flex justify-center py-8"><Spinner /></div>
         ) : (auditQ.data?.items ?? auditQ.data ?? []).length === 0 ? (
-          <p className="text-body-md text-neutral-500 py-4">No attestations yet. Write some memories to start.</p>
+          <p className="text-body-md text-neutral-500 py-4">No attestations yet. Every write and deletion your agent makes shows up here with its hash.</p>
         ) : (
           <div className="space-y-2">
             {(auditQ.data?.items ?? auditQ.data ?? []).map((a: any) => (
@@ -136,7 +136,7 @@ export default function DashboardPage() {
       </Card>
 
       {/* Quick links */}
-      <div className="mt-6 grid grid-cols-2 gap-4">
+      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card className="hover:border-primary/40 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
           <Link href="/dashboard/memories" className="block">
             <div className="flex items-center gap-3">
