@@ -3,8 +3,6 @@ import localFont from 'next/font/local';
 import './globals.css';
 import { Providers } from '@/components/shared/providers';
 import { Toaster } from 'sonner';
-import { DEMO_MODE } from '@/lib/demo';
-import { DemoBanner } from '@/components/shared/DemoBanner';
 
 const sans = localFont({ src: '../fonts/Geist-Variable.woff2', variable: '--font-sans', display: 'swap', weight: '100 900' });
 const mono = localFont({ src: '../fonts/GeistMono-Variable.woff2', variable: '--font-mono', display: 'swap', weight: '100 900' });
@@ -23,7 +21,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`${sans.variable} ${mono.variable} font-sans`}>
         <Providers>
-          {DEMO_MODE && <DemoBanner />}
           {children}
           <Toaster position="bottom-right" theme="light" />
         </Providers>

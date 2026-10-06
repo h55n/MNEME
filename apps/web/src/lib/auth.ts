@@ -34,10 +34,13 @@ export function normalizeApiUrl(input: string): string | null {
 
 /** True once the saved session has been read from localStorage (false during the first render). */
 export function useAuthHydrated(): boolean {
-  const [hydrated, setHydrated] = useState(() => useAuthStore.persist.hasHydrated());
+  // `persist` does not exist while rendering on the server (no localStorage there).
+  const [hydrated, setHydrated] = useState(() => useAuthStore.persist?.hasHydrated() ?? false);
   useEffect(() => {
-    if (useAuthStore.persist.hasHydrated()) setHydrated(true);
-    return useAuthStore.persist.onFinishHydration(() => setHydrated(true));
+    const persist = useAuthStore.persist;
+    if (!persist) return;
+    if (persist.hasHydrated()) setHydrated(true);
+    return persist.onFinishHydration(() => setHydrated(true));
   }, []);
   return hydrated;
 }

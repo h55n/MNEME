@@ -108,7 +108,7 @@ function LoginForm() {
             {needsApiUrl && (
               <Input
                 label="MNEME API URL"
-                placeholder="http://localhost:3001"
+                placeholder="http://localhost:3001/v1"
                 autoComplete="url"
                 inputMode="url"
                 value={form.apiUrl}

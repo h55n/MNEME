@@ -3,8 +3,6 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 
-const DEMO = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
-
 const LINKS: [string, string][] = [
   ['How it works', '#how'],
   ['Proof', '#proof'],
@@ -16,16 +14,12 @@ const LINKS: [string, string][] = [
 const LINK = 'font-mono uppercase text-[12px] px-3 h-9 inline-flex items-center text-[#F1EEE7]/65 hover:text-[#F1EEE7] transition-colors';
 
 // Floating dark bar, mono uppercase labels, one accent dot. Below md the
-// section links move into a menu. When the demo banner is shown the bar sits
-// beneath it so the two never overlap.
+// section links move into a menu.
 export function Nav() {
   const [open, setOpen] = useState(false);
   return (
     <header
-      className={
-        'fixed left-0 right-0 z-40 flex justify-center px-3 pointer-events-none ' +
-        (DEMO ? 'top-16 sm:top-12' : 'top-3 sm:top-4')
-      }
+      className="fixed left-0 right-0 z-40 flex justify-center px-3 pointer-events-none top-3 sm:top-4"
     >
       <div className="pointer-events-auto w-full max-w-fit rounded-lg bg-[#232323] text-[#F1EEE7] ring-1 ring-white/10">
         <div className="flex items-center gap-1 sm:gap-2 pl-3 pr-1.5 h-12">

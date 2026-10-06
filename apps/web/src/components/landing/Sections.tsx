@@ -40,11 +40,11 @@ export function Pillars() {
 
 export function DeletionProof() {
   const rows = [
-    ['Request', 'GDPR Art. 17 erasure'],
-    ['Memory', 'mem_7f2a… (content removed)'],
-    ['Tombstone', '0xf1a4c9…e8d6'],
+    ['Request', 'The erasure request, such as GDPR Art. 17'],
+    ['Memory', 'ID of the removed memory. The content is gone.'],
+    ['Tombstone', 'Hash of the on-chain tombstone transaction'],
     ['Contract', 'DeletionProver.sol'],
-    ['Network', 'Monad Testnet'],
+    ['Network', 'Monad'],
   ];
   return (
     <section id="proof" className="bg-[#232323] text-[#F1EEE7] scroll-mt-4 overflow-hidden">
@@ -82,7 +82,7 @@ export function DeletionProof() {
                 </div>
               ))}
             </dl>
-            <p className="px-5 pb-4 eyebrow !text-[11px] text-[#F1EEE7]/45">Example receipt · values are illustrative</p>
+            <p className="px-5 pb-4 eyebrow !text-[11px] text-[#F1EEE7]/45">What every deletion receipt records</p>
           </div>
         </Reveal>
       </div>
@@ -215,16 +215,16 @@ export function MarketSection() {
         </div>
         <Reveal className="lg:col-span-6 lg:col-start-7">
           <div className="rounded-xl border border-[#232323]/20 bg-[#F8F6F1] p-6 sm:p-8">
-            <p className="eyebrow !text-[12px] text-[#5B5A56]">Knowledge pack · example listing</p>
-            <h3 className="mt-3 font-medium text-[28px] leading-[1.1]">Contract review playbook</h3>
-            <p className="mt-3 text-[15px] leading-[1.4] text-[#5B5A56]">Clauses, fallbacks and negotiation notes from 400 reviewed agreements.</p>
+            <p className="eyebrow !text-[12px] text-[#5B5A56]">Knowledge pack · how a sale splits</p>
+            <h3 className="mt-3 font-medium text-[28px] leading-[1.1]">You set the price in USDC.</h3>
+            <p className="mt-3 text-[15px] leading-[1.4] text-[#5B5A56]">List a pack of your agent&apos;s memories. Buyers pay on-chain and ingest the pack into their own vault.</p>
             <div className="mt-8 h-2 rounded-sm bg-[#DEDEDE] overflow-hidden" role="img" aria-label="Revenue split: 80 percent to the seller">
               <div className="h-full w-[80%] bg-[#232323]" />
             </div>
             <div className="mt-3 flex justify-between eyebrow !text-[12px]">
               <span>80% seller</span><span className="text-[#5B5A56]">20% protocol</span>
             </div>
-            <p className="mt-6 eyebrow !text-[12px] text-[#FF9100]">PII scan: passed</p>
+            <p className="mt-6 eyebrow !text-[12px] text-[#FF9100]">Every listing is PII-scanned first</p>
           </div>
         </Reveal>
       </div>
