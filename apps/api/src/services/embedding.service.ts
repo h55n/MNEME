@@ -59,7 +59,9 @@ export class EmbeddingService {
   private loadLocal(): Promise<Extractor> {
     if (!this.extractor) {
       this.extractor = (async () => {
-        const { pipeline } = await import('@huggingface/transformers');
+        const { pipeline, env } = await import('@huggingface/transformers');
+        // Docker bakes the model into MODEL_CACHE_DIR at build time, so a new container starts offline.
+        if (process.env.MODEL_CACHE_DIR) env.cacheDir = process.env.MODEL_CACHE_DIR;
         const started = Date.now();
         const extractor = (await pipeline('feature-extraction', LOCAL_MODEL, {
           dtype: 'fp32',

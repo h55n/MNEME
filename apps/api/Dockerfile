@@ -5,9 +5,9 @@
 # ─────────────────────────────────────────────────────────────────────────────
 
 # Stage 1: base OS layer
-FROM node:22-alpine AS base
+# Debian (glibc), not Alpine: the local embedder's onnxruntime binaries need glibc.
+FROM node:22-bookworm-slim AS base
 WORKDIR /app
-RUN apk add --no-cache libc6-compat
 
 # Stage 2: install all dependencies
 FROM base AS deps
@@ -27,15 +27,22 @@ RUN npm run build --workspace=packages/shared
 COPY apps/api ./apps/api
 RUN npm run build --workspace=apps/api
 
+# Download the embedding model once, at build time, so containers start without network.
+ENV MODEL_CACHE_DIR=/app/models
+RUN node -e "import('@huggingface/transformers').then(async m=>{m.env.cacheDir=process.env.MODEL_CACHE_DIR;await m.pipeline('feature-extraction','Xenova/all-MiniLM-L6-v2',{dtype:'fp32'});console.log('model cached')})"
+
 # Stage 4: lean production image
-FROM node:22-alpine AS runner
+FROM node:22-bookworm-slim AS runner
 WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends wget ca-certificates && rm -rf /var/lib/apt/lists/*
 
 # Security: run as non-root user
-RUN addgroup --system --gid 1001 mneme \
- && adduser  --system --uid 1001 mneme
+RUN groupadd --system --gid 1001 mneme \
+ && useradd  --system --uid 1001 --gid mneme mneme
 
 ENV NODE_ENV=production
+ENV MODEL_CACHE_DIR=/app/models
+COPY --from=builder --chown=mneme:mneme /app/models ./models
 
 # Copy only what's needed to run
 COPY --from=builder --chown=mneme:mneme /app/packages/shared/dist          ./packages/shared/dist

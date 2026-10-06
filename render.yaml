@@ -1,0 +1,33 @@
+# MNEME API on Render (free web service, Docker).
+# The database is NOT created here: use a free Neon Postgres (pgvector included) and paste its
+# connection string as DATABASE_URL in the Render dashboard. Secrets are never stored in this file.
+services:
+  - type: web
+    name: mneme-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: false
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3001"
+      - key: HOST
+        value: 0.0.0.0
+      - key: EMBEDDER
+        value: local
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ENCRYPTION_SECRET
+        generateValue: true
+# Redis and Neo4j are optional: without REDIS_URL / NEO4J_URI the API runs in no-cache mode
+# with graph features off.
+# Free-tier caveats: the service sleeps after about 15 minutes idle (first request is slow),
+# and 512 MB RAM is enough for the local embedder but leaves little headroom.
