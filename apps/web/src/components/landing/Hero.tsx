@@ -31,7 +31,7 @@ export function Hero() {
           </ul>
         </div>
       </div>
-      <div className="order-1 lg:order-2 lg:col-span-5 flex flex-col justify-center px-5 sm:px-8 lg:pl-14 lg:pr-16 pt-32 pb-14 lg:py-16">
+      <div className="order-1 lg:order-2 lg:col-span-5 flex flex-col justify-center px-5 sm:px-8 lg:pl-14 lg:pr-16 pt-12 pb-14 lg:py-16">
         <Reveal>
           <p className="eyebrow mb-5">Sovereign memory for AI agents.</p>
           <h1 className="font-medium text-balance mb-8 text-[clamp(40px,4.6vw,72px)] leading-none">
