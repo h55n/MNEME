@@ -13,7 +13,7 @@ interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'ref'> {
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = 'primary', size = 'md', loading, children, className, disabled, ...props }, ref) => {
-    const base = 'inline-flex items-center justify-center font-sans font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50';
+    const base = 'inline-flex items-center justify-center font-mono uppercase tracking-[0.02em] font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50';
 
     const variants = {
       primary: 'bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-glow rounded-lg',
@@ -25,9 +25,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const sizes = {
-      sm: 'text-label-sm px-3 h-8 gap-1.5',
-      md: 'text-label-md px-4 h-10 gap-2',
-      lg: 'text-label-md px-8 h-12 gap-2 rounded-xl',
+      sm: 'text-[12px] px-3 h-8 gap-1.5',
+      md: 'text-[13px] px-4 h-10 gap-2',
+      lg: 'text-[14px] px-6 h-12 gap-2',
     };
 
     return (
@@ -63,8 +63,8 @@ export function Card({ children, className }: CardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       className={clsx(
-        'bg-white border border-border rounded-2xl p-6 shadow-sm',
-        'transition-all duration-300 hover:shadow hover:-translate-y-0.5',
+        'bg-surface-card border border-border rounded-xl p-6',
+        'transition-colors duration-200 hover:border-primary/30',
         className
       )}
     >
@@ -158,7 +158,7 @@ export function Badge({ children, variant = 'default', className }: BadgeProps) 
 
   return (
     <span className={clsx(
-      'inline-flex items-center px-2.5 py-0.5 rounded-full text-label-sm font-semibold transition-colors',
+      'inline-flex items-center px-2 py-0.5 rounded font-mono uppercase tracking-[0.04em] text-[11px] font-medium transition-colors',
       variants[variant],
       className
     )}>

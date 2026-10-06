@@ -8,11 +8,11 @@
 }
 
 :root {
-  --color-primary: #171717;
-  --color-secondary: #E5E7EB;
+  --color-primary: #232323;
+  --color-secondary: #E6E2D8;
   --color-tertiary: #FF9100;
-  --color-surface: #FFFFFF;
-  --color-on-surface: #171717;
+  --color-surface: #F1EEE7;
+  --color-on-surface: #232323;
   --color-error: #D92D20;
   --color-border-subtle: rgba(0,0,0,0.08);
 }
@@ -82,15 +82,13 @@ body {
 }
 
 /* Mono text */
-.mono {
-  font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
-  font-size: 13px;
-}
 
-/* Landing page typography */
-.font-display { font-family: var(--font-display), Georgia, 'Times New Roman', serif; font-weight: 400; letter-spacing: -0.01em; }
-.font-sans-landing { font-family: var(--font-sans), system-ui, sans-serif; }
-.mono { font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace; }
-@keyframes drift { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-@keyframes pulse-ring { 0% { r: 6; opacity: .7; } 100% { r: 22; opacity: 0; } }
-@keyframes fade-out-node { 0%,55% { opacity: 1; } 75%,100% { opacity: .18; } }
+
+/* Geist type system, tailored from the reference */
+.mono { font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+.eyebrow { font-family: var(--font-mono), ui-monospace, monospace; text-transform: uppercase; font-size: clamp(13px, 1.1vw, 15px); letter-spacing: 0.01em; line-height: 1.25; }
+body { background: #F1EEE7; color: #232323; -webkit-font-smoothing: antialiased; }
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+@keyframes spin-slow-rev { to { transform: rotate(-360deg); } }
+@keyframes blink-dot { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .spin-ring { animation: none !important; } }
