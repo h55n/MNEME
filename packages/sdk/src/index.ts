@@ -96,7 +96,12 @@ class HttpClient {
         signal: controller.signal,
       });
 
-      const data = (await res.json()) as APIResponse<T>;
+      let data: APIResponse<T>;
+      try {
+        data = (await res.json()) as APIResponse<T>;
+      } catch {
+        throw new MnemeError(`Server returned a non-JSON response (HTTP ${res.status})`, 'BAD_RESPONSE', res.status);
+      }
 
       if (!data.success || !res.ok) {
         throw new MnemeError(
@@ -187,7 +192,7 @@ export class MemoriesResource {
    * Delete a memory with on-chain proof of deletion.
    */
   delete(memoryId: string): Promise<{ contentHash: string; attestationId: string }> {
-    return this.http.del(`/vaults/${this.vaultId}/memories/${memoryId}`);
+    return this.http.del(`/vaults/${this.vaultId}/memories/${encodeURIComponent(memoryId)}`);
   }
 }
 
