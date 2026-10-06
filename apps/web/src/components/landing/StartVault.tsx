@@ -34,12 +34,12 @@ export function StartVault() {
 
   return (
     <section id="start" className="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-24 scroll-mt-16">
-      <div className="rounded-3xl bg-primary text-primary-foreground px-6 sm:px-12 py-12 sm:py-16 grid lg:grid-cols-2 gap-10 items-center">
+      <div className="rounded-3xl border border-white/10 bg-[radial-gradient(70%_120%_at_20%_0%,rgba(255,145,0,0.22),transparent_60%),#0E1218] text-white px-6 sm:px-12 py-12 sm:py-16 grid lg:grid-cols-2 gap-10 items-center">
         <div>
-          <h2 className="text-[28px] leading-[34px] sm:text-[40px] sm:leading-[46px] font-medium tracking-[-0.02em]">
+          <h2 className="font-display text-[40px] leading-[1.02] sm:text-[60px]">
             Give your agent a memory it keeps.
           </h2>
-          <p className="mt-4 text-body-lg text-neutral-300 max-w-md">
+          <p className="mt-4 text-[17px] leading-7 text-[#9AA3B2] max-w-md">
             Create a vault in under a minute. Free tier, 1,000 memories a month, no credit card.
           </p>
         </div>

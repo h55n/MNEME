@@ -1,20 +1,28 @@
-# Landing page mood board
+# Landing page mood board (v2)
 
-Public references reviewed (screenshots only, no login): supermemory.ai, linear.app, mem0.ai.
-Mobbin needs an account, so it was not used.
+Public references reviewed from screenshots, no login: linear.app, vercel.com, supermemory.ai, mem0.ai, railway.com, cursor.com. Mobbin's public explore page loads but its screens need an account, so no Mobbin screens were used.
 
-## What we took from them
+## What we took
 
-| Reference | Pattern | How it shows up in MNEME |
+| Reference | Pattern | In MNEME |
 | --- | --- | --- |
-| Linear | Large type-led hero with a framed product mock directly under it | Hero headline plus the "vault activity" panel |
-| Linear | Quiet neutral palette, one dark primary action | Black primary button, grey surfaces, no gradients |
-| supermemory | Monospace labels and code-first developer section | Mono eyebrow labels, MCP config tabs with a copy button |
-| supermemory | One-line setup CTA near the top | "Add it to your agent" link in the hero |
-| mem0 | Plain FAQ near the footer | Native details/summary FAQ |
+| Railway | Dark, atmospheric full-bleed hero with a serif headline and a framed app window | Near-black page, warm amber glow behind the hero, serif display headline, framed vault window |
+| Cursor | Serif-led headline and a real product window as the hero visual | Instrument Serif for display type, the window shows live-looking vault activity |
+| Linear | Quiet neutral surfaces, thin borders, one bright action | 1px white-on-dark borders, white pill CTA |
+| supermemory | Monospace labels, code-first developer section | JetBrains Mono eyebrows, MCP config tabs with a copy button |
+| Vercel | Strong contrast and generous spacing | Section padding of 80 to 128px, large type |
+
+## Visual idea
+
+Memory as a constellation. Each stored memory is a glowing amber node. The memory that was forgotten becomes a dashed teal ring with a tombstone hash, so the hero shows the product promise (portable memory plus provable erasure) without a stock illustration.
+
+## Type and colour
+
+- Display: Instrument Serif. Body: Inter. Mono: JetBrains Mono (all via next/font).
+- Background #07090D, surface #0E1218, text #E8EAED, muted #9AA3B2, accent amber #FF9100 / #FFB74D, proof teal #4FD1C5.
+- Light mode: the app dashboard stays light. The marketing page is dark by design.
 
 ## Rules we kept
 
-- Claims match the README. The deletion proof is a SHA-256 attestation plus an on-chain tombstone. It is not a zero-knowledge proof, and the page says so.
-- Example data is labelled as example data.
-- No invented prices. Only the free tier (1,000 memories a month) and the 80/20 market split from the README are stated.
+- Claims match the README: SHA-256 attestation plus on-chain tombstone, explicitly not a zero-knowledge proof; 80/20 market split; 1,000 free memories a month.
+- Example data is labelled as example data. No invented prices.

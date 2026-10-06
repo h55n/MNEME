@@ -27,7 +27,7 @@ export default function HomePage() {
   if (vaultId) return null;
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="min-h-screen bg-[#07090D] text-white font-sans-landing">
       <Nav />
       <main>
         <Hero />

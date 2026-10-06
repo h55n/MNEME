@@ -86,3 +86,11 @@ body {
   font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
   font-size: 13px;
 }
+
+/* Landing page typography */
+.font-display { font-family: var(--font-display), Georgia, 'Times New Roman', serif; font-weight: 400; letter-spacing: -0.01em; }
+.font-sans-landing { font-family: var(--font-sans), system-ui, sans-serif; }
+.mono { font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace; }
+@keyframes drift { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes pulse-ring { 0% { r: 6; opacity: .7; } 100% { r: 22; opacity: 0; } }
+@keyframes fade-out-node { 0%,55% { opacity: 1; } 75%,100% { opacity: .18; } }
