@@ -7,6 +7,8 @@ import { persist } from 'zustand/middleware';
 // prevent XSS attacks from reading it out of localStorage.
 
 interface PersistedAuthState {
+  /** Base URL of the MNEME API this session talks to (used when none is built in). */
+  apiUrl: string | null;
   vaultId: string | null;
   operatorAddress: string | null;
   vaultName: string | null;
@@ -16,25 +18,35 @@ interface PersistedAuthState {
 interface AuthState extends PersistedAuthState {
   // Session-only (not persisted to localStorage)
   apiKey: string | null;
-  setSession: (data: { vaultId: string; apiKey: string; operatorAddress: string; vaultName?: string; plan?: string }) => void;
+  setSession: (data: { vaultId: string; apiKey: string; operatorAddress: string; vaultName?: string; plan?: string; apiUrl?: string | null }) => void;
+  /** Remembers the API URL on its own, so the login form can prefill it after logout. */
+  setApiUrl: (apiUrl: string | null) => void;
   clearSession: () => void;
 }
+
+/** A session is only usable with both halves: the vault and the in-memory key. */
+export const selectIsAuthenticated = (s: Pick<AuthState, 'vaultId' | 'apiKey'>) =>
+  Boolean(s.vaultId && s.apiKey);
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
+      apiUrl: null,
       vaultId: null,
       apiKey: null,          // Not written to localStorage — see partialize below
       operatorAddress: null,
       vaultName: null,
       plan: null,
-      setSession: (data) => set({
+      setApiUrl: (apiUrl) => set({ apiUrl }),
+      setSession: (data) => set((state) => ({
+        apiUrl: data.apiUrl === undefined ? state.apiUrl : data.apiUrl,
         vaultId: data.vaultId,
         apiKey: data.apiKey,
         operatorAddress: data.operatorAddress,
         vaultName: data.vaultName ?? null,
         plan: data.plan ?? 'free',
-      }),
+      })),
+      // The API URL stays after a logout so the next login is one field shorter.
       clearSession: () => set({ vaultId: null, apiKey: null, operatorAddress: null, vaultName: null, plan: null }),
     }),
     {
@@ -42,6 +54,7 @@ export const useAuthStore = create<AuthState>()(
       // Explicitly exclude apiKey from localStorage — it is kept in memory only.
       // On page reload the user must re-authenticate (or use a wallet signature).
       partialize: (state): PersistedAuthState => ({
+        apiUrl: state.apiUrl,
         vaultId: state.vaultId,
         operatorAddress: state.operatorAddress,
         vaultName: state.vaultName,

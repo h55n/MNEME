@@ -2,13 +2,15 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useAuthStore } from '@/store';
+import { useLogout } from '@/lib/auth';
 import { vaultApi } from '@/lib/api';
 import { Card, CardHeader, CardTitle, Button, Badge, Input, MonoHash } from '@/components/ui';
 import { Copy, RotateCw, Eye, EyeOff, Terminal, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function SettingsPage() {
-  const { vaultId, apiKey, operatorAddress, vaultName, plan, setSession, clearSession } = useAuthStore();
+  const { vaultId, apiKey, operatorAddress, vaultName, plan, setSession } = useAuthStore();
+  const logout = useLogout();
   const [showKey, setShowKey] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
 
@@ -155,7 +157,7 @@ export default function SettingsPage() {
             Destroying the vault creates an on-chain tombstone and is irreversible.
             All memories will be permanently deleted.
           </p>
-          <Button variant="destructive" onClick={clearSession}>
+          <Button variant="destructive" onClick={logout}>
             Sign out
           </Button>
         </Card>

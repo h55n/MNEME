@@ -5,24 +5,9 @@ import { memoryApi, complianceApi } from '@/lib/api';
 import { Card, CardHeader, CardTitle, Badge, Spinner, MonoHash } from '@/components/ui';
 import { Database, Brain, Shield, Zap, TrendingUp, Clock } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect } from 'react';
-import { DEMO_MODE } from '@/lib/demo';
 
 export default function DashboardPage() {
-  const { vaultId, vaultName, operatorAddress, plan, setSession } = useAuthStore();
-
-  // In demo mode a visitor lands on a sample vault without a wallet.
-  useEffect(() => {
-    if (DEMO_MODE && !vaultId) {
-      setSession({
-        vaultId: 'vlt_demo_mneme_01',
-        apiKey: 'demo',
-        operatorAddress: '0x742d35Cc6634C0532925a3b8D4C9E3B9a1C2F0d4',
-        vaultName: 'Demo Agent Vault',
-        plan: 'free',
-      });
-    }
-  }, [vaultId, setSession]);
+  const { vaultId, vaultName, operatorAddress, plan } = useAuthStore();
 
   const memoriesQ = useQuery({
     queryKey: ['memories', vaultId],
