@@ -27,6 +27,19 @@ services:
         generateValue: true
       - key: ENCRYPTION_SECRET
         generateValue: true
+  # Remote MCP endpoint: https://<this-service>.onrender.com/mcp
+  # Callers send their own API key (Authorization: Bearer) and vault (X-Mneme-Vault-Id).
+  - type: web
+    name: mneme-mcp
+    runtime: docker
+    plan: free
+    dockerfilePath: ./apps/mcp/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: false
+    envVars:
+      - key: MNEME_API_URL
+        sync: false   # e.g. https://mneme-api.onrender.com/v1
 # Redis and Neo4j are optional: without REDIS_URL / NEO4J_URI the API runs in no-cache mode
 # with graph features off.
 # Free-tier caveats: the service sleeps after about 15 minutes idle (first request is slow),
