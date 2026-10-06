@@ -879,7 +879,7 @@ CREATE TABLE memories (
   type            TEXT NOT NULL CHECK (type IN ('episodic', 'semantic', 'procedural')),
   content         TEXT NOT NULL,                 -- Encrypted AES-256-GCM
   content_iv      BYTEA NOT NULL,                -- Encryption IV
-  embedding       vector(1536),                  -- OpenAI/local embedding
+  embedding       vector(384),                   -- local MiniLM default
   tags            TEXT[] DEFAULT '{}',
   importance      FLOAT DEFAULT 0.5,
   source_model    TEXT,                          -- Which LLM wrote this

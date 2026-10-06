@@ -79,7 +79,8 @@ export const memories = pgTable('memories', {
   content: text('content').notNull(),        // Encrypted AES-256-GCM (hex)
   contentIv: text('content_iv').notNull(),    // Encryption IV (hex)
   contentTag: text('content_tag').notNull(),  // Auth tag (hex)
-  embedding: vector('embedding', { length: 1536 }),  // pgvector 1536-dim
+  embedding: vector('embedding', { length: 384 }),  // pgvector 384-dim (see services/embedding.service.ts)
+  embedderId: text('embedder_id'),                  // which embedder made the vector; null = needs re-embedding
   tags: text('tags').array().notNull().default([]),
   importance: real('importance').notNull().default(0.5),
   sourceModel: text('source_model'),

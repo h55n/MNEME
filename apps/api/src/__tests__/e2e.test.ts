@@ -25,9 +25,10 @@ vi.mock('../blockchain/attestation-batcher.js', () => ({
 
 vi.mock('../services/embedding.service.js', () => ({
   embeddingService: {
+    id: 'mock:384',
     embed: vi.fn().mockResolvedValue(
       // Deterministic non-zero vector (simulates real embedding)
-      Array.from({ length: 1536 }, (_, i) => Math.sin(i * 0.01))
+      Array.from({ length: 384 }, (_, i) => Math.sin(i * 0.01))
     ),
   },
 }));
