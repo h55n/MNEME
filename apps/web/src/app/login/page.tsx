@@ -79,6 +79,18 @@ function LoginForm() {
     if (!invalid) loginMut.mutate();
   }
 
+  function startDemo() {
+    setSession({
+      vaultId: 'vlt_demo_mneme_01',
+      apiKey: 'demo',
+      operatorAddress: '0x742d35Cc6634C0532925a3b8D4C9E3B9a1C2F0d4',
+      vaultName: 'Demo Agent Vault',
+      plan: 'pro',
+      demo: true,
+    });
+    router.replace('/dashboard');
+  }
+
   const fieldError = (field: 'vaultId' | 'apiKey' | 'apiUrl') =>
     (touched && errors[field]) || (serverError?.field === field ? serverError.message : '');
 
@@ -139,6 +151,9 @@ function LoginForm() {
             <Button type="submit" className="w-full" loading={loginMut.isPending} disabled={loginMut.isPending}>
               <LogIn className="w-4 h-4 mr-2" />
               Access Vault
+            </Button>
+            <Button type="button" variant="secondary" className="w-full" onClick={startDemo}>
+              Try demo with sample data
             </Button>
             <Button type="button" variant="secondary" className="w-full" onClick={() => router.push('/')}>
               Back to Home

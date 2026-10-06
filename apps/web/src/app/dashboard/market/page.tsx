@@ -79,7 +79,7 @@ export default function MarketPage() {
 
   return (
     <div className="p-8 max-w-5xl animate-fade-in">
-      <div className="flex justify-between items-start mb-10">
+      <div className="flex flex-wrap justify-between items-start gap-4 mb-10">
         <div>
           <h1 className="text-display mb-2 flex items-center gap-3">
             <div className="p-2 bg-tertiary/10 text-tertiary rounded-xl border border-tertiary/20">
@@ -91,7 +91,7 @@ export default function MarketPage() {
             Acquire specialized domain knowledge and pre-trained behavioral packs for your agent.
           </p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)} disabled={!vaultId}>
+        <Button className="whitespace-nowrap shrink-0" onClick={() => setShowCreateModal(true)} disabled={!vaultId}>
           <PlusCircle className="w-4 h-4 mr-2" />
           List New Pack
         </Button>

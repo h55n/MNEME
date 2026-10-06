@@ -143,12 +143,12 @@ export default function MemoriesPage() {
       </div>
 
       {/* Tab nav */}
-      <div className="flex gap-1 bg-surface/50 backdrop-blur-md border border-border rounded-xl p-1.5 mb-8 w-fit shadow-sm">
+      <div className="flex gap-1 bg-surface/50 backdrop-blur-md border border-border rounded-xl p-1.5 mb-8 w-fit max-w-full overflow-x-auto shadow-sm">
         {TABS.map(t => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`px-4 h-9 text-label-md font-medium rounded-lg transition-all duration-300 ${
+            className={`px-4 h-9 shrink-0 whitespace-nowrap text-label-md font-medium rounded-lg transition-all duration-300 ${
               tab === t.id ? 'bg-primary text-primary-foreground shadow-sm' : 'text-neutral-400 hover:text-on-surface hover:bg-surface-hover'
             }`}
           >
