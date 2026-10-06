@@ -8,7 +8,6 @@ import { vaultApi } from '@/lib/api';
 import { useAuthStore } from '@/store';
 import { Button, Input } from '@/components/ui';
 
-const DEMO_ADDRESS = '0x742d35Cc6634C0532925a3b8D4C9E3B9a1C2F0d4';
 
 export function StartVault() {
   const router = useRouter();
@@ -53,7 +52,7 @@ export function StartVault() {
         >
           <Input
             label="Operator address (wallet or identifier)"
-            placeholder="0x742d35Cc... or you@email.com"
+            placeholder="Wallet address or email"
             value={form.operatorAddress}
             onChange={(e) => setForm((f) => ({ ...f, operatorAddress: e.target.value }))}
           />
@@ -66,20 +65,9 @@ export function StartVault() {
           <Button type="submit" className="w-full" loading={createMut.isPending} disabled={!form.operatorAddress.trim()}>
             Create vault <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="secondary"
-              className="w-1/2"
-              disabled={createMut.isPending}
-              onClick={() => createMut.mutate({ operatorAddress: DEMO_ADDRESS, name: 'Demo Agent Vault' })}
-            >
-              Try the demo
-            </Button>
-            <Button type="button" variant="secondary" className="w-1/2" onClick={() => router.push('/login')}>
-              Log in
-            </Button>
-          </div>
+          <Button type="button" variant="secondary" className="w-full" onClick={() => router.push('/login')}>
+            Log in
+          </Button>
         </form>
       </div>
     </section>

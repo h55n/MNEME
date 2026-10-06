@@ -34,19 +34,23 @@ export default function MarketPage() {
   const packs = Array.isArray(packData) ? packData : (packData?.items || []);
   const myPurchasedPacks = Array.isArray(myPurchasedData) ? myPurchasedData : (myPurchasedData?.items || []);
 
+  // A purchase is paid on-chain from the buyer's wallet. The buyer pastes the
+  // transaction hash of that payment; nothing is made up on their behalf.
+  const [buying, setBuying] = useState<{ id: string; title: string } | null>(null);
+  const [txHash, setTxHash] = useState('');
+  const txHashValid = /^0x[0-9a-fA-F]{64}$/.test(txHash.trim());
+  const buyerAddress = /^0x[0-9a-fA-F]{40}$/.test(operatorAddress ?? '') ? operatorAddress! : null;
+
   const purchaseMut = useMutation({
-    mutationFn: (packId: string) => {
-      const mockTxHash = '0x' + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
-      return marketApi.purchasePack(packId, {
-        monadTxHash: mockTxHash,
-        buyerAddress: operatorAddress || '0x742d35Cc6634C0532925a3b8D4C9E3B9a1C2F0d4',
-      });
-    },
+    mutationFn: (packId: string) =>
+      marketApi.purchasePack(packId, { monadTxHash: txHash.trim(), buyerAddress: buyerAddress! }),
     onSuccess: () => {
-      toast.success('Pack purchased successfully!');
+      toast.success('Pack purchased');
+      setBuying(null);
+      setTxHash('');
       queryClient.invalidateQueries({ queryKey: ['market', 'myPacks'] });
     },
-    onError: (err: any) => toast.error(err.message || 'Failed to purchase pack'),
+    onError: (err: any) => toast.error(err.message || 'Purchase failed'),
   });
 
   const createPackMut = useMutation({
@@ -147,8 +151,7 @@ export default function MarketPage() {
                   <Button
                     variant="outline"
                     className="w-full group-hover:bg-tertiary group-hover:text-tertiary-foreground group-hover:border-tertiary transition-colors"
-                    onClick={() => purchaseMut.mutate(pack.id)}
-                    loading={purchaseMut.isPending}
+                    onClick={() => setBuying({ id: pack.id, title })}
                   >
                     <ShoppingCart className="w-4 h-4 mr-2" />
                     Purchase Pack
@@ -168,6 +171,41 @@ export default function MarketPage() {
           </div>
         )}
       </div>
+
+      {/* Purchase Modal */}
+      {buying && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-fade-in flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={`Purchase ${buying.title}`}>
+          <div className="bg-surface border border-border rounded-xl p-6 w-full max-w-md shadow-2xl relative">
+            <button onClick={() => { setBuying(null); setTxHash(''); }} className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-200" aria-label="Close">
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-xl font-bold mb-2">Purchase {buying.title}</h2>
+            <p className="text-body-sm text-neutral-400 mb-4">
+              Pay for the pack from your wallet on Monad, then paste the transaction hash here. The server checks the payment on-chain before it unlocks the pack.
+            </p>
+            {!buyerAddress && (
+              <p role="alert" className="text-body-sm text-error mb-4">
+                This vault is not tied to a wallet address, so it can't buy packs. Sign in with a vault whose operator is a 0x wallet address.
+              </p>
+            )}
+            <Input
+              label="Payment transaction hash"
+              placeholder="0x..."
+              value={txHash}
+              error={txHash && !txHashValid ? 'A transaction hash is 0x followed by 64 hex characters.' : undefined}
+              onChange={(e) => setTxHash(e.target.value)}
+            />
+            <Button
+              className="w-full mt-4"
+              disabled={!txHashValid || !buyerAddress}
+              loading={purchaseMut.isPending}
+              onClick={() => purchaseMut.mutate(buying.id)}
+            >
+              Confirm purchase
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Create Pack Modal */}
       {showCreateModal && (

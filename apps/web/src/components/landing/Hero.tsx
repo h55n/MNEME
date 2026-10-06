@@ -29,7 +29,6 @@ export function Hero() {
               </li>
             ))}
           </ul>
-          <span className="hidden sm:inline">Example vault</span>
         </div>
       </div>
       <div className="order-1 lg:order-2 lg:col-span-5 flex flex-col justify-center px-5 sm:px-8 lg:pl-14 lg:pr-16 pt-32 pb-14 lg:py-16">
