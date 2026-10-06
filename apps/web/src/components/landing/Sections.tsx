@@ -1,75 +1,115 @@
 'use client';
 import { useState } from 'react';
-import { Brain, Check, Copy, FileJson, Shield, Store, Terminal } from 'lucide-react';
+import { Check, Copy } from 'lucide-react';
 import { Reveal } from './Reveal';
 
-function SectionHead({ eyebrow, title, body }: { eyebrow: string; title: string; body?: string }) {
-  return (
-    <div className="max-w-2xl">
-      <p className="mono text-xs uppercase tracking-[0.12em] text-tertiary">{eyebrow}</p>
-      <h2 className="mt-3 font-display text-[40px] leading-[1.02] sm:text-[60px]">{title}</h2>
-      {body && <p className="mt-4 text-[17px] leading-7 text-[#9AA3B2]">{body}</p>}
-    </div>
-  );
+const WRAP = 'max-w-[1400px] mx-auto px-5 sm:px-8 lg:px-20';
+
+function Eyebrow({ children, dark }: { children: React.ReactNode; dark?: boolean }) {
+  return <p className={'eyebrow mb-5 ' + (dark ? 'text-[#F1EEE7]/70' : 'text-[#232323]')}>{children}</p>;
+}
+function H2({ children, dark }: { children: React.ReactNode; dark?: boolean }) {
+  return <h2 className={'font-medium text-balance text-[clamp(32px,4vw,48px)] leading-[1.1] ' + (dark ? 'text-[#F1EEE7]' : 'text-[#232323]')}>{children}</h2>;
 }
 
 const PILLARS = [
-  {
-    icon: Brain,
-    title: 'Portable memory',
-    body: 'Memory lives in a vault tied to your keys, not to a model vendor. Export it as JSON and import it anywhere.',
-  },
-  {
-    icon: Shield,
-    title: 'Provable erasure',
-    body: 'Forgetting a memory records a SHA-256 deletion attestation and a tombstone on Monad. Raw content never goes on-chain.',
-  },
-  {
-    icon: Store,
-    title: 'Sell what it knows',
-    body: 'List curated knowledge packs on the Memory Market. Sellers keep 80% of every sale, settled in USDC.',
-  },
+  ['01', 'Portable memory', 'Memory lives in a vault tied to your keys, not to a model vendor. Export it as JSON and import it anywhere.'],
+  ['02', 'Provable erasure', 'Forgetting records a SHA-256 deletion attestation and a tombstone on Monad. Raw content never goes on-chain.'],
+  ['03', 'Sell what it knows', 'List curated knowledge packs on the Memory Market. Sellers keep 80% of every sale, settled in USDC.'],
 ];
 
 export function Pillars() {
   return (
-    <section className="max-w-6xl mx-auto px-5 sm:px-8 py-20 sm:py-32">
-      <div className="grid md:grid-cols-3 gap-5">
-        {PILLARS.map(({ icon: Icon, title, body }, i) => (
-          <Reveal key={title} delay={i * 0.08}>
-            <div className="h-full rounded-2xl border border-white/10 p-6 hover:border-white/25 transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-[#0E1218]/10 flex items-center justify-center">
-                <Icon className="w-5 h-5" />
+    <section className="bg-[#F1EEE7] text-[#232323]">
+      <div className={WRAP + ' py-20 sm:py-28'}>
+        <div className="grid md:grid-cols-3 border-t border-[#232323]/20">
+          {PILLARS.map(([n, t, b], i) => (
+            <Reveal key={n} delay={i * 0.06}>
+              <div className={'h-full pt-6 pb-10 md:pr-10 ' + (i > 0 ? 'md:border-l md:border-[#232323]/20 md:pl-10' : '')}>
+                <p className="eyebrow text-[#5B5A56]">{n}</p>
+                <h3 className="mt-10 mb-3 font-medium text-[clamp(24px,2.4vw,30px)] leading-[1.15]">{t}</h3>
+                <p className="text-[16px] leading-[1.35] text-[#5B5A56] max-w-sm">{b}</p>
               </div>
-              <h3 className="mt-5 text-[20px] font-medium">{title}</h3>
-              <p className="mt-2 text-[15px] leading-6 text-[#9AA3B2]">{body}</p>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function DeletionProof() {
+  const rows = [
+    ['Request', 'GDPR Art. 17 erasure'],
+    ['Memory', 'mem_7f2a… (content removed)'],
+    ['Tombstone', '0xf1a4c9…e8d6'],
+    ['Contract', 'DeletionProver.sol'],
+    ['Network', 'Monad Testnet'],
+  ];
+  return (
+    <section id="proof" className="bg-[#232323] text-[#F1EEE7] scroll-mt-4 overflow-hidden">
+      <div className={WRAP + ' pt-20 sm:pt-28'}>
+        <p className="font-medium select-none text-[clamp(88px,19vw,280px)] leading-[0.82] tracking-[-0.045em] text-[#F1EEE7]" aria-hidden="true">FORGET.</p>
+      </div>
+      <div className={WRAP + ' py-16 sm:py-24 grid lg:grid-cols-12 gap-12'}>
+        <div className="lg:col-span-5">
+          <Eyebrow dark>Deletion proof</Eyebrow>
+          <H2 dark>Erasure you can show to an auditor.</H2>
+          <p className="mt-6 text-[17px] leading-[1.35] text-[#F1EEE7]/70">
+            When a user invokes GDPR Article 17, MNEME removes the memory from your vault, then records a hash of the deletion and a tombstone on Monad. The chain holds no personal data.
+          </p>
+          <ul className="mt-8 space-y-3 text-[15px] leading-6 text-[#F1EEE7]/80">
+            {[
+              'SHA-256 deletion attestation, written by DeletionProver.sol',
+              'Immutable tombstone, so the erasure cannot be quietly undone',
+              'Not a zero-knowledge proof. It proves a deletion was recorded, not that no copy exists elsewhere.',
+            ].map((t) => (
+              <li key={t} className="flex gap-3"><Check className="w-4 h-4 mt-1 shrink-0 text-[#FF9100]" /><span>{t}</span></li>
+            ))}
+          </ul>
+        </div>
+        <Reveal className="lg:col-span-6 lg:col-start-7">
+          <div className="rounded-xl border border-white/15 overflow-hidden">
+            <div className="flex items-center justify-between px-5 h-12 border-b border-white/15">
+              <span className="eyebrow !text-[12px]">Deletion receipt</span>
+              <span className="eyebrow !text-[12px] text-[#FF9100] inline-flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#FF9100]" />Tombstoned</span>
             </div>
-          </Reveal>
-        ))}
+            <dl className="px-5 py-5 grid grid-cols-[110px_1fr] gap-y-3.5 text-[14px]">
+              {rows.map(([k, v]) => (
+                <div key={k} className="contents">
+                  <dt className="eyebrow !text-[12px] text-[#F1EEE7]/55 pt-0.5">{k}</dt>
+                  <dd className="mono !text-[13px] break-all">{v}</dd>
+                </div>
+              ))}
+            </dl>
+            <p className="px-5 pb-4 eyebrow !text-[11px] text-[#F1EEE7]/45">Example receipt · values are illustrative</p>
+          </div>
+        </Reveal>
       </div>
     </section>
   );
 }
 
 const STEPS = [
-  { n: '01', title: 'Create a vault', body: 'One vault per agent, owned by your wallet or identifier. You get an API key.' },
-  { n: '02', title: 'Connect your agent', body: 'Add the MCP server to Claude Desktop, Cursor or Windsurf, or call the REST API.' },
-  { n: '03', title: 'Write and recall', body: 'The agent stores memories and recalls them by meaning, using vector search.' },
-  { n: '04', title: 'Attest and forget', body: 'Writes are hashed on-chain. Deletions leave a tombstone you can show an auditor.' },
+  ['01', 'Create a vault', 'One vault per agent, owned by your wallet or identifier. You get an API key.'],
+  ['02', 'Connect your agent', 'Add the MCP server to Claude Desktop, Cursor or Windsurf, or call the REST API.'],
+  ['03', 'Write and recall', 'The agent stores memories and recalls them by meaning, using vector search.'],
+  ['04', 'Attest and forget', 'Writes are hashed on-chain. Deletions leave a tombstone you can show an auditor.'],
 ];
 
 export function HowItWorks() {
   return (
-    <section id="how" className="bg-[#0B0F15] border-y border-white/10 scroll-mt-16">
-      <div className="max-w-6xl mx-auto px-5 sm:px-8 py-20 sm:py-32">
-        <SectionHead eyebrow="How it works" title="From first write to a deletion receipt in four steps." />
-        <ol className="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {STEPS.map((s, i) => (
-            <Reveal key={s.n} delay={i * 0.07}>
-              <li className="h-full list-none rounded-2xl bg-[#0E1218] border border-white/10 p-6">
-                <span className="mono text-xs text-[#6B7485]">{s.n}</span>
-                <h3 className="mt-3 text-[17px] font-medium">{s.title}</h3>
-                <p className="mt-2 text-[15px] leading-6 text-[#9AA3B2]">{s.body}</p>
+    <section id="how" className="bg-[#F1EEE7] text-[#232323] scroll-mt-4">
+      <div className={WRAP + ' py-20 sm:py-28'}>
+        <Eyebrow>How it works</Eyebrow>
+        <H2>From first write to a deletion receipt in four steps.</H2>
+        <ol className="mt-14 grid sm:grid-cols-2 lg:grid-cols-4 border-t border-[#232323]/20">
+          {STEPS.map(([n, t, b], i) => (
+            <Reveal key={n} delay={i * 0.05}>
+              <li className={'list-none h-full pt-6 pb-10 lg:pr-8 ' + (i > 0 ? 'lg:border-l lg:border-[#232323]/20 lg:pl-8' : '')}>
+                <p className="eyebrow text-[#5B5A56]">{n}</p>
+                <h3 className="mt-8 mb-2 font-medium text-[20px] leading-[1.2]">{t}</h3>
+                <p className="text-[15px] leading-[1.4] text-[#5B5A56]">{b}</p>
               </li>
             </Reveal>
           ))}
@@ -79,64 +119,10 @@ export function HowItWorks() {
   );
 }
 
-export function DeletionProof() {
-  return (
-    <section id="proof" className="max-w-6xl mx-auto px-5 sm:px-8 py-20 sm:py-32 scroll-mt-16">
-      <div className="grid lg:grid-cols-2 gap-12 items-center">
-        <div>
-          <SectionHead
-            eyebrow="Deletion proof"
-            title="Erasure you can show to an auditor."
-            body="When a user invokes GDPR Article 17, MNEME removes the memory from your vault, then records a hash of the deletion and a tombstone on Monad. The chain holds no personal data."
-          />
-          <ul className="mt-6 space-y-3 text-[15px] leading-6 text-[#C3C9D4]">
-            {[
-              'SHA-256 deletion attestation, written by DeletionProver.sol',
-              'Immutable tombstone, so the erasure cannot be quietly undone',
-              'Not a zero-knowledge proof. It proves a deletion was recorded, not that no copy exists elsewhere.',
-            ].map((t) => (
-              <li key={t} className="flex gap-3">
-                <Check className="w-4 h-4 mt-1 shrink-0 text-[#4FD1C5]" />
-                <span>{t}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <Reveal>
-          <div className="rounded-2xl border border-white/10 shadow-[0_30px_80px_-30px_rgba(255,145,0,0.25)] bg-[#0E1218] overflow-hidden">
-            <div className="px-5 h-12 flex items-center justify-between border-b border-white/10 bg-[#0B0F15]">
-              <span className="text-[14px] font-medium">Deletion receipt</span>
-              <span className="text-[12px] text-[#4FD1C5] inline-flex items-center gap-1">
-                <Shield className="w-3.5 h-3.5" /> Tombstoned
-              </span>
-            </div>
-            <dl className="px-5 py-5 grid grid-cols-[110px_1fr] gap-y-3 text-[13px]">
-              {[
-                ['Request', 'GDPR Art. 17 erasure'],
-                ['Memory', 'mem_7f2a… (content removed)'],
-                ['Tombstone', '0xf1a4c9…e8d6'],
-                ['Contract', 'DeletionProver.sol'],
-                ['Network', 'Monad Testnet'],
-              ].map(([k, v]) => (
-                <div key={k} className="contents">
-                  <dt className="text-[#6B7485]">{k}</dt>
-                  <dd className="mono text-xs sm:text-[13px] text-white break-all">{v}</dd>
-                </div>
-              ))}
-            </dl>
-            <p className="px-5 pb-4 text-[12px] text-[#6B7485]">Example receipt. Values are illustrative.</p>
-          </div>
-        </Reveal>
-      </div>
-    </section>
-  );
-}
-
 const SNIPPETS = {
   mcp: {
     label: 'MCP server',
-    icon: Terminal,
-    lang: 'claude_desktop_config.json',
+    file: 'claude_desktop_config.json',
     code: `{
   "mcpServers": {
     "mneme-memory": {
@@ -152,8 +138,7 @@ const SNIPPETS = {
   },
   tools: {
     label: 'Tools',
-    icon: FileJson,
-    lang: 'what your agent can call',
+    file: 'what your agent can call',
     code: `memory_write    store a memory with type, tags, importance
 memory_recall   semantic search across stored memories
 memory_inspect  what did the agent know at time T?
@@ -168,7 +153,6 @@ export function Developers() {
   const [tab, setTab] = useState<keyof typeof SNIPPETS>('mcp');
   const [copied, setCopied] = useState(false);
   const snippet = SNIPPETS[tab];
-
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(snippet.code);
@@ -178,50 +162,38 @@ export function Developers() {
       /* clipboard can be blocked; the code stays selectable */
     }
   };
-
   return (
-    <section id="developers" className="bg-[#0B0F15] border-y border-white/10 scroll-mt-16">
-      <div className="max-w-6xl mx-auto px-5 sm:px-8 py-20 sm:py-32 grid lg:grid-cols-5 gap-12 items-start">
-        <div className="lg:col-span-2">
-          <SectionHead
-            eyebrow="For developers"
-            title="One config block and your agent has memory."
-            body="MNEME ships a Model Context Protocol server. It works with Claude Desktop, Cursor, Windsurf and any MCP client."
-          />
+    <section id="developers" className="bg-[#232323] text-[#F1EEE7] scroll-mt-4">
+      <div className={WRAP + ' py-20 sm:py-28 grid lg:grid-cols-12 gap-12 items-start'}>
+        <div className="lg:col-span-4">
+          <Eyebrow dark>For developers</Eyebrow>
+          <H2 dark>One config block and your agent has memory.</H2>
+          <p className="mt-6 text-[17px] leading-[1.35] text-[#F1EEE7]/70">
+            MNEME ships a Model Context Protocol server. It works with Claude Desktop, Cursor, Windsurf and any MCP client.
+          </p>
         </div>
-        <div className="lg:col-span-3 rounded-2xl border border-white/10 bg-[#0E1218] shadow-none overflow-hidden min-w-0">
-          <div className="flex items-center justify-between border-b border-white/10 px-2">
+        <div className="lg:col-span-7 lg:col-start-6 rounded-xl border border-white/15 min-w-0 overflow-hidden">
+          <div className="flex items-center justify-between border-b border-white/15 pl-1 pr-2">
             <div role="tablist" aria-label="Integration examples" className="flex">
-              {(Object.keys(SNIPPETS) as (keyof typeof SNIPPETS)[]).map((k) => {
-                const Icon = SNIPPETS[k].icon;
-                return (
-                  <button
-                    key={k}
-                    role="tab"
-                    aria-selected={tab === k}
-                    onClick={() => setTab(k)}
-                    className={
-                      'flex items-center gap-2 h-12 px-4 text-[14px] font-medium border-b-2 -mb-px transition-colors ' +
-                      (tab === k ? 'border-[#FF9100] text-white' : 'border-transparent text-[#6B7485] hover:text-white')
-                    }
-                  >
-                    <Icon className="w-4 h-4" />
-                    {SNIPPETS[k].label}
-                  </button>
-                );
-              })}
+              {(Object.keys(SNIPPETS) as (keyof typeof SNIPPETS)[]).map((k) => (
+                <button
+                  key={k}
+                  role="tab"
+                  aria-selected={tab === k}
+                  onClick={() => setTab(k)}
+                  className={'eyebrow !text-[12px] h-12 px-4 border-b-2 -mb-px transition-colors ' + (tab === k ? 'border-[#FF9100] text-[#F1EEE7]' : 'border-transparent text-[#F1EEE7]/50 hover:text-[#F1EEE7]')}
+                >
+                  {SNIPPETS[k].label}
+                </button>
+              ))}
             </div>
-            <button
-              onClick={copy}
-              className="mr-2 inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-[12px] text-[#9AA3B2] hover:bg-[#0E1218]/10 transition-colors"
-              aria-label="Copy code"
-            >
-              {copied ? <Check className="w-3.5 h-3.5 text-[#4FD1C5]" /> : <Copy className="w-3.5 h-3.5" />}
+            <button onClick={copy} aria-label="Copy code" className="eyebrow !text-[12px] inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-[#F1EEE7]/70 hover:bg-white/10 transition-colors">
+              {copied ? <Check className="w-3.5 h-3.5 text-[#FF9100]" /> : <Copy className="w-3.5 h-3.5" />}
               {copied ? 'Copied' : 'Copy'}
             </button>
           </div>
-          <p className="px-5 pt-4 mono text-xs text-[#6B7485]">{snippet.lang}</p>
-          <pre className="px-5 pb-5 pt-2 overflow-x-auto text-[13px] leading-6 mono text-[#E8EAED]" tabIndex={0}>
+          <p className="px-5 pt-4 mono !text-[12px] text-[#F1EEE7]/45">{snippet.file}</p>
+          <pre className="px-5 pb-5 pt-2 overflow-x-auto text-[13px] leading-6 mono text-[#F1EEE7]" tabIndex={0}>
             <code>{snippet.code}</code>
           </pre>
         </div>
@@ -232,32 +204,29 @@ export function Developers() {
 
 export function MarketSection() {
   return (
-    <section id="market" className="max-w-6xl mx-auto px-5 sm:px-8 py-20 sm:py-32 scroll-mt-16">
-      <div className="grid lg:grid-cols-2 gap-12 items-center">
-        <Reveal className="order-2 lg:order-1">
-          <div className="rounded-2xl border border-white/10 bg-[#0E1218] shadow-[0_30px_80px_-30px_rgba(255,145,0,0.25)] p-6">
-            <p className="text-[12px] text-[#6B7485]">Knowledge pack</p>
-            <h3 className="mt-1 text-[20px] font-medium">Contract review playbook</h3>
-            <p className="mt-2 text-[15px] leading-6 text-[#9AA3B2]">
-              Clauses, fallbacks and negotiation notes from 400 reviewed agreements.
-            </p>
-            <div className="mt-5 flex items-center justify-between">
-              <span className="mono text-xs text-[#6B7485]">PII scan: passed</span>
-              <span className="text-[14px] font-medium">Example listing</span>
+    <section id="market" className="bg-[#F1EEE7] text-[#232323] scroll-mt-4">
+      <div className={WRAP + ' py-20 sm:py-28 grid lg:grid-cols-12 gap-12 items-center'}>
+        <div className="lg:col-span-5">
+          <Eyebrow>Memory Market</Eyebrow>
+          <H2>Turn what your agent learned into a product.</H2>
+          <p className="mt-6 text-[17px] leading-[1.35] text-[#5B5A56]">
+            List a curated pack of domain knowledge. Every submission is scanned for personal data before it goes live, and sellers keep 80% of each sale in USDC.
+          </p>
+        </div>
+        <Reveal className="lg:col-span-6 lg:col-start-7">
+          <div className="rounded-xl border border-[#232323]/20 bg-[#F8F6F1] p-6 sm:p-8">
+            <p className="eyebrow !text-[12px] text-[#5B5A56]">Knowledge pack · example listing</p>
+            <h3 className="mt-3 font-medium text-[28px] leading-[1.1]">Contract review playbook</h3>
+            <p className="mt-3 text-[15px] leading-[1.4] text-[#5B5A56]">Clauses, fallbacks and negotiation notes from 400 reviewed agreements.</p>
+            <div className="mt-8 h-2 rounded-sm bg-[#DEDEDE] overflow-hidden" role="img" aria-label="Revenue split: 80 percent to the seller">
+              <div className="h-full w-[80%] bg-[#232323]" />
             </div>
-            <div className="mt-5 h-2 rounded-full bg-[#0E1218]/10 overflow-hidden" aria-label="Revenue split 80 percent to seller">
-              <div className="h-full w-[80%] bg-[#FF9100]" />
+            <div className="mt-3 flex justify-between eyebrow !text-[12px]">
+              <span>80% seller</span><span className="text-[#5B5A56]">20% protocol</span>
             </div>
-            <p className="mt-2 text-[12px] text-[#6B7485]">80% to the seller, 20% to the protocol</p>
+            <p className="mt-6 eyebrow !text-[12px] text-[#FF9100]">PII scan: passed</p>
           </div>
         </Reveal>
-        <div className="order-1 lg:order-2">
-          <SectionHead
-            eyebrow="Memory Market"
-            title="Turn what your agent learned into a product."
-            body="List a curated pack of domain knowledge. Every submission is scanned for personal data before it goes live, and sellers keep 80% of each sale in USDC."
-          />
-        </div>
       </div>
     </section>
   );
@@ -273,17 +242,17 @@ const FAQ = [
 
 export function Faq() {
   return (
-    <section id="faq" className="bg-[#0B0F15] border-y border-white/10 scroll-mt-16">
-      <div className="max-w-3xl mx-auto px-5 sm:px-8 py-20 sm:py-32">
-        <SectionHead eyebrow="FAQ" title="Straight answers." />
-        <div className="mt-10 divide-y divide-white/10 border-y border-white/10">
+    <section id="faq" className="bg-[#F1EEE7] text-[#232323] scroll-mt-4 border-t border-[#232323]/20">
+      <div className={WRAP + ' py-20 sm:py-28 grid lg:grid-cols-12 gap-10'}>
+        <div className="lg:col-span-4"><Eyebrow>FAQ</Eyebrow><H2>Straight answers.</H2></div>
+        <div className="lg:col-span-7 lg:col-start-6 divide-y divide-[#232323]/20 border-y border-[#232323]/20">
           {FAQ.map(([q, a]) => (
             <details key={q} className="group py-5">
-              <summary className="flex cursor-pointer list-none items-center justify-between text-[17px] font-medium [&::-webkit-details-marker]:hidden">
+              <summary className="flex cursor-pointer list-none items-center justify-between text-[18px] font-medium [&::-webkit-details-marker]:hidden">
                 {q}
-                <span className="ml-4 text-[#6B7485] transition-transform group-open:rotate-45 text-xl leading-none" aria-hidden="true">+</span>
+                <span className="ml-4 text-[#5B5A56] transition-transform group-open:rotate-45 text-2xl leading-none" aria-hidden="true">+</span>
               </summary>
-              <p className="mt-3 text-[15px] leading-6 text-[#9AA3B2]">{a}</p>
+              <p className="mt-3 text-[15px] leading-[1.45] text-[#5B5A56] max-w-xl">{a}</p>
             </details>
           ))}
         </div>

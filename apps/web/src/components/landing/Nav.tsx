@@ -1,46 +1,32 @@
 'use client';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 
-const LINKS = [
+const LINKS: [string, string][] = [
   ['How it works', '#how'],
-  ['Deletion proof', '#proof'],
+  ['Proof', '#proof'],
   ['Developers', '#developers'],
   ['Market', '#market'],
   ['FAQ', '#faq'],
 ];
 
+// Floating dark bar, mono uppercase labels, one accent dot.
 export function Nav() {
-  const [solid, setSolid] = useState(false);
-  useEffect(() => {
-    const on = () => setSolid(window.scrollY > 12);
-    on();
-    window.addEventListener('scroll', on, { passive: true });
-    return () => window.removeEventListener('scroll', on);
-  }, []);
-
   return (
-    <header
-      className={
-        'sticky top-0 z-40 transition-colors ' +
-        (solid ? 'bg-[#07090D]/85 backdrop-blur border-b border-white/10' : 'bg-transparent border-b border-transparent')
-      }
-    >
-      <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
-        <Link href="/" className="font-display text-[26px] text-white leading-none" aria-label="mneme home">
-          mneme<span className="text-[#FF9100]">.</span>
+    <header className="fixed top-3 sm:top-4 left-0 right-0 z-40 flex justify-center px-3 pointer-events-none">
+      <div className="pointer-events-auto flex items-center gap-1 sm:gap-2 rounded-lg bg-[#232323] text-[#F1EEE7] pl-3 pr-1.5 h-12 ring-1 ring-white/10">
+        <Link href="/" className="flex items-center gap-2 pr-2 sm:pr-4" aria-label="mneme home">
+          <span className="w-2 h-2 rounded-full bg-[#FF9100]" />
+          <span className="font-mono uppercase text-[13px] tracking-[0.02em] font-medium">mneme</span>
         </Link>
-        <nav className="hidden md:flex items-center gap-7 text-[14px] text-[#9AA3B2]" aria-label="Primary">
+        <nav className="hidden md:flex items-center" aria-label="Primary">
           {LINKS.map(([l, h]) => (
-            <a key={h} href={h} className="hover:text-white transition-colors">{l}</a>
+            <a key={h} href={h} className="font-mono uppercase text-[12px] px-3 h-9 inline-flex items-center text-[#F1EEE7]/65 hover:text-[#F1EEE7] transition-colors">{l}</a>
           ))}
         </nav>
-        <div className="flex items-center gap-2">
-          <Link href="/login" className="hidden sm:inline-flex h-9 items-center px-3 text-[14px] text-[#9AA3B2] hover:text-white transition-colors">Log in</Link>
-          <a href="#start" className="inline-flex h-9 items-center px-4 rounded-full bg-white text-[#07090D] text-[14px] font-medium hover:bg-[#FFB74D] transition-colors">
-            Create a vault
-          </a>
-        </div>
+        <Link href="/login" className="font-mono uppercase text-[12px] px-3 h-9 inline-flex items-center text-[#F1EEE7]/65 hover:text-[#F1EEE7] transition-colors">Log in</Link>
+        <a href="#start" className="font-mono uppercase text-[12px] px-3.5 h-9 inline-flex items-center rounded-md bg-[#F1EEE7] text-[#232323] hover:bg-[#FF9100] transition-colors">
+          Create vault
+        </a>
       </div>
     </header>
   );

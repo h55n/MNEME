@@ -33,18 +33,19 @@ export function StartVault() {
   });
 
   return (
-    <section id="start" className="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-24 scroll-mt-16">
-      <div className="rounded-3xl border border-white/10 bg-[radial-gradient(70%_120%_at_20%_0%,rgba(255,145,0,0.22),transparent_60%),#0E1218] text-white px-6 sm:px-12 py-12 sm:py-16 grid lg:grid-cols-2 gap-10 items-center">
-        <div>
-          <h2 className="font-display text-[40px] leading-[1.02] sm:text-[60px]">
+    <section id="start" className="bg-[#232323] text-[#F1EEE7] scroll-mt-4">
+      <div className="max-w-[1400px] mx-auto px-5 sm:px-8 lg:px-20 py-20 sm:py-28 grid lg:grid-cols-12 gap-12 items-center">
+        <div className="lg:col-span-6">
+          <p className="eyebrow mb-5 text-[#F1EEE7]/70">Start</p>
+          <h2 className="font-medium text-balance text-[clamp(40px,5.2vw,80px)] leading-none">
             Give your agent a memory it keeps.
           </h2>
-          <p className="mt-4 text-[17px] leading-7 text-[#9AA3B2] max-w-md">
+          <p className="mt-4 text-[17px] leading-[1.35] text-[#F1EEE7]/70 max-w-md">
             Create a vault in under a minute. Free tier, 1,000 memories a month, no credit card.
           </p>
         </div>
         <form
-          className="rounded-2xl bg-white text-on-surface p-5 sm:p-6 space-y-3"
+          className="lg:col-span-5 lg:col-start-8 rounded-xl bg-[#F1EEE7] text-[#232323] p-5 sm:p-6 space-y-3"
           onSubmit={(e) => {
             e.preventDefault();
             if (form.operatorAddress.trim()) createMut.mutate(form);
