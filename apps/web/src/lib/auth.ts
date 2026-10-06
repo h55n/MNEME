@@ -34,8 +34,9 @@ export function normalizeApiUrl(input: string): string | null {
 
 /** True once the saved session has been read from localStorage (false during the first render). */
 export function useAuthHydrated(): boolean {
-  // `persist` does not exist while rendering on the server (no localStorage there).
-  const [hydrated, setHydrated] = useState(() => useAuthStore.persist?.hasHydrated() ?? false);
+  // Always false on the first render, on the server and the client alike, so the two
+  // match. `persist` does not exist on the server (no localStorage there).
+  const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
     const persist = useAuthStore.persist;
     if (!persist) return;

@@ -103,7 +103,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       <input
         ref={ref}
         className={clsx(
-          'h-10 px-3 bg-white border border-border rounded-lg text-body-md text-on-surface',
+          'h-10 px-3 bg-surface-card border border-border rounded-lg text-body-md text-on-surface',
           'placeholder:text-neutral-500 focus:outline-none focus:border-ring focus:ring-1 focus:ring-ring transition-all duration-200 shadow-sm',
           error && 'border-error focus:border-error focus:ring-error',
           className
@@ -130,7 +130,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       <textarea
         ref={ref}
         className={clsx(
-          'px-3 py-2 bg-white border border-border rounded-lg text-body-md text-on-surface',
+          'px-3 py-2 bg-surface-card border border-border rounded-lg text-body-md text-on-surface',
           'placeholder:text-neutral-500 focus:outline-none focus:border-ring focus:ring-1 focus:ring-ring transition-all duration-200 resize-none shadow-sm',
           error && 'border-error focus:border-error focus:ring-error',
           className
@@ -182,7 +182,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       <select
         ref={ref}
         className={clsx(
-          'h-10 px-3 bg-white border border-border rounded-lg text-body-md text-on-surface',
+          'h-10 px-3 bg-surface-card border border-border rounded-lg text-body-md text-on-surface',
           'focus:outline-none focus:border-ring focus:ring-1 focus:ring-ring transition-all duration-200 shadow-sm appearance-none',
           error && 'border-error focus:border-error focus:ring-error',
           className
@@ -234,8 +234,8 @@ export function EmptyState({ icon, title, description, action }: {
 export function Spinner({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
   const sizes = { sm: 'h-4 w-4 border-2', md: 'h-6 w-6 border-2', lg: 'h-8 w-8 border-3' };
   return (
-    <div className={clsx(
-      'animate-spin rounded-full border-t-primary border-r-primary border-b-secondary border-l-secondary',
+    <span role="status" aria-label="Loading" className={clsx(
+      'inline-block animate-spin rounded-full border-t-primary border-r-primary border-b-secondary border-l-secondary',
       sizes[size]
     )} />
   );

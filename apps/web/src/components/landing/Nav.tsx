@@ -21,7 +21,7 @@ export function Nav() {
     <header
       className="fixed left-0 right-0 z-40 flex justify-center px-3 pointer-events-none top-3 sm:top-4"
     >
-      <div className="pointer-events-auto w-full max-w-fit rounded-lg bg-black/90 backdrop-blur-md text-[#F1EEE7] ring-1 ring-white/30 shadow-[0_10px_32px_rgba(0,0,0,0.5)]">
+      <div className="pointer-events-auto w-full max-w-fit rounded-lg bg-black backdrop-blur-md text-[#F1EEE7] ring-1 ring-white/30 shadow-[0_10px_32px_rgba(0,0,0,0.5)]">
         <div className="flex items-center gap-1 sm:gap-2 pl-3 pr-1.5 h-12">
           <Link href="/" className="flex items-center gap-2 pr-2 sm:pr-4" aria-label="mneme home">
             <span className="w-2 h-2 rounded-full bg-[#FF9100]" />
@@ -33,7 +33,7 @@ export function Nav() {
             ))}
           </nav>
           <Link href="/login" className={LINK}>Log in</Link>
-          <a href="#start" className="font-mono uppercase text-[12px] px-3.5 h-9 inline-flex items-center rounded-md bg-[#F1EEE7] text-[#232323] hover:bg-[#FF9100] transition-colors">
+          <a href="#start" className="font-mono uppercase text-[12px] px-3.5 h-9 inline-flex items-center rounded-md bg-[#F1EEE7] text-[#0A0A0A] hover:bg-[#FF9100] transition-colors">
             Create vault
           </a>
           <button

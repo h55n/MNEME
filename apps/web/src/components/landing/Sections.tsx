@@ -6,10 +6,10 @@ import { Reveal } from './Reveal';
 const WRAP = 'max-w-[1400px] mx-auto px-5 sm:px-8 lg:px-20';
 
 function Eyebrow({ children, dark }: { children: React.ReactNode; dark?: boolean }) {
-  return <p className={'eyebrow mb-5 ' + (dark ? 'text-[#F1EEE7]/70' : 'text-[#232323]')}>{children}</p>;
+  return <p className={'eyebrow mb-5 ' + (dark ? 'text-[#F1EEE7]/70' : 'text-[#0A0A0A]')}>{children}</p>;
 }
 function H2({ children, dark }: { children: React.ReactNode; dark?: boolean }) {
-  return <h2 className={'font-medium text-balance text-[clamp(32px,4vw,48px)] leading-[1.1] ' + (dark ? 'text-[#F1EEE7]' : 'text-[#232323]')}>{children}</h2>;
+  return <h2 className={'font-medium text-balance text-[clamp(32px,4vw,48px)] leading-[1.1] ' + (dark ? 'text-[#F1EEE7]' : 'text-[#0A0A0A]')}>{children}</h2>;
 }
 
 const PILLARS = [
@@ -20,12 +20,12 @@ const PILLARS = [
 
 export function Pillars() {
   return (
-    <section className="bg-[#F1EEE7] text-[#232323]">
+    <section className="bg-[#F1EEE7] text-[#0A0A0A]">
       <div className={WRAP + ' py-20 sm:py-28'}>
-        <div className="grid md:grid-cols-3 border-t border-[#232323]/20">
+        <div className="grid md:grid-cols-3 border-t border-[#0A0A0A]/20">
           {PILLARS.map(([n, t, b], i) => (
             <Reveal key={n} delay={i * 0.06}>
-              <div className={'h-full pt-6 pb-10 md:pr-10 ' + (i > 0 ? 'md:border-l md:border-[#232323]/20 md:pl-10' : '')}>
+              <div className={'h-full pt-6 pb-10 md:pr-10 ' + (i > 0 ? 'md:border-l md:border-[#0A0A0A]/20 md:pl-10' : '')}>
                 <p className="eyebrow text-[#5B5A56]">{n}</p>
                 <h3 className="mt-10 mb-3 font-medium text-[clamp(24px,2.4vw,30px)] leading-[1.15]">{t}</h3>
                 <p className="text-[16px] leading-[1.35] text-[#5B5A56] max-w-sm">{b}</p>
@@ -47,7 +47,7 @@ export function DeletionProof() {
     ['Network', 'Monad'],
   ];
   return (
-    <section id="proof" className="bg-[#232323] text-[#F1EEE7] scroll-mt-4 overflow-hidden">
+    <section id="proof" className="bg-[#0A0A0A] text-[#F1EEE7] scroll-mt-4 overflow-hidden">
       <div className={WRAP + ' pt-20 sm:pt-28'}>
         <p className="font-medium select-none text-[clamp(88px,19vw,280px)] leading-[0.82] tracking-[-0.045em] text-[#F1EEE7]" aria-hidden="true">FORGET.</p>
       </div>
@@ -99,14 +99,14 @@ const STEPS = [
 
 export function HowItWorks() {
   return (
-    <section id="how" className="bg-[#F1EEE7] text-[#232323] scroll-mt-4">
+    <section id="how" className="bg-[#F1EEE7] text-[#0A0A0A] scroll-mt-4">
       <div className={WRAP + ' py-20 sm:py-28'}>
         <Eyebrow>How it works</Eyebrow>
         <H2>From first write to a deletion receipt in four steps.</H2>
-        <ol className="mt-14 grid sm:grid-cols-2 lg:grid-cols-4 border-t border-[#232323]/20">
+        <ol className="mt-14 grid sm:grid-cols-2 lg:grid-cols-4 border-t border-[#0A0A0A]/20">
           {STEPS.map(([n, t, b], i) => (
             <Reveal key={n} delay={i * 0.05}>
-              <li className={'list-none h-full pt-6 pb-10 lg:pr-8 ' + (i > 0 ? 'lg:border-l lg:border-[#232323]/20 lg:pl-8' : '')}>
+              <li className={'list-none h-full pt-6 pb-10 lg:pr-8 ' + (i > 0 ? 'lg:border-l lg:border-[#0A0A0A]/20 lg:pl-8' : '')}>
                 <p className="eyebrow text-[#5B5A56]">{n}</p>
                 <h3 className="mt-8 mb-2 font-medium text-[20px] leading-[1.2]">{t}</h3>
                 <p className="text-[15px] leading-[1.4] text-[#5B5A56]">{b}</p>
@@ -163,7 +163,7 @@ export function Developers() {
     }
   };
   return (
-    <section id="developers" className="bg-[#232323] text-[#F1EEE7] scroll-mt-4">
+    <section id="developers" className="bg-[#0A0A0A] text-[#F1EEE7] scroll-mt-4">
       <div className={WRAP + ' py-20 sm:py-28 grid lg:grid-cols-12 gap-12 items-start'}>
         <div className="lg:col-span-4">
           <Eyebrow dark>For developers</Eyebrow>
@@ -204,7 +204,7 @@ export function Developers() {
 
 export function MarketSection() {
   return (
-    <section id="market" className="bg-[#F1EEE7] text-[#232323] scroll-mt-4">
+    <section id="market" className="bg-[#F1EEE7] text-[#0A0A0A] scroll-mt-4">
       <div className={WRAP + ' py-20 sm:py-28 grid lg:grid-cols-12 gap-12 items-center'}>
         <div className="lg:col-span-5">
           <Eyebrow>Memory Market</Eyebrow>
@@ -214,12 +214,12 @@ export function MarketSection() {
           </p>
         </div>
         <Reveal className="lg:col-span-6 lg:col-start-7">
-          <div className="rounded-xl border border-[#232323]/20 bg-[#F8F6F1] p-6 sm:p-8">
+          <div className="rounded-xl border border-[#0A0A0A]/20 bg-[#F8F6F1] p-6 sm:p-8">
             <p className="eyebrow !text-[12px] text-[#5B5A56]">Knowledge pack · how a sale splits</p>
             <h3 className="mt-3 font-medium text-[28px] leading-[1.1]">You set the price in USDC.</h3>
             <p className="mt-3 text-[15px] leading-[1.4] text-[#5B5A56]">List a pack of your agent&apos;s memories. Buyers pay on-chain and ingest the pack into their own vault.</p>
             <div className="mt-8 h-2 rounded-sm bg-[#DEDEDE] overflow-hidden" role="img" aria-label="Revenue split: 80 percent to the seller">
-              <div className="h-full w-[80%] bg-[#232323]" />
+              <div className="h-full w-[80%] bg-[#0A0A0A]" />
             </div>
             <div className="mt-3 flex justify-between eyebrow !text-[12px]">
               <span>80% seller</span><span className="text-[#5B5A56]">20% protocol</span>
@@ -242,10 +242,10 @@ const FAQ = [
 
 export function Faq() {
   return (
-    <section id="faq" className="bg-[#F1EEE7] text-[#232323] scroll-mt-4 border-t border-[#232323]/20">
+    <section id="faq" className="bg-[#F1EEE7] text-[#0A0A0A] scroll-mt-4 border-t border-[#0A0A0A]/20">
       <div className={WRAP + ' py-20 sm:py-28 grid lg:grid-cols-12 gap-10'}>
         <div className="lg:col-span-4"><Eyebrow>FAQ</Eyebrow><H2>Straight answers.</H2></div>
-        <div className="lg:col-span-7 lg:col-start-6 divide-y divide-[#232323]/20 border-y border-[#232323]/20">
+        <div className="lg:col-span-7 lg:col-start-6 divide-y divide-[#0A0A0A]/20 border-y border-[#0A0A0A]/20">
           {FAQ.map(([q, a]) => (
             <details key={q} className="group py-5">
               <summary className="flex cursor-pointer list-none items-center justify-between text-[18px] font-medium [&::-webkit-details-marker]:hidden">

@@ -32,7 +32,7 @@ export function StartVault() {
   });
 
   return (
-    <section id="start" className="bg-[#232323] text-[#F1EEE7] scroll-mt-4">
+    <section id="start" className="bg-[#0A0A0A] text-[#F1EEE7] scroll-mt-4">
       <div className="max-w-[1400px] mx-auto px-5 sm:px-8 lg:px-20 py-20 sm:py-28 grid lg:grid-cols-12 gap-12 items-center">
         <div className="lg:col-span-6">
           <p className="eyebrow mb-5 text-[#F1EEE7]/70">Start</p>
@@ -44,7 +44,7 @@ export function StartVault() {
           </p>
         </div>
         <form
-          className="lg:col-span-5 lg:col-start-8 rounded-xl bg-[#F1EEE7] text-[#232323] p-5 sm:p-6 space-y-3"
+          className="lg:col-span-5 lg:col-start-8 rounded-xl bg-[#141414] ring-1 ring-white/15 text-[#F1EEE7] p-5 sm:p-6 space-y-3"
           onSubmit={(e) => {
             e.preventDefault();
             if (form.operatorAddress.trim()) createMut.mutate(form);
