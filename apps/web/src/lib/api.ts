@@ -1,3 +1,5 @@
+import { demoRequest } from './demoApi';
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 // ── Request ────────────────────────────────────────────────────────────────────
@@ -21,6 +23,15 @@ function getVaultId(): string {
     return session?.state?.vaultId ?? '';
   } catch {
     return '';
+  }
+}
+
+function isDemo(): boolean {
+  try {
+    const { useAuthStore } = require('@/store');
+    return useAuthStore.getState().demo === true;
+  } catch {
+    return false;
   }
 }
 
@@ -56,6 +67,10 @@ async function request<T>(
   body?: unknown,
   options: RequestOptions = {},
 ): Promise<T> {
+  // The built-in demo answers from fixtures, but only after "Try demo" and never for the
+  // login check, which always talks to a real server.
+  if (!options.baseUrl && isDemo()) return demoRequest<T>(method, path, body);
+
   const base = (options.baseUrl ?? getApiBase()).replace(/\/+$/, '');
   if (!base) {
     throw new ApiError('No MNEME API URL is set. Enter the address of your MNEME server.', 0, 'network');

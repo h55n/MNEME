@@ -18,7 +18,9 @@ interface PersistedAuthState {
 interface AuthState extends PersistedAuthState {
   // Session-only (not persisted to localStorage)
   apiKey: string | null;
-  setSession: (data: { vaultId: string; apiKey: string; operatorAddress: string; vaultName?: string; plan?: string; apiUrl?: string | null }) => void;
+  /** True only while the user is in the built-in demo; fixture data, never persisted. */
+  demo: boolean;
+  setSession: (data: { vaultId: string; apiKey: string; operatorAddress: string; vaultName?: string; plan?: string; apiUrl?: string | null; demo?: boolean }) => void;
   /** Remembers the API URL on its own, so the login form can prefill it after logout. */
   setApiUrl: (apiUrl: string | null) => void;
   clearSession: () => void;
@@ -33,6 +35,7 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       apiUrl: null,
       vaultId: null,
+      demo: false,
       apiKey: null,          // Not written to localStorage — see partialize below
       operatorAddress: null,
       vaultName: null,
@@ -42,12 +45,13 @@ export const useAuthStore = create<AuthState>()(
         apiUrl: data.apiUrl === undefined ? state.apiUrl : data.apiUrl,
         vaultId: data.vaultId,
         apiKey: data.apiKey,
+        demo: data.demo === true,
         operatorAddress: data.operatorAddress,
         vaultName: data.vaultName ?? null,
         plan: data.plan ?? 'free',
       })),
       // The API URL stays after a logout so the next login is one field shorter.
-      clearSession: () => set({ vaultId: null, apiKey: null, operatorAddress: null, vaultName: null, plan: null }),
+      clearSession: () => set({ demo: false, vaultId: null, apiKey: null, operatorAddress: null, vaultName: null, plan: null }),
     }),
     {
       name: 'mneme-session',

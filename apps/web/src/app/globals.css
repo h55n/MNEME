@@ -8,26 +8,26 @@
 }
 
 :root {
-  --color-primary: #232323;
-  --color-secondary: #E6E2D8;
+  --color-primary: #ECE9E2;
+  --color-secondary: #1C1C1C;
   --color-tertiary: #FF9100;
-  --color-surface: #F1EEE7;
-  --color-on-surface: #232323;
-  --color-error: #D92D20;
-  --color-border-subtle: rgba(0,0,0,0.08);
+  --color-surface: #0A0A0A;
+  --color-on-surface: #ECE9E2;
+  --color-error: #F04438;
+  --color-border-subtle: rgba(255,255,255,0.08);
 }
 
 * {
   box-sizing: border-box;
 }
 
-/* Always render light, even when the device or browser forces dark mode. */
+/* Deep black everywhere, whatever the device theme is. */
 html {
-  color-scheme: only light;
+  color-scheme: only dark;
 }
 
 ::selection {
-  background: rgba(0, 0, 0, 0.12);
+  background: rgba(255, 145, 0, 0.35);
 }
 
 html {
@@ -87,7 +87,7 @@ body {
 /* Geist type system, tailored from the reference */
 .mono { font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
 .eyebrow { font-family: var(--font-mono), ui-monospace, monospace; text-transform: uppercase; font-size: clamp(13px, 1.1vw, 15px); letter-spacing: 0.01em; line-height: 1.25; }
-body { background: #F1EEE7; color: #232323; -webkit-font-smoothing: antialiased; }
+body { background: #0A0A0A; color: #ECE9E2; -webkit-font-smoothing: antialiased; }
 @keyframes spin-slow { to { transform: rotate(360deg); } }
 @keyframes spin-slow-rev { to { transform: rotate(-360deg); } }
 @keyframes blink-dot { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
