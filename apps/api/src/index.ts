@@ -124,7 +124,8 @@ async function checkDependencies(): Promise<DependencyStatus> {
 
   // Embedding API (optional)
   try {
-    if (process.env.OPENAI_API_KEY) status.embedding = 'ok';
+    const wanted = (process.env.EMBEDDER ?? 'local').toLowerCase();
+    if (wanted === 'local' || process.env.OPENAI_API_KEY) status.embedding = 'ok';
   } catch {
     // noop
   }
@@ -167,7 +168,9 @@ async function bootstrap() {
     logger: false, // We use pino directly
     requestIdHeader: 'x-request-id',
     genReqId: () => uuidv4(),
-    trustProxy: true,
+    // Trust only the proxy hops we run behind. `true` would believe a client-supplied X-Forwarded-For
+    // and let anyone dodge per-IP limits by changing it.
+    trustProxy: Number(process.env.TRUST_PROXY_HOPS ?? 1),
   });
 
   // ── Plugins ───────────────────────────────────────────────────────────────
@@ -188,12 +191,15 @@ async function bootstrap() {
     global: true,
     max: 1000,
     timeWindow: '1 minute',
-    keyGenerator: (request) => {
-      return request.headers.authorization?.split(' ')[1]?.slice(0, 16) ?? request.ip;
-    },
+    // Key by IP. Keying by the unauthenticated bearer value gave a caller a fresh bucket per
+    // request just by changing the token.
+    keyGenerator: (request) => request.ip,
   });
 
   // ── Swagger / OpenAPI docs ─────────────────────────────────────────────────
+  // Off in production unless ENABLE_DOCS=true, so the route map is not public by default.
+  const docsEnabled = process.env.NODE_ENV !== 'production' || process.env.ENABLE_DOCS === 'true';
+  if (docsEnabled) {
   await fastify.register(swagger, {
     openapi: {
       openapi: '3.0.3',
@@ -216,6 +222,7 @@ async function bootstrap() {
     uiConfig: { docExpansion: 'list', deepLinking: true },
     staticCSP: true,
   });
+  }
 
   // ── Request ID propagation ────────────────────────────────────────────────
   fastify.addHook('onSend', async (request, reply) => {
@@ -245,19 +252,16 @@ async function bootstrap() {
 
     const statusCode = overallStatus === 'down' ? 503 : 200;
 
-    reply.status(statusCode).send({
-      status: overallStatus,
-      version: VERSION,
-      dependencies: cachedDeps,
-      timestamp: new Date().toISOString(),
-    });
+    // Public output is the status only. Which dependency is down is logged, not published.
+    if (overallStatus !== 'ok') logger.warn({ dependencies: cachedDeps }, 'Health check not ok');
+    reply.status(statusCode).send({ status: overallStatus });
   });
 
   fastify.get('/', async (_, reply) => {
     reply.send({
       name: 'MNEME API',
       version: VERSION,
-      docs: `${API_PREFIX}/docs`,
+      ...(docsEnabled ? { docs: `${API_PREFIX}/docs` } : {}),
     });
   });
 

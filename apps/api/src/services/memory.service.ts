@@ -447,7 +447,7 @@ export class MemoryService {
             importance = LEAST(1.0, importance + 0.05),
             decay_rate = GREATEST(0.01, decay_rate * 0.95)
         WHERE vault_id = ${vaultId}
-          AND id = ANY(${memoryIds})
+          AND id IN (${sql.join(memoryIds.map(id => sql`${id}`), sql`, `)})
       `);
     } catch (err) {
       logger.warn({ err, vaultId }, 'Failed to reinforce memories');
