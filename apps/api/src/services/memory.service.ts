@@ -118,6 +118,7 @@ export class MemoryService {
         vaultId,
         type: classifiedType,          // Use classified type (not raw input.type)
         content: encrypted.ciphertext,
+        embedderId: embedding ? embeddingService.id : null,
         contentIv: encrypted.iv,
         contentTag: encrypted.tag,
         tags: input.tags ?? [],

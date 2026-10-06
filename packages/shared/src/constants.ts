@@ -54,7 +54,7 @@ export const ENCRYPTION_ALGORITHM = 'aes-256-gcm';
 export const HASH_ALGORITHM = 'sha256';
 
 // Embedding dimensions
-export const EMBEDDING_DIMENSIONS = 1536; // text-embedding-3-small
+export const EMBEDDING_DIMENSIONS = 384; // local MiniLM default
 
 // ── Two-stage retrieval ───────────────────────────────────────────────────────
 
