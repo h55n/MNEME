@@ -20,7 +20,10 @@ const ExportQuerySchema = z.object({
 
 export async function vaultRoutes(fastify: FastifyInstance) {
   // POST /vaults — create vault
-  fastify.post('/vaults', async (request, reply) => {
+  // Open endpoint (no key yet), so it gets its own tight per-IP limit against vault spam.
+  fastify.post('/vaults', {
+    config: { rateLimit: { max: Number(process.env.VAULT_CREATE_LIMIT ?? 10), timeWindow: '1 hour', keyGenerator: (r: { ip: string }) => r.ip } },
+  }, async (request, reply) => {
     const body = CreateVaultSchema.safeParse(request.body);
     if (!body.success) {
       return reply.status(400).send(errorResponse({
