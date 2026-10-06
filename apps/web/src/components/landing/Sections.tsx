@@ -78,7 +78,7 @@ export function DeletionProof() {
               {rows.map(([k, v]) => (
                 <div key={k} className="contents">
                   <dt className="eyebrow !text-[12px] text-[#F1EEE7]/55 pt-0.5">{k}</dt>
-                  <dd className="mono !text-[13px] break-all">{v}</dd>
+                  <dd className="mono !text-[13px] break-words">{v}</dd>
                 </div>
               ))}
             </dl>
@@ -193,7 +193,7 @@ export function Developers() {
             </button>
           </div>
           <p className="px-5 pt-4 mono !text-[12px] text-[#F1EEE7]/45">{snippet.file}</p>
-          <pre className="px-5 pb-5 pt-2 overflow-x-auto text-[13px] leading-6 mono text-[#F1EEE7]" tabIndex={0}>
+          <pre className="px-5 pb-5 pt-2 whitespace-pre-wrap break-words text-[11px] sm:text-[13px] leading-6 mono text-[#F1EEE7]" tabIndex={0}>
             <code>{snippet.code}</code>
           </pre>
         </div>
