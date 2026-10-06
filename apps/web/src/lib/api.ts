@@ -385,19 +385,52 @@ function getVaultId(): string {
   }
 }
 
+/** A failed API call. `status` is 0 when the server could not be reached at all. */
+export class ApiError extends Error {
+  constructor(message: string, public readonly status: number, public readonly kind: 'network' | 'unauthorized' | 'not-found' | 'invalid-response' | 'server') {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
+/** Where requests go: an explicit base, else the URL saved at login, else the one built into this deployment. */
+export function getApiBase(): string {
+  try {
+    const { useAuthStore } = require('@/store');
+    const saved: string | null = useAuthStore.getState().apiUrl;
+    if (saved) return saved;
+  } catch {
+    // store unavailable (server render): use the built-in URL
+  }
+  return API_BASE.replace(/\/+$/, '');
+}
+
+interface RequestOptions {
+  /** Use this API URL and key instead of the saved session (login checks them before saving). */
+  baseUrl?: string;
+  apiKey?: string;
+}
+
 async function request<T>(
   method: string,
   path: string,
   body?: unknown,
+  options: RequestOptions = {},
 ): Promise<T> {
-  // Always use demo mode when no backend URL configured
-  if (DEMO_MODE) {
+  // Demo mode serves fixtures; see lib/demo.ts.
+  if (DEMO_MODE && !options.baseUrl) {
     return handleMockRequest<T>(method, path, body);
   }
 
+  const base = (options.baseUrl ?? getApiBase()).replace(/\/+$/, '');
+  if (!base) {
+    throw new ApiError('No MNEME API URL is set. Enter the address of your MNEME server.', 0, 'network');
+  }
+  const apiKey = options.apiKey ?? getApiKey();
+
+  let res: Response;
   try {
-    const apiKey = getApiKey();
-    const res = await fetch(`${API_BASE}${path}`, {
+    res = await fetch(`${base}${path}`, {
       method,
       headers: {
         'Content-Type': 'application/json',
@@ -405,39 +438,33 @@ async function request<T>(
       },
       body: body ? JSON.stringify(body) : undefined,
     });
-
-    let data: any;
-    try {
-      data = await res.json();
-    } catch {
-      // Non-JSON response (HTML error page etc.) — fall back to demo
-      console.info(`[MNEME Demo Mode] Non-JSON response for ${method} ${path}`);
-      return handleMockRequest<T>(method, path, body);
-    }
-
-    if (!res.ok || data?.success === false) {
-      throw new Error(data?.error?.message ?? data?.message ?? `HTTP ${res.status}`);
-    }
-
-    return (data?.data ?? data) as T;
-  } catch (err: any) {
-    // In production: surface errors visibly — never silently fall back to demo data.
-    // In development: fall back to demo mode for network errors to allow offline development.
-    const isNetworkError = (
-      err.name === 'TypeError' ||
-      err.name === 'AbortError' ||
-      err.message?.includes('fetch') ||
-      err.message?.includes('NetworkError') ||
-      err.message?.includes('Failed to fetch') ||
-      err.message?.includes('CORS') ||
-      err.message?.includes('network')
-    );
-    if (!IS_PRODUCTION && isNetworkError) {
-      console.warn(`[MNEME Dev Demo] ${method} ${path} — ${err.message}. Falling back to demo data.`);
-      return handleMockRequest<T>(method, path, body);
-    }
-    throw err;
+  } catch {
+    // fetch only rejects when nothing answered: wrong URL, server down, or CORS.
+    throw new ApiError(`Can't reach the MNEME API at ${base}. Check the address and that the server is running.`, 0, 'network');
   }
+
+  let data: any;
+  try {
+    data = await res.json();
+  } catch {
+    // An HTML error page or an empty body: this isn't a MNEME API.
+    throw new ApiError(
+      res.status === 404
+        ? `Nothing at ${base}${path} (404). Is this the address of a MNEME API?`
+        : `The server at ${base} did not answer like a MNEME API (HTTP ${res.status}).`,
+      res.status,
+      res.status === 404 ? 'not-found' : 'invalid-response',
+    );
+  }
+
+  if (!res.ok || data?.success === false) {
+    const message = data?.error?.message ?? data?.message ?? `HTTP ${res.status}`;
+    if (res.status === 401 || res.status === 403) throw new ApiError(message, res.status, 'unauthorized');
+    if (res.status === 404) throw new ApiError(message, res.status, 'not-found');
+    throw new ApiError(message, res.status, 'server');
+  }
+
+  return (data?.data ?? data) as T;
 }
 
 // ── Vault API ──────────────────────────────────────────────────────────────────
@@ -446,8 +473,8 @@ export const vaultApi = {
   create: (body: { operatorAddress: string; name?: string; plan?: string }) =>
     request<{ vault: any; apiKey: string }>('POST', '/vaults', body),
 
-  get: (vaultId: string) =>
-    request<any>('GET', `/vaults/${vaultId}`),
+  get: (vaultId: string, options?: RequestOptions) =>
+    request<any>('GET', `/vaults/${vaultId}`, undefined, options),
 
   destroy: (vaultId: string) =>
     request<any>('DELETE', `/vaults/${vaultId}`),

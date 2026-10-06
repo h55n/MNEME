@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { clsx } from 'clsx';
 import { useAuthStore } from '@/store';
+import { useLogout } from '@/lib/auth';
 import {
   Database, Brain, Shield, Settings,
   LogOut, Store, Menu, X
@@ -19,7 +20,8 @@ const NAV = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { vaultName, operatorAddress, plan, clearSession } = useAuthStore();
+  const { vaultName, operatorAddress, plan } = useAuthStore();
+  const logout = useLogout();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -106,7 +108,7 @@ export function Sidebar() {
         </div>
 
         <button
-          onClick={clearSession}
+          onClick={logout}
           className="flex items-center gap-2 w-full px-3 h-9 rounded-md text-label-md text-neutral-500 hover:bg-secondary/60 transition-colors"
         >
           <LogOut className="w-4 h-4" />
