@@ -51,7 +51,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <a href="/" className="inline-block mb-8">
-            <img src="/mneme.svg" alt="mneme." className="h-8 w-auto mx-auto" />
+            <span className="inline-flex items-center gap-2" aria-label="mneme"><span className="w-2.5 h-2.5 rounded-full bg-tertiary" /><span className="font-mono uppercase text-[16px] font-medium">mneme</span></span>
           </a>
           <h1 className="text-display mb-2">Access Vault</h1>
           <p className="text-body-lg text-neutral-500">

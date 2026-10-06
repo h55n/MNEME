@@ -70,7 +70,7 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-1">
-          <h1 className="font-display text-[44px] leading-none tracking-tight">{vaultName ?? 'My Vault'}</h1>
+          <h1 className="font-medium text-[clamp(32px,4vw,48px)] leading-none">{vaultName ?? 'My Vault'}</h1>
           <Badge variant="orange">Active</Badge>
         </div>
         <p className="text-body-md text-neutral-500">
@@ -87,7 +87,7 @@ export default function DashboardPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="mono text-[11px] uppercase tracking-[0.08em] text-neutral-500 mb-2 pr-6">{label}</p>
-                  <p className="font-display text-[40px] leading-none">
+                  <p className="font-medium text-[40px] leading-none">
                     {memoriesQ.isLoading || auditQ.isLoading
                       ? <Spinner size="sm" />
                       : value}

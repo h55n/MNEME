@@ -134,7 +134,7 @@ export default function MemoriesPage() {
     <div className="p-8 max-w-4xl animate-fade-in">
       <div className="mb-8">
         <h1 className="text-display mb-2 flex items-center gap-3">
-          <div className="p-2 bg-primary/10 text-primary-foreground rounded-xl border border-primary/20">
+          <div className="p-2 bg-secondary text-primary rounded-lg border border-border">
             <Brain className="w-6 h-6" />
           </div>
           Memories
