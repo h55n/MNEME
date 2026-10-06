@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef } from 'react';
 
-// Original text-glyph artwork. The silhouette and the folds are hand-written
+// Original text-glyph artwork, shaded like a rendered image. The silhouette and the folds are hand-written
 // paths (viewBox 100 x 80, side profile facing left). They are rasterised into
 // a coverage mask and sampled into characters, so the shape stays recognisable
 // at any grid density. Inside the shape: readable memory words at the front,
@@ -25,15 +25,12 @@ const FOLDS = [
   'M70 46C75 44 79 46 84 44',
   'M33 34C38 31 42 35 46 31',
 ];
-const MEMORY = 'remember recall write inspect export import vault agent ';
-const CIPHER = '0123456789abcdef#%&@$=+*<>/\\|~^';
+const RAMP = ' .\'`:,;-~=+*oxX#%&@';
 const CREAM = '241,238,231';
 const AMBER = '255,145,0';
 const MINT = '143,214,190';
 const VW = 100;
 const VH = 80;
-
-type Cell = { c: number; r: number; edge: boolean; fold: boolean; cb: boolean; stem: boolean; rnd: number; t: number; pe: number; d: number };
 
 function coverage(cols: number, rows: number, paint: (ctx: CanvasRenderingContext2D) => void): Float32Array {
   const cv = document.createElement('canvas');
@@ -50,36 +47,94 @@ function coverage(cols: number, rows: number, paint: (ctx: CanvasRenderingContex
   return out;
 }
 
+type Cell = { c: number; r: number; s: number; t: number; pe: number; edge: number };
+
+function blur(src: Float32Array, cols: number, rows: number, rx: number, ry: number, passes: number): Float32Array {
+  let a = src;
+  for (let p = 0; p < passes; p++) {
+    const b = new Float32Array(a.length);
+    for (let r = 0; r < rows; r++) {
+      let sum = 0;
+      for (let c = -rx; c <= rx; c++) sum += a[r * cols + Math.min(cols - 1, Math.max(0, c))];
+      for (let c = 0; c < cols; c++) {
+        b[r * cols + c] = sum / (2 * rx + 1);
+        sum += a[r * cols + Math.min(cols - 1, c + rx + 1)] - a[r * cols + Math.max(0, c - rx)];
+      }
+    }
+    const o = new Float32Array(a.length);
+    for (let c = 0; c < cols; c++) {
+      let sum = 0;
+      for (let r = -ry; r <= ry; r++) sum += b[Math.min(rows - 1, Math.max(0, r)) * cols + c];
+      for (let r = 0; r < rows; r++) {
+        o[r * cols + c] = sum / (2 * ry + 1);
+        sum += b[Math.min(rows - 1, r + ry + 1) * cols + c] - b[Math.max(0, r - ry) * cols + c];
+      }
+    }
+    a = o;
+  }
+  return a;
+}
+
+// Height field = soft dome from the silhouette, minus carved fold lines, plus
+// a warped ridge pattern for the gyri. Light comes from the upper left; folds
+// get ambient occlusion. The result is one brightness value per character.
 function build(cols: number, rows: number): Cell[] {
-  const body = coverage(cols, rows, (g) => {
-    g.fill(new Path2D(CEREBRUM));
-  });
+  const body = coverage(cols, rows, (g) => g.fill(new Path2D(CEREBRUM)));
   const cere = coverage(cols, rows, (g) => g.fill(new Path2D(CEREBELLUM)));
   const stem = coverage(cols, rows, (g) => g.fill(new Path2D(STEM)));
-  const fold = coverage(cols, rows, (g) => {
-    g.lineWidth = 2.4;
+  const foldRaw = coverage(cols, rows, (g) => {
+    g.lineWidth = 1.8;
     g.lineCap = 'round';
     g.lineJoin = 'round';
     for (const f of FOLDS) g.stroke(new Path2D(f));
   });
+  const all = new Float32Array(body.length);
+  for (let i = 0; i < all.length; i++) all[i] = Math.max(body[i], cere[i], stem[i]);
+  const s = cols / 100;
+  const dome = blur(all, cols, rows, Math.round(7 * s), Math.round(3.5 * s), 3);
+  const fold = blur(foldRaw, cols, rows, Math.max(1, Math.round(1 * s)), 1, 1);
+  const ridge = new Float32Array(all.length);
+  const gyri = new Float32Array(all.length);
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const x = ((c + 0.5) / cols) * VW;
+      const y = ((r + 0.5) / rows) * VH;
+      const w =
+        Math.sin(x * 0.62 + Math.sin(y * 0.45) * 2.3) +
+        Math.sin(y * 0.58 + Math.sin(x * 0.41 + 1.3) * 2.1) +
+        0.6 * Math.sin((x + y) * 0.36 + Math.sin(x * 0.2) * 2);
+      const v = Math.min(1, Math.max(0, (w + 1.2) / 2.8));
+      gyri[r * cols + c] = v * v * (3 - 2 * v);
+    }
+  }
+  const h = new Float32Array(all.length);
+  for (let i = 0; i < h.length; i++) h[i] = 1.4 * dome[i] + 0.22 * gyri[i] - 0.5 * fold[i];
+  ridge.set(gyri);
+  const L = [-0.55, -0.6, 0.58];
+  const ln = Math.hypot(L[0], L[1], L[2]);
   const cells: Cell[] = [];
-  const at = (a: Float32Array, c: number, r: number) => (c < 0 || r < 0 || c >= cols || r >= rows ? 0 : a[r * cols + c]);
-  const pocket = { x: 26, y: 31, r: 6.2 };
+  const pocket = { x: 30, y: 36, r: 4.2 };
+  const at = (a: Float32Array, c: number, r: number) => a[Math.min(rows - 1, Math.max(0, r)) * cols + Math.min(cols - 1, Math.max(0, c))];
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       const i = r * cols + c;
-      const inBody = body[i] > 0.45;
-      const inCb = cere[i] > 0.45;
-      const inStem = stem[i] > 0.45;
-      if (!inBody && !inCb && !inStem) continue;
+      const cov = all[i];
+      if (cov < 0.4) continue;
+      const gx = (at(h, c + 1, r) - at(h, c - 1, r)) / 2;
+      const gy = (at(h, c, r + 1) - at(h, c, r - 1)) / 4;
+      const k = 11;
+      const nx = -gx * k;
+      const ny = -gy * k;
+      const nl = Math.hypot(nx, ny, 1);
+      const diff = Math.max(0, (nx * L[0] + ny * L[1] + L[2]) / (nl * ln));
+      const ao = 1 - 0.85 * Math.max(fold[i] * 1.8, (1 - ridge[i]) * 0.7);
+      const rim = Math.min(1, dome[i] * 2.2); // darken toward the edge so it reads as round
+      let s0 = (0.1 + 0.95 * diff) * (0.45 + 0.55 * ao) * (0.35 + 0.65 * rim);
+      if (body[i] < 0.4 && cere[i] >= 0.4) s0 *= 0.9;
       const x = ((c + 0.5) / cols) * VW;
       const y = ((r + 0.5) / rows) * VH;
-      const edge = [at(body, c - 1, r), at(body, c + 1, r), at(body, c, r - 1), at(body, c, r + 1)].some((v) => v < 0.45) && inBody;
-      const dx = x - pocket.x;
-      const dy = y - pocket.y;
-      const pe = Math.hypot(dx, dy) / pocket.r;
-      const t = Math.min(1, Math.max(0, (x - 28) / 52));
-      cells.push({ c, r, edge, fold: inBody && fold[i] > 0.4, cb: inCb && !inBody, stem: inStem && !inBody && !inCb, rnd: Math.random(), t, pe, d: 0.5 + 0.5 * Math.sin(x * 0.9 + y * 0.6) });
+      const pe = Math.hypot(x - pocket.x, y - pocket.y) / pocket.r;
+      cells.push({ c, r, s: Math.min(1, Math.max(0, s0 * 1.25)), t: Math.min(1, Math.max(0, (x - 40) / 50)), pe, edge: cov });
     }
   }
   return cells;
@@ -101,7 +156,6 @@ export function MemoryBrain({ className }: { className?: string }) {
     let cols = 0;
     let rows = 0;
     let oy = 0;
-    const cipher: string[] = [];
     let raf = 0;
     let last = 0;
 
@@ -110,15 +164,12 @@ export function MemoryBrain({ className }: { className?: string }) {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.round(rect.width * dpr);
       canvas.height = Math.round(rect.height * dpr);
-      cols = rect.width < 520 ? 72 : 150;
+      cols = rect.width < 520 ? 110 : 190;
       cw = rect.width / cols;
-      ch = cw * 2;
-      // keep the 100 x 80 drawing proportional
-      rows = Math.round((cols * VH) / VW / 2);
+      ch = cw * 1.8;
+      rows = Math.round(((cols * VH) / VW / 1.8) * 1.2);
       oy = (rect.height - rows * ch) / 2;
       cells = build(cols, rows);
-      cipher.length = cells.length;
-      for (let i = 0; i < cells.length; i++) cipher[i] = CIPHER[(Math.random() * CIPHER.length) | 0];
     };
 
     const draw = (t: number) => {
@@ -128,57 +179,34 @@ export function MemoryBrain({ className }: { className?: string }) {
       ctx.font = `500 ${cw / 0.6}px ${family}`;
       ctx.textBaseline = 'middle';
       ctx.textAlign = 'center';
-      const sweep = ((t / 1000) * 0.1) % 1.3;
+      const n = RAMP.length - 1;
       for (let i = 0; i < cells.length; i++) {
         const k = cells[i];
         const px = (k.c + 0.5) * cw;
         const py = (k.r + 0.5) * ch + oy;
-        if (k.pe < 0.62) continue;
-        if (k.pe < 1) {
-          ctx.fillStyle = `rgba(${AMBER},${0.55 + 0.4 * Math.sin(t / 650 + i)})`;
-          ctx.fillText('·', px, py);
-          continue;
-        }
-        if (k.fold) {
-          continue;
-        }
-        if (k.cb) {
-          ctx.fillStyle = `rgba(${MINT},0.75)`;
-          ctx.fillText(k.r % 2 ? '=' : '-', px, py);
-          continue;
-        }
-        if (k.stem) {
-          ctx.fillStyle = `rgba(${MINT},0.6)`;
-          ctx.fillText(k.r % 2 ? '|' : ':', px, py);
-          continue;
-        }
-        const near = Math.abs((k.c + 0.5) / cols - (sweep - 0.15)) < 0.012;
-        const enc = k.rnd < k.t * k.t * (3 - 2 * k.t) * 1.2;
-        let g: string;
-        let color: string;
-        if (!enc) {
-          g = MEMORY[(k.c + k.r * 7) % MEMORY.length];
-          color = `rgba(${CREAM},${k.edge ? 1 : 0.55 + 0.4 * k.d})`;
+        if (k.pe < 0.7) continue;
+        // slow shimmer: a soft travelling wave in brightness
+        const sh = reduce ? 0 : 0.07 * Math.sin(t / 1400 + k.c * 0.13 + k.r * 0.21) + (k.t > 0.4 ? 0.05 * Math.sin(t / 380 + k.c * 0.9 + k.r * 1.7) : 0);
+        let s = k.s + sh;
+        let rgb: string;
+        if (k.pe < 1.05) {
+          rgb = AMBER;
+          s = 0.55 + 0.25 * Math.sin(t / 700 + i);
         } else {
-          if (!reduce && Math.random() < 0.03 + (near ? 0.5 : 0)) cipher[i] = CIPHER[(Math.random() * CIPHER.length) | 0];
-          g = cipher[i];
-          color = `rgba(${MINT},${k.edge ? 1 : 0.5 + 0.45 * k.d})`;
+          const m = k.t * 0.6; // mint tint toward the back
+          const a = CREAM.split(',').map(Number);
+          const b = MINT.split(',').map(Number);
+          rgb = a.map((v, j) => Math.round(v + (b[j] - v) * m)).join(',');
         }
-        if (near) color = `rgba(${AMBER},0.95)`;
-        ctx.fillStyle = color;
-        ctx.fillText(g, px, py);
-      }
-      // tombstone mark in the erased pocket
-      const mid = cells.find((k) => k.pe < 0.62 && Math.abs(k.pe) < 0.12) ?? cells.find((k) => k.pe < 0.62);
-      if (mid) {
-        ctx.fillStyle = `rgb(${AMBER})`;
-        ctx.font = `600 ${(cw / 0.6) * 1.6}px ${family}`;
-        ctx.fillText('x', (mid.c + 0.5) * cw, (mid.r + 0.5) * ch + oy);
+        const idx = Math.min(n, Math.max(0, Math.round(s * n)));
+        if (idx === 0) continue;
+        ctx.fillStyle = `rgba(${rgb},${Math.min(1, 0.35 + s * 0.8)})`;
+        ctx.fillText(RAMP[idx], px, py);
       }
     };
 
     const loop = (t: number) => {
-      if (t - last > 90) {
+      if (t - last > 110) {
         last = t;
         draw(t);
       }
@@ -204,7 +232,7 @@ export function MemoryBrain({ className }: { className?: string }) {
       ref={ref}
       className={'mono ' + (className ?? '')}
       role="img"
-      aria-label="A brain in side profile drawn from text. The front holds readable memories, the back the same memories as shifting encrypted glyphs, and a small erased pocket is marked in amber."
+      aria-label="A brain in side profile drawn from text characters, shaded like a lit sculpture. The back of the brain shifts toward mint to suggest encryption, and a small erased pocket glows amber."
     />
   );
 }

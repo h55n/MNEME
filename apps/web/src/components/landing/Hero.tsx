@@ -13,7 +13,7 @@ const LEGEND: [string, string][] = [
 export function Hero() {
   return (
     <section className="bg-[#F1EEE7] text-[#232323] lg:grid lg:grid-cols-12 lg:min-h-screen">
-      <div className="order-2 lg:order-1 lg:col-span-7 relative bg-[#232323] text-[#F1EEE7] flex flex-col min-h-[460px] lg:min-h-0">
+      <div className="order-2 lg:order-1 lg:col-span-7 relative bg-[#232323] text-[#F1EEE7] flex flex-col min-h-[460px] lg:min-h-0 bg-[radial-gradient(65%_45%_at_50%_100%,rgba(143,214,190,0.16),transparent_70%)]">
         {['top-4 left-4', 'top-4 right-4', 'bottom-14 left-4', 'bottom-14 right-4'].map((p) => (
           <span key={p} aria-hidden="true" className={'absolute font-mono text-[14px] leading-none text-[#F1EEE7]/35 ' + p}>+</span>
         ))}
