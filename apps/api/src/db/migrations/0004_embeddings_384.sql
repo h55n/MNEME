@@ -1,5 +1,5 @@
 -- Embeddings move from 1536 dimensions (OpenAI only) to 384 (local model by default).
--- Existing vectors cannot be converted, so they are cleared; rows keep their encrypted
+-- Existing vectors cannot be converted, so they are cleared, and rows keep their encrypted
 -- content and are re-embedded by the reembed job (embedder_id IS NULL marks them).
 DROP INDEX IF EXISTS memories_embedding_idx;
 
