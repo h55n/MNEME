@@ -14,6 +14,7 @@ import { readdir, readFile } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import postgres from 'postgres';
+import { splitStatements } from './db/split-sql.js';
 
 // In compiled ESM output this resolves correctly
 const __filename = fileURLToPath(import.meta.url);
@@ -86,12 +87,7 @@ async function main() {
       // Run in a transaction so a partial failure doesn't corrupt state
       await sql.begin(async (tx) => {
         // Execute each non-empty statement individually
-        const statements = sqlContent
-          .split(';')
-          .map(s => {
-            return s.split('\n').filter(line => !line.trim().startsWith('--')).join('\n').trim();
-          })
-          .filter(s => s.length > 0);
+        const statements = splitStatements(sqlContent);
 
         for (const statement of statements) {
           await tx.unsafe(statement);

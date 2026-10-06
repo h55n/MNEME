@@ -5,6 +5,7 @@ import { vector } from '@electric-sql/pglite-pgvector';
 import { readdir, readFile } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { splitStatements } from '../db/split-sql.js';
 
 const dir = join(dirname(fileURLToPath(import.meta.url)), '..', 'db', 'migrations');
 
@@ -13,7 +14,10 @@ describe('SQL migrations (real Postgres engine with pgvector)', () => {
     const db = new PGlite({ extensions: { vector, uuid_ossp } });
     const files = (await readdir(dir)).filter(f => f.endsWith('.sql')).sort();
     expect(files[0]).toBe('0001_init.sql');
-    for (const f of files) await db.exec(await readFile(join(dir, f), 'utf8'));
+    // Run each file the way migrate.ts does: one statement at a time.
+    for (const f of files) {
+      for (const stmt of splitStatements(await readFile(join(dir, f), 'utf8'))) await db.query(stmt);
+    }
 
     const cols = await db.query<{ column_name: string }>(
       "SELECT column_name FROM information_schema.columns WHERE table_name='memories' AND column_name IN ('embedding','embedder_id')");
@@ -27,4 +31,14 @@ describe('SQL migrations (real Postgres engine with pgvector)', () => {
     await expect(db.query(`SELECT '${v(0)}'::vector(384) <=> '${v(1)}'::vector(384) AS d`)).resolves.toBeTruthy();
     await expect(db.query("SELECT '[1,2,3]'::vector(384)")).rejects.toThrow();
   }, 120_000);
+});
+
+describe('splitStatements', () => {
+  it('ignores semicolons inside comments', () => {
+    expect(splitStatements('-- a; b\nSELECT 1;\n-- c; d\nSELECT 2;')).toEqual(['SELECT 1', 'SELECT 2']);
+  });
+  it('keeps $$ bodies whole and handles a missing final semicolon', () => {
+    const fn = 'CREATE FUNCTION f() RETURNS int AS $$ BEGIN RETURN 1; END; $$ LANGUAGE plpgsql';
+    expect(splitStatements(`${fn};\nSELECT 1`)).toEqual([fn, 'SELECT 1']);
+  });
 });
