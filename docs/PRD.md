@@ -1,6 +1,8 @@
 # MNEME — Product Requirements Document
 
-## Sovereign, Portable, Monetisable Memory Infrastructure for AI Agents
+## Portable Memory Infrastructure for AI Agents
+
+> Hosted trust model (current implementation): content is encrypted at rest, not end-to-end. The API derives vault keys from its own server secret and can read memory plaintext. Self-hosting lets the operator control the server and its secret. Older sovereignty goals in this planning document are aspirations, not guarantees. See [TRUST_MODEL.md](TRUST_MODEL.md).
 
 **Version:** 1.0.0  
 **Date:** July 2026  
@@ -50,7 +52,7 @@ Existing solutions (Mem0, Zep, Letta, Cognee) solve persistence within their own
 
 Three core capabilities:
 
-1. **Sovereign Vault** — Agent memory tied to a DID (Decentralised Identifier), not a platform account. Operator-owned keys. Switch models, keep memory.
+1. **Sovereign Vault** — Agent memory tied to a DID (Decentralised Identifier), not a platform account. API-key access; server-managed content encryption. Switch models, keep memory.
 2. **Cross-Model Portability** — MCP server exposing memory to Claude, GPT, Gemini, Llama, or any MCP-compatible agent without rebuilding.
 3. **Memory Market** — Operators of high-performing agents monetise anonymised memory snapshots. New agents bootstrap domain expertise on day one.
 
@@ -61,7 +63,7 @@ Monad is not decoration. Its 10,000 TPS throughput and sub-second finality enabl
 | Capability               | Mem0       | Zep         | Letta          | Cognee         | **MNEME**                       |
 | ------------------------ | ---------- | ----------- | -------------- | -------------- | ------------------------------- |
 | Cross-model portability  | ❌         | ❌          | Partial        | ❌             | ✅                              |
-| Operator-owned keys      | ❌         | ❌          | ✅ (self-host) | ✅ (self-host) | ✅ (native)                     |
+| Operator-owned keys      | ❌         | ❌          | ✅ (self-host) | ✅ (self-host) | Server-managed encryption; self-host for control                     |
 | On-chain provenance      | ❌         | ❌          | ❌             | ❌             | ✅ (Monad)                      |
 | Memory marketplace       | ❌         | ❌          | ❌             | ❌             | ✅                              |
 | Compliance audit trail   | ❌         | Partial     | ❌             | ❌             | ✅                              |
@@ -97,7 +99,7 @@ Position the on-chain audit trail as the enterprise-grade answer to AI governanc
 
 ### 2.4 Product Principles
 
-- **Sovereignty first.** Operators own their agents' memory. No exceptions, no fine print.
+- **Sovereignty first.** Memory should remain portable. Hosted users must trust the API operator with plaintext.
 - **Model-agnostic always.** If it speaks MCP, it speaks MNEME. No preferential treatment for any model provider.
 - **On-chain where it matters, off-chain where it's smart.** Monad anchors provenance; encrypted off-chain storage keeps costs and privacy intact.
 - **Earn trust before asking for money.** The sovereign vault is free. Monetisation comes from the market and enterprise compliance tiers.
@@ -265,7 +267,7 @@ Specific gaps:
 
 ### 5.1 Memory Vault (Core)
 
-**FR-001:** System SHALL create a sovereign memory vault for each agent, tied to a DID and accessible only via operator-held private keys.
+**FR-001:** System SHALL create a sovereign memory vault for each agent, tied to a DID and accessible through vault-scoped API keys; encryption keys are server-managed.
 
 **FR-002:** Vault SHALL persist across sessions, model switches, and platform migrations without any data loss or reformatting required.
 
@@ -381,7 +383,7 @@ Specific gaps:
 - All data in transit SHALL use TLS 1.3
 - Operator private keys SHALL never touch MNEME servers — all signing happens client-side
 - System SHALL support hardware security module (HSM) integration for enterprise
-- Memory content SHALL be zero-knowledge to MNEME — the platform cannot read stored memories
+- Memory content is encrypted at rest; the API platform can decrypt it. Zero-knowledge content storage is not implemented.
 
 ### 6.4 Maintainability
 
@@ -397,7 +399,7 @@ Specific gaps:
 ### Epic 1: Sovereign Memory Vault
 
 **US-001: Create Agent Vault**  
-_As an agent operator, I want to create a sovereign memory vault for my agent so that all memories are owned by my keys, not a vendor's platform._
+_As an agent operator, I want to create a sovereign memory vault for my agent so that my memory is portable across models, with the hosted API trust boundary documented._
 
 Acceptance Criteria:
 
@@ -713,7 +715,7 @@ interface MemoryAttestation {
 
 - Auth: JWT + API Keys (REST); MCP OAuth 2.1
 - Encryption: AES-256-GCM (at rest), TLS 1.3 (transit)
-- Key Management: Operator-side (never server-side); enterprise HSM support
+- Key Management: Server-side vault keys derived from ENCRYPTION_SECRET; client-side encryption and enterprise HSM support are not implemented.
 
 ---
 
@@ -1109,7 +1111,7 @@ class AttestationBatcher {
 | Threat                         | Likelihood | Impact   | Mitigation                                                      |
 | ------------------------------ | ---------- | -------- | --------------------------------------------------------------- |
 | Operator key compromise        | Medium     | Critical | Key never touches servers; HSM support for enterprise           |
-| Memory content breach          | Low        | High     | AES-256-GCM encryption; zero-knowledge to platform              |
+| Memory content breach          | Low        | High     | AES-256-GCM at rest; the hosted API can decrypt              |
 | PII leak in memory market pack | Medium     | High     | Multi-layer PII scan + anonymisation pipeline                   |
 | Smart contract exploit         | Low        | Critical | Formal verification; multi-sig on contract upgrades; bug bounty |
 | Monad RPC failure              | Medium     | Medium   | Multi-provider fallback; offline queue with retry               |
@@ -1125,10 +1127,11 @@ Operator generates key pair (client-side, never transmitted)
 └── Private key → used to sign vault operations
 
 Memory content encryption:
-  plaintext → AES-256-GCM (key derived from operator key + vault ID) → stored
+  plaintext → API → AES-256-GCM (key derived from server secret + vault ID) → stored
 
-MNEME servers store: encrypted ciphertext + IV only
-MNEME cannot decrypt: operator key never transmitted
+MNEME stores: encrypted ciphertext + IV + authentication tag
+MNEME API can decrypt: it holds ENCRYPTION_SECRET
+Wallet keys do not provide client-side memory encryption
 ```
 
 ### 13.3 Compliance Proofs
@@ -1603,7 +1606,7 @@ memory_packs ──< pack_purchases
 | Temporal Supersession | When a new fact contradicts an old one, the old fact's validity window is closed                                             |
 | PII                   | Personally Identifiable Information — must be removed before any memory pack is listed                                       |
 | Provenance            | Proof that a memory pack was derived from real agent interactions, not synthetically generated                               |
-| Sovereign             | Owned and controlled by the operator, with no dependency on any platform or vendor                                           |
+| Sovereign             | Deployment-control goal; hosted users trust the API operator, who can decrypt content                                           |
 
 ---
 

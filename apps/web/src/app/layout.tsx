@@ -8,8 +8,8 @@ const sans = localFont({ src: '../fonts/Geist-Variable.woff2', variable: '--font
 const mono = localFont({ src: '../fonts/GeistMono-Variable.woff2', variable: '--font-mono', display: 'swap', weight: '100 900' });
 
 export const metadata: Metadata = {
-  title: 'MNEME — Sovereign Agent Memory',
-  description: 'Sovereign, portable, monetisable memory infrastructure for AI agents.',
+  title: 'MNEME — Portable Agent Memory',
+  description: 'Portable, encrypted-at-rest, monetisable memory infrastructure for AI agents.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

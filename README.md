@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="docs/assets/mneme-github-banner.png" alt="MNEME — Sovereign Agent Memory Banner" width="100%" />
+  <img src="docs/assets/mneme-github-banner.png" alt="MNEME — Portable Agent Memory Banner" width="100%" />
 
-  <h1>MNEME — Sovereign Agent Memory</h1>
+  <h1>MNEME — Portable Agent Memory</h1>
 
   <p><strong>Portable · Monetisable · Cryptographically Verifiable AI Agent Memory</strong></p>
 
@@ -26,9 +26,15 @@
 
 ---
 
-> **MNEME** is the only AI agent memory infrastructure with a built-in cryptographically verified **Deletion Prover** — allowing AI agents to persist knowledge across sessions while natively complying with GDPR Article 17 (Right to Erasure) via on-chain Monad tombstoning. Agents own their memory. Operators hold zero raw PII on-chain.
+> **MNEME** is the only AI agent memory infrastructure with a built-in cryptographically verified **Deletion Prover** — allowing AI agents to persist knowledge across sessions while natively complying with GDPR Article 17 (Right to Erasure) via on-chain Monad tombstoning. Memory is portable. Raw memory content is not stored on-chain.
 
 ---
+
+## Hosted trust model
+
+Memory content is encrypted at rest with AES-256-GCM. Vault keys are derived from the API server's `ENCRYPTION_SECRET`, not from a user-held encryption key. The API receives plaintext and decrypts memories during processing, so a hosted service operator can read them. This is **not end-to-end encryption** or a zero-knowledge service. Self-hosting gives you control of the API process and its secret, not protection from whoever administers that process. API keys authorize access; wallet identifiers and on-chain hashes do not stop the server from decrypting.
+
+Read the [trust model](docs/TRUST_MODEL.md) before storing sensitive data.
 
 ## 👥 Team
 
@@ -58,7 +64,7 @@
 
 | Feature | Description |
 |---|---|
-| 🏛 **Sovereign Vaults** | Every AI agent gets a W3C DID-bound vault on Monad. No lock-in, agent owns its memory. |
+| 🏛 **Agent Vaults** | Every AI agent gets a W3C DID-bound vault on Monad. Exportable memory with API-key access; hosted operators control encryption keys. |
 | 🔗 **On-chain Attestations** | Every memory write is hashed and attested via `AttestationAggregator.sol` on Monad Testnet. |
 | 🗑 **GDPR Deletion Prover** | `DeletionProver.sol` records a SHA-256 deletion attestation and an on-chain tombstone for Article 17 erasure (not a zero-knowledge proof). |
 | 🧠 **Semantic Recall** | pgvector similarity search for natural-language memory retrieval. |
@@ -434,7 +440,7 @@ For example, Codex generated the entire Drizzle ORM schema and the viem contract
 
 - **Attestation:** Every `memory_write` produces a SHA-256 hash attested on Monad — tamper-proof audit trail
 - **GDPR Art. 17:** `DeletionProver.sol` tombstones allow verifying deletion with zero PII exposure
-- **DID Sovereignty:** Vaults bound to W3C DIDs; MNEME never holds private keys
+- **Vault identity:** DIDs and wallet identifiers do not provide end-to-end content encryption; the API holds the server secret that derives memory keys.
 - **ReentrancyGuard:** All financial functions in `MemoryMarket.sol`
 - **48-hour timelock:** Treasury parameter changes in `MemoryMarket.sol`
 - **ECDSA verification:** Operator signature checks on all vault operations
