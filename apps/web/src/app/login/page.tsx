@@ -9,7 +9,7 @@ import { Button, Input, Card, Spinner } from '@/components/ui';
 import { LogIn } from 'lucide-react';
 import { toast } from 'sonner';
 
-const VAULT_ID = /^vlt_[A-Za-z0-9_-]{3,}$/;
+const VAULT_ID = /^(?:vlt_[A-Za-z0-9_-]{3,}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
 
 function describe(err: unknown): { field?: 'vaultId' | 'apiKey' | 'apiUrl'; message: string } {
   if (err instanceof ApiError) {
@@ -47,7 +47,7 @@ function LoginForm() {
 
   const apiUrl = needsApiUrl ? normalizeApiUrl(form.apiUrl) : BUILT_IN_API_URL;
   const errors = {
-    vaultId: !form.vaultId.trim() ? 'Enter your Vault ID.' : !VAULT_ID.test(form.vaultId.trim()) ? 'A Vault ID looks like vlt_...' : '',
+    vaultId: !form.vaultId.trim() ? 'Enter your Vault ID.' : !VAULT_ID.test(form.vaultId.trim()) ? 'Enter a UUID or vlt_ Vault ID.' : '',
     apiKey: !form.apiKey.trim() ? 'Enter your API key.' : '',
     apiUrl: needsApiUrl ? (!form.apiUrl.trim() ? 'Enter the address of your MNEME server.' : !apiUrl ? 'That is not a valid http(s) address.' : '') : '',
   };
@@ -162,10 +162,8 @@ function LoginForm() {
         </Card>
 
         <p className="mt-6 text-center text-body-md text-neutral-500">
-          No server yet? MNEME is self-hosted. Clone the repo, run{' '}
-          <code className="font-mono text-[13px]">docker-compose up -d</code> and{' '}
-          <code className="font-mono text-[13px]">npm run dev</code>, then create a vault and paste its ID and key here.{' '}
-          <a className="underline" href="https://github.com/h55n/MNEME#-getting-started-local" target="_blank" rel="noreferrer">Setup guide</a>
+          New here? <a className="underline" href="/#start">Create a hosted vault</a>. You can also use your own MNEME server.
+
         </p>
       </div>
     </div>

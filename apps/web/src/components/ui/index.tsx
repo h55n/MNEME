@@ -1,11 +1,12 @@
 'use client';
-import { type ButtonHTMLAttributes, type InputHTMLAttributes, forwardRef } from 'react';
+import { type InputHTMLAttributes, forwardRef } from 'react';
 import { clsx } from 'clsx';
-import { motion, HTMLMotionProps } from 'framer-motion';
+import { motion, type HTMLMotionProps } from 'framer-motion';
 
 // ── Button ────────────────────────────────────────────────────────────────────
 
-interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'ref'> {
+interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'ref' | 'children'> {
+  children?: React.ReactNode;
   variant?: 'primary' | 'secondary' | 'link' | 'destructive' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;

@@ -184,8 +184,8 @@ export const marketApi = {
   purchasePack: (packId: string, body: { monadTxHash: string; buyerAddress?: string }) =>
     request<any>('POST', `/market/packs/${packId}/purchase`, body),
 
-  scanPack: (contents: string[]) =>
-    request<any>('POST', '/market/packs/scan', { contents }),
+  scanPack: (contents: string[], processingConsent: boolean) =>
+    request<any>('POST', '/market/packs/scan', { contents, processingConsent }),
 
   ingestPack: (vaultId: string, packId: string) =>
     request<any>('POST', `/vaults/${vaultId}/ingest/${packId}`),
