@@ -33,13 +33,14 @@ export function Hero() {
       </div>
       <div className="order-1 lg:order-2 lg:col-span-5 flex flex-col justify-center px-5 sm:px-8 lg:pl-14 lg:pr-16 pt-12 pb-14 lg:py-16">
         <Reveal>
-          <p className="eyebrow mb-5">Sovereign memory for AI agents.</p>
+          <p className="eyebrow mb-5">Portable memory for AI agents.</p>
           <h1 className="font-medium text-balance mb-8 text-[clamp(40px,4.6vw,72px)] leading-none">
-            Memory your agent owns. Forgetting it, provable.
+            Memory you can take with you. Forgetting it, provable.
           </h1>
           <p className="max-w-[460px] text-[clamp(15px,1.3vw,18px)] leading-[1.35] text-[#5B5A56]">
             Keep your agent&apos;s memory when you switch models. Sell what it knows. When someone asks to be forgotten, record a SHA-256 deletion attestation and a tombstone on-chain.
           </p>
+          <p className="mt-4 max-w-[460px] text-[14px] leading-[1.4] text-[#5B5A56]">Encrypted at rest, not end-to-end. The hosted API can read memory while processing it. Self-host to control the server and its keys.</p>
           <div className="mt-8 flex flex-wrap gap-2">
             <a href="#start" className="font-mono uppercase text-[14px] h-12 px-6 inline-flex items-center rounded-lg bg-[#0A0A0A] text-[#F1EEE7] hover:bg-[#FF9100] hover:text-[#0A0A0A] transition-colors">Get a vault</a>
             <a href="#developers" className="font-mono uppercase text-[14px] h-12 px-6 inline-flex items-center rounded-lg border border-[#0A0A0A]/25 text-[#0A0A0A] hover:border-[#0A0A0A] transition-colors">Add to your agent</a>
