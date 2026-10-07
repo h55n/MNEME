@@ -13,6 +13,7 @@ export function StartVault() {
   const router = useRouter();
   const { setSession } = useAuthStore();
   const [credentials, setCredentials] = useState<{ vaultId: string; apiKey: string } | null>(null);
+  const [showApiKey, setShowApiKey] = useState(false);
   const [form, setForm] = useState({ operatorAddress: '', name: '' });
 
   const createMut = useMutation({
@@ -49,12 +50,15 @@ export function StartVault() {
             <h3 className="text-xl">Save your vault credentials</h3>
             <p>Your API key is shown once here and is not saved in your browser. Keep it in a password manager. Reloading signs you out.</p>
             <Input label="Vault ID" value={credentials.vaultId} readOnly />
-            <Input label="API key" type="password" value={credentials.apiKey} readOnly />
-            <Button type="button" onClick={async () => {
+            <Input label="API key" type={showApiKey ? 'text' : 'password'} value={credentials.apiKey} readOnly />
+            <Button type="button" variant="secondary" className="w-full" aria-pressed={showApiKey} onClick={() => setShowApiKey((shown) => !shown)}>
+              {showApiKey ? 'Hide API key' : 'Show API key'}
+            </Button>
+            <Button type="button" className="w-full" onClick={async () => {
               try { await navigator.clipboard.writeText(JSON.stringify(credentials, null, 2)); toast.success('Copied. Save it in a password manager.'); }
               catch { toast.error('Copy failed. Select the credentials and save them manually.'); }
             }}>Copy credentials</Button>
-            <Button type="button" onClick={() => { setCredentials(null); router.push('/dashboard'); }}>I saved them. Open dashboard</Button>
+            <Button type="button" className="w-full" onClick={() => { setCredentials(null); router.push('/dashboard'); }}>I saved them. Open dashboard</Button>
           </div>
         ) : <form
           className="lg:col-span-5 lg:col-start-8 rounded-xl bg-[#141414] ring-1 ring-white/15 text-[#F1EEE7] p-5 sm:p-6 space-y-3"
