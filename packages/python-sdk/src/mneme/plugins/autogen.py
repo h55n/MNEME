@@ -1,4 +1,5 @@
-from typing import Optional, Dict, Any, List
+from typing import Any, Dict, List, Optional
+
 try:
     from autogen import ConversableAgent
 except ImportError:
@@ -6,38 +7,39 @@ except ImportError:
 
 from ..client import MnemeClient
 
-class MnemeConversableAgent(ConversableAgent):
-    """
-    An AutoGen agent that automatically recalls MNEME context before generating replies,
-    and stores new information after generating replies.
-    """
-    def __init__(self, name: str, vault_id: str, api_key: Optional[str] = None, budget_tokens: int = 1500, **kwargs):
-        if ConversableAgent is object:
-            raise ImportError("pyautogen is not installed. Please install it using `pip install pyautogen`.")
-            
-        super().__init__(name=name, **kwargs)
-        self.mneme = MnemeClient(api_key=api_key, vault_id=vault_id)
-        self.budget_tokens = budget_tokens
-        
-        # Register hooks
-        self.register_reply([ConversableAgent, None], MnemeConversableAgent._generate_reply_with_mneme, position=1)
 
-    def _generate_reply_with_mneme(self, messages: Optional[List[Dict]] = None, sender: Optional[Any] = None, config: Optional[Any] = None) -> tuple[bool, Optional[str]]:
+class MnemeConversableAgent(ConversableAgent):
+    """Recall context for each turn without changing persistent system messages.
+
+    Uses the pyautogen 0.2 message-processing hook. This adapter recalls only;
+    callers explicitly store useful replies through ``agent.mneme.write``.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        vault_id: str,
+        api_key: Optional[str] = None,
+        budget_tokens: int = 1500,
+        base_url: str = "https://api.mneme.dev/v1",
+        **kwargs,
+    ):
+        if ConversableAgent is object:
+            raise ImportError("Install the AutoGen adapter with `pip install mneme[autogen]`.")
+        super().__init__(name=name, **kwargs)
+        self.mneme = MnemeClient(api_key=api_key, vault_id=vault_id, base_url=base_url)
+        self.budget_tokens = budget_tokens
+        self.register_hook("process_all_messages_before_reply", self._with_mneme_context)
+
+    def _with_mneme_context(self, messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         if not messages:
-            return False, None
-            
-        last_message = messages[-1].get("content", "")
-        
-        # Fetch memory context
-        recall = self.mneme.recall(query=last_message, budget_tokens=self.budget_tokens)
-        context_str = "\n".join([f"[{m.type.upper()}] {m.content}" for m in recall.memories])
-        
-        # Inject context into the system message temporarily
-        original_system_message = self.system_message
-        self.update_system_message(f"{original_system_message}\n\n[MNEME CONTEXT]\n{context_str}")
-        
-        # We return False, None so that AutoGen falls back to the default LLM generation reply method
-        # but the system message now contains the injected memory.
-        # After generation, we don't reset it here because AutoGen doesn't have a post-generation hook easily, 
-        # but in a real implementation we would restore `original_system_message` or use `generate_oai_reply` override.
-        return False, None
+            return messages
+        query = messages[-1].get("content", "")
+        if not isinstance(query, str) or not query.strip():
+            return messages
+        recall = self.mneme.recall(query=query, budget_tokens=self.budget_tokens)
+        if not recall.memories:
+            return messages
+        context = "\n".join(f"[{m.type.upper()}] {m.content}" for m in recall.memories)
+        # The hook gets a copy for this reply. Never mutate the conversation log.
+        return [{"role": "system", "content": f"[MNEME CONTEXT]\n{context}"}, *messages]
