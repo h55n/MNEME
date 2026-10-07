@@ -3,7 +3,8 @@
  *
  * Tests the full happy path using fastify.inject() (in-process, no external HTTP server).
  * Mocks: attestation batcher, embedding service, Neo4j graph service.
- * Requires: PostgreSQL (DATABASE_URL env var, or TEST_DATABASE_URL).
+ * Uses an isolated PGlite PostgreSQL engine with pgvector when no test database is configured.
+ * With DATABASE_URL or TEST_DATABASE_URL, exercises the configured PostgreSQL service.
  *
  * Run: npm test --workspace=apps/api
  */
@@ -12,6 +13,35 @@ import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import Fastify, { type FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
+
+// A real isolated PostgreSQL engine lets the full route flow run without external services.
+const testDatabase = vi.hoisted(() => ({ embedded: null as null | { close(): Promise<void> } }));
+vi.mock('../db/index.js', async (importOriginal) => {
+  if (process.env.DATABASE_URL || process.env.TEST_DATABASE_URL) return importOriginal();
+  const { PGlite } = await import('@electric-sql/pglite');
+  const { uuid_ossp } = await import('@electric-sql/pglite/contrib/uuid_ossp');
+  const { vector } = await import('@electric-sql/pglite-pgvector');
+  const { drizzle } = await import('drizzle-orm/pglite');
+  const schema = await import('../db/schema.js');
+  const { readdir, readFile } = await import('node:fs/promises');
+  const { splitStatements } = await import('../db/split-sql.js');
+  const client = new PGlite({ extensions: { vector, uuid_ossp } });
+  testDatabase.embedded = client;
+  const dir = new URL('../db/migrations/', import.meta.url);
+  for (const file of (await readdir(dir)).filter(f => f.endsWith('.sql')).sort()) {
+    for (const stmt of splitStatements(await readFile(new URL(file, dir), 'utf8'))) await client.query(stmt);
+  }
+  const embeddedDb = drizzle(client, { schema });
+  // postgres-js returns raw execute rows directly; PGlite wraps them in { rows }.
+  const execute = embeddedDb.execute.bind(embeddedDb);
+  const compatibleDb = new Proxy(embeddedDb, {
+    get(target, prop, receiver) {
+      if (prop === 'execute') return async (...args: Parameters<typeof execute>) => (await execute(...args)).rows;
+      return Reflect.get(target, prop, receiver);
+    },
+  });
+  return { ...schema, db: compatibleDb };
+});
 
 // ── Mock heavy dependencies before importing routes ───────────────────────────
 
@@ -32,6 +62,8 @@ vi.mock('../services/embedding.service.js', () => ({
     ),
   },
 }));
+
+vi.mock('../services/reranker.service.js', () => ({ rerankerService: { rerank: vi.fn(async () => []) } }));
 
 vi.mock('../services/graph.service.js', () => ({
   graphService: {
@@ -115,7 +147,7 @@ const CODING_MEMORIES = [
 
 // ── Suite ─────────────────────────────────────────────────────────────────────
 
-describe.skipIf(!process.env.DATABASE_URL && !process.env.TEST_DATABASE_URL)('MNEME E2E Happy Path', () => {
+describe('MNEME E2E Happy Path', () => {
 
   beforeAll(async () => {
     // Use test database if provided, otherwise use main DATABASE_URL
@@ -127,6 +159,7 @@ describe.skipIf(!process.env.DATABASE_URL && !process.env.TEST_DATABASE_URL)('MN
 
   afterAll(async () => {
     if (app) await app.close();
+    await testDatabase.embedded?.close();
   });
 
   // ── Step 1: Create vault ────────────────────────────────────────────────────
