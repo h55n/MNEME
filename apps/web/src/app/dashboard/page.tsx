@@ -59,7 +59,7 @@ export default function DashboardPage() {
           <Badge variant="orange">Active</Badge>
         </div>
         <p className="text-body-md text-neutral-500">
-          Sovereign memory vault · <MonoHash hash={operatorAddress ?? ''} />
+          Agent memory vault · <MonoHash hash={operatorAddress ?? ''} />
         </p>
         <p className="mono text-xs text-neutral-400 mt-1">{vaultId}</p>
       </div>
