@@ -28,3 +28,14 @@ describe('market launch gate', () => {
     await app.close();
   });
 });
+
+describe('scan input boundaries', () => {
+  it('rejects false consent and over-limit plaintext without scanning', async () => {
+    const app = Fastify(); await app.register(marketRoutes, { prefix: '/v1' });
+    const url = '/v1/market/packs/scan';
+    const headers = { authorization: 'Bearer test-key' };
+    expect((await app.inject({ method: 'POST', url, headers, payload: { contents: ['hello'], processingConsent: false } })).statusCode).toBe(400);
+    expect((await app.inject({ method: 'POST', url, headers, payload: { contents: Array(6).fill('x'.repeat(50000)), processingConsent: true } })).statusCode).toBe(413);
+    await app.close();
+  });
+});
