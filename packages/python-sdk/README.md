@@ -17,7 +17,8 @@ pip install mneme[autogen]
 
 ## Endpoint and timeout
 
-The default endpoint is `https://api.mneme.dev/v1`. If you run your own API,
+The default endpoint is the local development API at `http://localhost:3001/v1`.
+No public production API is assumed. If you run your own API,
 pass `base_url` to `MnemeClient` or any adapter. Requests use a 30-second timeout;
 pass `timeout` to the client to change it. Call `client.close()` when finished.
 

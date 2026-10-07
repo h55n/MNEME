@@ -25,7 +25,7 @@ class MnemeClient:
         self,
         api_key: Optional[str] = None,
         vault_id: Optional[str] = None,
-        base_url: str = "https://api.mneme.dev/v1",
+        base_url: str = "http://localhost:3001/v1",
         timeout: float = 30.0,
     ):
         self.api_key = api_key or os.environ.get("MNEME_API_KEY")

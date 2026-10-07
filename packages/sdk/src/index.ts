@@ -8,7 +8,7 @@
  * const mneme = new MnemeClient({
  *   apiKey: 'mneme_...',
  *   vaultId: 'uuid-...',
- *   baseUrl: 'https://api.mneme.dev/v1',
+ *   baseUrl: 'http://localhost:3001/v1',
  * });
  *
  * // Write a memory
@@ -48,7 +48,7 @@ export interface MnemeClientConfig {
   vaultId: string;
   /** Operator's public key / address for encryption */
   operatorPublicKey?: string;
-  /** Base URL (default: https://api.mneme.dev/v1) */
+  /** Base URL (default: http://localhost:3001/v1) */
   baseUrl?: string;
   /** Request timeout in ms (default: 30000) */
   timeout?: number;
@@ -73,7 +73,7 @@ class HttpClient {
   private readonly timeout: number;
 
   constructor(config: MnemeClientConfig) {
-    this.baseUrl = config.baseUrl ?? 'https://api.mneme.dev/v1';
+    this.baseUrl = config.baseUrl ?? 'http://localhost:3001/v1';
     this.timeout = config.timeout ?? 30_000;
     this.headers = {
       'Content-Type': 'application/json',

@@ -21,7 +21,7 @@ class MnemeConversableAgent(ConversableAgent):
         vault_id: str,
         api_key: Optional[str] = None,
         budget_tokens: int = 1500,
-        base_url: str = "https://api.mneme.dev/v1",
+        base_url: str = "http://localhost:3001/v1",
         **kwargs,
     ):
         if ConversableAgent is object:

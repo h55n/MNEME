@@ -81,6 +81,7 @@ def test_environment_config(monkeypatch):
     monkeypatch.setenv("MNEME_VAULT_ID", "env-vault")
     c = MnemeClient()
     assert c.vault_id == "env-vault"
+    assert c.base_url == "http://localhost:3001/v1"
     assert c.session.headers["Authorization"] == "Bearer env-key"
     c.close()
     with pytest.raises(ValueError, match="positive"):

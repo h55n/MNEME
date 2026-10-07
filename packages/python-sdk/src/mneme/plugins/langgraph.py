@@ -19,7 +19,7 @@ class MnemeMemoryPlugin:
         api_key: Optional[str] = None,
         budget_tokens: int = 1500,
         state_key: str = "messages",
-        base_url: str = "https://api.mneme.dev/v1",
+        base_url: str = "http://localhost:3001/v1",
     ):
         if StateGraph is None:
             raise ImportError(
