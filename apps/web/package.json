@@ -6,11 +6,10 @@
     "build": "next build",
     "dev": "next dev -p 3000",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@getpara/evm-wallet-connectors": "^3.8.0",
-    "@getpara/react-sdk": "^3.8.0",
     "@hookform/resolvers": "^3.9.0",
     "@mneme/shared": "*",
     "@tanstack/react-query": "^5.101.2",
@@ -19,7 +18,7 @@
     "force-graph": "^1.51.4",
     "framer-motion": "^12.42.2",
     "lucide-react": "^0.411.0",
-    "next": "14.2.5",
+    "next": "14.2.35",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-force-graph-2d": "^1.29.1",
@@ -27,8 +26,6 @@
     "recharts": "^2.12.7",
     "sonner": "^1.5.0",
     "tailwind-merge": "^2.4.0",
-    "viem": "^2.55.2",
-    "wagmi": "^3.7.3",
     "zod": "^3.23.8",
     "zustand": "^4.5.4"
   },

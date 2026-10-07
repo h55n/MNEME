@@ -23,12 +23,14 @@
   "devDependencies": {
     "@types/node": "^20.0.0",
     "eslint": "^8.57.0",
-    "next": "^14.2.5",
+    "next": "14.2.35",
     "prettier": "^3.2.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "turbo": "^2.0.0",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint-config-next": "14.2.35"
   },
   "engines": {
     "node": ">=22.0.0",
