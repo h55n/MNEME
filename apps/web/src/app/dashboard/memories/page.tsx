@@ -139,7 +139,7 @@ export default function MemoriesPage() {
           </div>
           Memories
         </h1>
-        <p className="text-body-lg text-neutral-400">Manage the agent's sovereign memory vault.</p>
+        <p className="text-body-lg text-neutral-400">Manage the agent's memory vault.</p>
       </div>
 
       {/* Tab nav */}
@@ -440,4 +440,4 @@ export default function MemoriesPage() {
       )}
     </div>
   );
-}
+        }
