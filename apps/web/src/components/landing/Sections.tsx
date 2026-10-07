@@ -13,7 +13,7 @@ function H2({ children, dark }: { children: React.ReactNode; dark?: boolean }) {
 }
 
 const PILLARS = [
-  ['01', 'Portable memory', 'Memory lives in a vault tied to your keys, not to a model vendor. Export it as JSON and import it anywhere.'],
+  ['01', 'Portable memory', 'Memory lives in a vault with API-key access, not in a model vendor\'s memory silo. Export it as JSON and import it anywhere.'],
   ['02', 'Provable erasure', 'Forgetting records a SHA-256 deletion attestation and a tombstone on Monad. Raw content never goes on-chain.'],
   ['03', 'Sell what it knows', 'List curated knowledge packs on the Memory Market. Sellers keep 80% of every sale, settled in USDC.'],
 ];
@@ -233,6 +233,7 @@ export function MarketSection() {
 }
 
 const FAQ = [
+  ['Can the hosted server read my memories?', 'Yes. Content is encrypted at rest, but the API holds the server secret used to derive vault keys and decrypts content while processing requests. This is not end-to-end encryption. Self-hosting lets you control that server and its secret.'],
   ['Does my data go on-chain?', 'No. Only hashes and tombstones are written to Monad. Memory content stays in your vault.'],
   ['Is the deletion proof a zero-knowledge proof?', 'No. It is a SHA-256 deletion attestation plus an on-chain tombstone. It shows a deletion was recorded at a point in time.'],
   ['Which agents work with it?', 'Any MCP client, including Claude Desktop, Cursor and Windsurf. There is also a REST API and SDKs for TypeScript and Python.'],
