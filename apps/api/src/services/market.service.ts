@@ -305,7 +305,7 @@ export class MarketService {
     return rows.map(r => this.toPackType(r.pack));
   }
 
-  // ── Public plaintext scan (Option B endpoint) ─────────────────────────────
+  // ── Consented hosted plaintext scan ─────────────────────────────
 
   /**
    * Scan operator-provided plaintext content for PII.
@@ -354,7 +354,7 @@ export class MarketService {
 
     const report: AnonymisationReport = {
       entitiesAnonymised: 0,
-      piiItemsRemoved: totalPiiItems,
+      piiItemsRemoved: 0,
       differentialPrivacyApplied: false,
       scanTimestamp: new Date().toISOString(),
       passed,

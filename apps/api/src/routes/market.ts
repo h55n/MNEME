@@ -121,10 +121,19 @@ const PurchaseSchema = z.object({
 });
 
 const ScanSchema = z.object({
+  processingConsent: z.literal(true),
   contents: z.array(z.string().min(1).max(50000).transform(s => s.replace(/\0/g, ''))).min(1).max(100),
 });
 
 export async function marketRoutes(fastify: FastifyInstance) {
+  // Paid exchange is unavailable until contract/listing identity and escrow integration
+  // are implemented and verified. Do not accept money or create misleading listings.
+  fastify.addHook('preHandler', async (request, reply) => {
+    const url = request.url.split('?')[0];
+    if (request.method !== 'GET' && !url.endsWith('/market/packs/scan') && !url.endsWith('/sample')) {
+      return reply.status(503).send(errorResponse({ code: 'MARKET_UNAVAILABLE', message: 'Paid memory exchange is not available. No purchase or listing was recorded.' }));
+    }
+  });
   // ── GET /market/packs — browse ─────────────────────────────────────────────
   fastify.get('/market/packs', async (request, reply) => {
     const query = BrowseQuerySchema.safeParse(request.query);
@@ -449,8 +458,8 @@ export async function marketRoutes(fastify: FastifyInstance) {
   });
 
   // ── POST /market/packs/scan — plaintext PII scan (no storage) ────────────
-  // Option B stub: operator decrypts locally, sends plaintext for scanning
-  fastify.post('/market/packs/scan', async (request, reply) => {
+  // Authenticated, consented hosted scan. Regex only, no external provider or persistence.
+  fastify.post('/market/packs/scan', { preHandler: [authMiddleware], bodyLimit: 256000 }, async (request, reply) => {
     const body = ScanSchema.safeParse(request.body);
     if (!body.success) {
       return reply.status(400).send(errorResponse({
@@ -460,6 +469,7 @@ export async function marketRoutes(fastify: FastifyInstance) {
       }));
     }
 
+    reply.header('Cache-Control', 'no-store');
     const report = await marketService.scanPlaintext(body.data.contents);
     return reply.send(successResponse(report));
   });
