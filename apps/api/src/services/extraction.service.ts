@@ -58,10 +58,24 @@ Rules:
 const EXTRACTION_SERVICE_URL = process.env.EXTRACTION_SERVICE_URL
   ?? (process.env.NODE_ENV === 'production' ? 'http://extraction:8001' : 'http://localhost:8001');
 
+function validateExtraction(value: unknown): ExtractionResult | null {
+  if (!value || typeof value !== 'object') return null;
+  const result = value as Partial<ExtractionResult>;
+  if (!Array.isArray(result.entities) || !Array.isArray(result.facts)) return null;
+  const text = (value: unknown) => typeof value === 'string' && value.length > 0 && value.length <= 2000;
+  return {
+    entities: result.entities.filter(entity => entity && text(entity.label) && text(entity.type)).slice(0, 20),
+    facts: result.facts.filter(fact => fact && text(fact.subject) && text(fact.subjectType) &&
+      text(fact.object) && text(fact.objectType) && text(fact.fact) &&
+      typeof fact.confidence === 'number' && Number.isFinite(fact.confidence) &&
+      fact.confidence >= 0.6 && fact.confidence <= 1).slice(0, 20),
+  };
+}
+
 async function callPythonService(params: ExtractParams): Promise<ExtractionResult | null> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
 
     const res = await fetch(`${EXTRACTION_SERVICE_URL}/extract`, {
       method: 'POST',
@@ -75,12 +89,12 @@ async function callPythonService(params: ExtractParams): Promise<ExtractionResul
       signal: controller.signal,
     });
 
-    clearTimeout(timeout);
-
     if (!res.ok) return null;
-    return await res.json() as ExtractionResult;
+    return validateExtraction(await res.json());
   } catch {
     return null; // Python service unavailable — fall back to Node
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
@@ -115,10 +129,7 @@ async function callAnthropic(content: string): Promise<ExtractionResult> {
     const jsonStr = jsonMatch[1] ?? rawText;
 
     const parsed = JSON.parse(jsonStr.trim());
-    return {
-      entities: Array.isArray(parsed.entities) ? parsed.entities.slice(0, 20) : [],
-      facts: Array.isArray(parsed.facts) ? parsed.facts.slice(0, 20) : [],
-    };
+    return validateExtraction(parsed) ?? EMPTY_RESULT;
   } catch (err) {
     logger.warn({ err }, 'Anthropic extraction failed');
     return EMPTY_RESULT;
@@ -149,10 +160,7 @@ async function callOpenAI(content: string): Promise<ExtractionResult> {
     if (!rawText) return EMPTY_RESULT;
 
     const parsed = JSON.parse(rawText);
-    return {
-      entities: Array.isArray(parsed.entities) ? parsed.entities.slice(0, 20) : [],
-      facts: Array.isArray(parsed.facts) ? parsed.facts.slice(0, 20) : [],
-    };
+    return validateExtraction(parsed) ?? EMPTY_RESULT;
   } catch (err) {
     logger.warn({ err }, 'OpenAI extraction fallback failed');
     return EMPTY_RESULT;
