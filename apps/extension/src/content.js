@@ -11,6 +11,7 @@ function createMnemeButton(textarea) {
   wrapper.style.width = '100%';
   
   const btn = document.createElement('button');
+  btn.type = 'button';
   btn.innerText = '🧠 MNEME';
   btn.style.position = 'absolute';
   btn.style.right = '10px';
@@ -27,7 +28,7 @@ function createMnemeButton(textarea) {
 
   btn.addEventListener('click', async (e) => {
     e.preventDefault();
-    const query = textarea.value || "General context for this session";
+    const query = (textarea.value || "General context for this session").slice(0, 1000);
     
     btn.innerText = '🧠 Fetching...';
     btn.disabled = true;

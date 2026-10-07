@@ -83,3 +83,10 @@ button:hover {
   font-size: 14px;
   font-weight: 500;
 }
+
+.status-error {
+  display: block;
+  margin-top: 12px;
+  color: #b91c1c;
+  font-size: 14px;
+}

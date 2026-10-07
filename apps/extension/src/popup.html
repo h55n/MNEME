@@ -12,29 +12,29 @@
     </div>
     
     <div class="form-group">
-      <label>API URL</label>
+      <label for="apiUrl">API URL</label>
       <input type="text" id="apiUrl" placeholder="https://api.mneme.dev/v1">
     </div>
 
     <div class="form-group">
-      <label>API Key</label>
+      <label for="apiKey">API Key</label>
       <input type="password" id="apiKey" placeholder="mnk_...">
     </div>
 
     <div class="form-group">
-      <label>Vault ID (Optional)</label>
+      <label for="vaultId">Vault ID</label>
       <input type="text" id="vaultId" placeholder="vlt_...">
-      <p class="help">Defaults to the API Key's primary vault if empty.</p>
+      <p class="help">Required. Use the vault ID from your API.</p>
     </div>
 
     <div class="form-group">
-      <label>Budget (Tokens)</label>
-      <input type="number" id="budgetTokens" value="1000">
+      <label for="budgetTokens">Budget (Tokens)</label>
+      <input type="number" id="budgetTokens" min="1" max="100000" value="1000">
     </div>
 
     <button id="saveBtn">Save Configuration</button>
     
-    <div id="status" class="status-hidden">Saved!</div>
+    <div id="status" role="status" aria-live="polite" class="status-hidden">Saved!</div>
   </div>
   <script src="popup.js"></script>
 </body>
