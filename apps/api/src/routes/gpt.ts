@@ -29,7 +29,7 @@ info:
   version: 1.0.0
   description: Memory layer for AI agents. Allows the agent to read and write memories for the user.
 servers:
-  - url: https://api.mneme.dev/v1
+  - url: http://localhost:3001/v1
 paths:
   /gpt/recall:
     post:

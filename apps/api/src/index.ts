@@ -6,6 +6,7 @@ import rateLimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import { vaultRoutes } from './routes/vaults.js';
+import { livenessRoutes } from './routes/liveness.js';
 import { memoryRoutes } from './routes/memories.js';
 import { marketRoutes } from './routes/market.js';
 import { complianceRoutes } from './routes/compliance.js';
@@ -228,6 +229,8 @@ async function bootstrap() {
   fastify.addHook('onSend', async (request, reply) => {
     reply.header('X-Request-ID', request.id);
   });
+
+  await fastify.register(livenessRoutes);
 
   // ── Health ────────────────────────────────────────────────────────────────
   let cachedDeps: DependencyStatus | null = null;

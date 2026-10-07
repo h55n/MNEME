@@ -4,14 +4,7 @@
   "version": "1.0.0",
   "description": "Injects context-aware memories into consumer AI interfaces without proxying your traffic.",
   "permissions": [
-    "storage",
-    "scripting",
-    "activeTab"
-  ],
-  "host_permissions": [
-    "*://chatgpt.com/*",
-    "*://claude.ai/*",
-    "*://gemini.google.com/*"
+    "storage"
   ],
   "action": {
     "default_popup": "src/popup.html",
@@ -27,8 +20,15 @@
         "*://claude.ai/*",
         "*://gemini.google.com/*"
       ],
-      "js": ["src/content.js"],
+      "js": [
+        "src/content.js"
+      ],
       "run_at": "document_end"
     }
+  ],
+  "optional_host_permissions": [
+    "https://*/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*"
   ]
 }

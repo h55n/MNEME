@@ -15,6 +15,11 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('MnemeClient requests', () => {
+  it('defaults to the local development API, never an unowned public domain', async () => {
+    fetchMock.mockResolvedValue(reply({ success: true, data: {} }));
+    await createMnemeClient({ apiKey: 'k', vaultId: VAULT }).vault.get();
+    expect(fetchMock.mock.calls[0][0]).toBe(`http://localhost:3001/v1/vaults/${VAULT}`);
+  });
   it('writes a memory to the right URL with auth headers and body', async () => {
     fetchMock.mockResolvedValue(reply({ success: true, data: { contentHash: 'h' } }));
     const out = await client().memories.write({ content: 'I live in Pune' } as any);

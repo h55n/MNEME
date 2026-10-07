@@ -1,61 +1,58 @@
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'fetchMnemeContext') {
-    handleFetchContext(request.query)
-      .then(context => sendResponse({ success: true, context }))
-      .catch(err => sendResponse({ success: false, error: err.message }));
-    
-    // Return true to indicate we will send a response asynchronously
-    return true;
-  }
+  if (request.action !== 'fetchMnemeContext') return false;
+  handleFetchContext(request.query)
+    .then(context => sendResponse({ success: true, context }))
+    .catch(() => sendResponse({ success: false, error: 'Recall failed. Check your endpoint, vault and key.' }));
+  return true;
 });
 
 async function handleFetchContext(query) {
-  const config = await chrome.storage.sync.get(['apiUrl', 'apiKey', 'vaultId', 'budgetTokens']);
-  
-  if (!config.apiKey) {
-    throw new Error('MNEME API Key not configured. Please click the extension icon to set it up.');
+  const config = await chrome.storage.local.get(['apiUrl', 'apiKey', 'vaultId', 'budgetTokens']);
+  if (!config.apiKey || !config.vaultId || !config.apiUrl) {
+    throw new Error('Configure an API endpoint, key and vault.');
   }
-
-  const baseUrl = config.apiUrl || 'https://mneme-five.vercel.app/api/v1';
-  let endpoint = '';
-  
-  if (config.vaultId) {
-    endpoint = `${baseUrl}/vaults/${config.vaultId}/memories/recall`;
-  } else {
-    // If no vaultId is specified, the GPT action endpoint handles it via API key
-    endpoint = `${baseUrl}/gpt/recall`;
+  if (typeof query !== 'string' || !query.trim() || query.length > 1000) {
+    throw new Error('Query must contain 1 to 1000 characters.');
   }
-
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${config.apiKey}`
-    },
-    body: JSON.stringify({
-      query,
-      budget_tokens: config.budgetTokens || 1000,
-      task_scope: 'chat_session'
-    })
-  });
-
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`MNEME API Error: ${response.status} ${errText}`);
+  const url = new URL(config.apiUrl);
+  const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
+  if (url.username || url.password || url.search || url.hash ||
+      (url.protocol !== 'https:' && !(url.protocol === 'http:' && loopback))) {
+    throw new Error('Use HTTPS or a local development endpoint.');
   }
-
-  const result = await response.json();
-  
-  // Handle both standard recall and GPT action formats
-  const memories = result.data.memories;
-  if (!memories || memories.length === 0) {
-    return 'No relevant memories found.';
+  const permission = `${url.origin}/*`;
+  if (!await chrome.permissions.contains({ origins: [permission] })) {
+    throw new Error('API host access is not granted.');
   }
-
-  if (typeof memories[0] === 'string') {
-    return memories.join('\n');
+  const budget = Number(config.budgetTokens ?? 1000);
+  if (!Number.isInteger(budget) || budget < 1 || budget > 100000) {
+    throw new Error('Invalid token budget.');
   }
-
-  // Standard recall format mapping
-  return memories.map(m => `[${m.type.toUpperCase()}] ${m.content}`).join('\n');
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30000);
+  try {
+    const endpoint = `${url.href.replace(/\/$/, '')}/vaults/${encodeURIComponent(config.vaultId)}/memories/recall`;
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${config.apiKey}` },
+      body: JSON.stringify({ query, budget_tokens: budget, task_scope: 'chat_session' }),
+      signal: controller.signal,
+      redirect: 'error'
+    });
+    if (!response.ok) throw new Error(`API returned HTTP ${response.status}`);
+    const result = await response.json();
+    if (result.success !== true || !Array.isArray(result.data?.memories)) {
+      throw new Error('Invalid recall response.');
+    }
+    const memories = result.data.memories;
+    if (!memories.length) return 'No relevant memories found.';
+    return memories.map(m => {
+      if (typeof m.content !== 'string' || typeof m.type !== 'string') {
+        throw new Error('Invalid memory response.');
+      }
+      return `[${m.type.toUpperCase()}] ${m.content}`;
+    }).join('\n');
+  } finally {
+    clearTimeout(timer);
+  }
 }

@@ -1,7 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MemoryService } from '../services/memory.service.js';
 import { redis } from '../db/redis.js';
-import { GraphService } from '../services/graph.service.js';
+import { embeddingService } from '../services/embedding.service.js';
+import { db, memories, attestations } from '../db/index.js';
+
+vi.mock('../blockchain/attestation-batcher.js', () => ({
+  attestationBatcher: { add: vi.fn().mockResolvedValue(undefined) },
+}));
+
+vi.mock('../services/recall.js', () => ({ recallService: {} }));
+
+// Keep the resilience test independent of model downloads and inference.
+vi.mock('../services/embedding.service.js', () => ({
+  embeddingService: {
+    embed: vi.fn().mockResolvedValue(Array.from({ length: 384 }, (_, i) => i === 0 ? 1 : 0)),
+    id: 'test:deterministic:384',
+  },
+}));
 
 // Mock the Redis database to avoid needing the Docker container
 vi.mock('../db/redis.js', () => ({
@@ -66,9 +81,16 @@ describe('MemoryService Resilience Tests', () => {
       // It should catch the error and queue it to Redis
     }
 
+    expect(embeddingService.embed).toHaveBeenCalledOnce();
+    expect(embeddingService.embed).toHaveBeenCalledWith('User prefers dark mode.');
+    expect(db.insert).toHaveBeenCalledTimes(2);
+    expect(db.insert).toHaveBeenNthCalledWith(1, memories);
+    expect(db.insert).toHaveBeenNthCalledWith(2, attestations);
+
+
     // Verify Redis fallback was triggered
     const rClient = redis.getInstance();
-    expect(rClient?.rpush).toHaveBeenCalled();
+    expect(rClient?.rpush).toHaveBeenCalledOnce();
     const queuedCall = (rClient?.rpush as import('vitest').Mock).mock.calls[0];
     expect(queuedCall[0]).toBe('offline_queue:test-vault');
     expect(JSON.parse(queuedCall[1]).content).toBe('User prefers dark mode.');

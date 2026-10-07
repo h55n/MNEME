@@ -463,3 +463,7 @@ MIT — see [LICENSE](LICENSE) for details.
   <p>Built with ❤️ by <strong>Hassan Rehman</strong> and <strong>Mrunmayee Daware</strong></p>
   <p>Powered by <a href="https://monad.xyz">Monad</a> — the parallel EVM L1</p>
 </div>
+
+## Free demo liveness
+
+The `/livez` route checks only that the API process can answer HTTP. It does not query PostgreSQL or verify memory operations. The demo-liveness workflow requests it every ten minutes, best effort, without repository secrets. Its job is disabled unless the repository variable `KEEPALIVE_ENABLED` is set to `true`; enable that only after `/livez` has been deployed and verified. GitHub can delay/drop runs or disable schedules after 60 inactive days, and Render can restart free instances. This reduces idle sleeps; it does not provide an uptime or latency guarantee. Render free instance-hours are shared across the workspace. Database inactivity shutdown is not defeated by this workflow. Use `/health` for manual dependency diagnosis, not scheduled keep-alive traffic.

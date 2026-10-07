@@ -34,6 +34,35 @@ jobs:
       - name: Type-check MCP
         run: npx tsc --noEmit --project apps/mcp/tsconfig.json
 
+  test-extension:
+    name: Extension service worker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test apps/extension/test/*.cjs
+
+  test-python-sdk:
+    name: Python SDK and adapters
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install SDK and tested frameworks
+        working-directory: packages/python-sdk
+        run: pip install -e '.[langgraph,autogen,crewai]' pytest ruff mypy types-requests
+      - name: Test, lint and type-check SDK
+        working-directory: packages/python-sdk
+        run: |
+          pytest -q
+          ruff check .
+          ruff format --check .
+          mypy src --ignore-missing-imports --follow-imports skip
+
   # ── Unit Tests: Classifier ──────────────────────────────────────────────────
   test-classifier:
     name: Classifier Unit Tests
