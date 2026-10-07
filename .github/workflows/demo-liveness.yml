@@ -1,0 +1,32 @@
+name: Demo process liveness
+
+# Best effort only: GitHub may delay/drop scheduled runs. Not an uptime guarantee.
+# This endpoint does not query Aiven. Never replace it with /health.
+on:
+  schedule:
+    - cron: '7,17,27,37,47,57 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: demo-process-liveness
+  cancel-in-progress: false
+
+jobs:
+  liveness:
+    # Enable only after /livez is deployed and verified.
+    if: vars.KEEPALIVE_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Request the demo process endpoint
+        shell: bash
+        run: |
+          curl --fail --silent --show-error --connect-timeout 10 --max-time 100 \
+            --output /tmp/liveness.json https://trymneme-api.onrender.com/livez
+          python3 - <<'PY'
+          import json
+          with open('/tmp/liveness.json') as response:
+              assert json.load(response) == {'status': 'alive'}
+          PY
