@@ -103,7 +103,7 @@ export const TOOL_DEFINITIONS = [
   {
     name: MCP_TOOLS.MEMORY_WRITE,
     description:
-      'Store a memory in the agent\'s sovereign MNEME vault. ' +
+      'Store a memory in the agent\'s MNEME vault. ' +
       'The classifier automatically determines the correct memory type. ' +
       'Use hint_type to force a specific type. Use task_scope to tag memories with their task context.',
     inputSchema: {
@@ -469,4 +469,3 @@ export function transformImport(
       return [];
   }
 }
-
