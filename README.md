@@ -147,7 +147,7 @@ MNEME/
 │   │   └── main.py           # SpaCy NER + entity graph writing to Neo4j
 │   ├── mcp/                  # Model Context Protocol server (@mneme/mcp)
 │   │   └── src/index.ts      # memory_write, memory_recall, memory_inspect tools
-│   └── web/                  # Next.js 14 App Router dashboard
+│   └── web/                  # Next.js 15 App Router dashboard
 │       ├── src/app/          # Pages: landing, dashboard, memories, market, compliance, settings
 │       ├── src/components/   # Design system: Button, Card, Badge, MonoHash
 │       ├── src/lib/api.ts    # Typed API client with demo mode interceptor
@@ -380,7 +380,7 @@ Create free tiers of the following services and add their connection strings to 
 
 | Technology | Version | Purpose |
 |---|---|---|
-| Next.js | 14.2.35 | App Router, SSG, RSC |
+| Next.js | 15.5.27 | App Router, SSG, RSC |
 | React | 18.x | UI rendering |
 | TypeScript | 5.x | Type safety |
 | Zustand | 4.x | Auth state (persisted) |
@@ -392,7 +392,7 @@ Create free tiers of the following services and add their connection strings to 
 
 | Technology | Version | Purpose |
 |---|---|---|
-| Fastify | 4.x | REST API |
+| Fastify | 5.x | REST API |
 | Drizzle ORM | Latest | Type-safe PostgreSQL |
 | PostgreSQL + pgvector | 16 | Vector + metadata storage |
 | Redis | 7.x | Write queue + caching |
