@@ -31,7 +31,7 @@ function makeApiCall(cfg: McpConfig) {
       res = await doFetch(`${cfg.apiBase}${path}`, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
           Authorization: `Bearer ${cfg.apiKey}`,
           'X-Operator-Public-Key': cfg.operatorPublicKey ?? '',
         },
