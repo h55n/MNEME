@@ -16,7 +16,15 @@
     "test": "vitest run",
     "clean": "rm -rf dist"
   },
-  "keywords": ["mneme", "ai", "memory", "agent", "monad", "blockchain", "mcp"],
+  "keywords": [
+    "mneme",
+    "ai",
+    "memory",
+    "agent",
+    "monad",
+    "blockchain",
+    "mcp"
+  ],
   "license": "MIT",
   "dependencies": {
     "@mneme/shared": "*"
@@ -24,7 +32,7 @@
   "devDependencies": {
     "typescript": "^5.4.0",
     "@types/node": "^20.0.0",
-    "vitest": "^1.6.0"
+    "vitest": "4.1.11"
   },
   "peerDependencies": {
     "node": ">=18.0.0"
