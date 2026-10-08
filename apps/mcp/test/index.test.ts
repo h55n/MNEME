@@ -73,6 +73,7 @@ describe('MCP server over a real MCP client connection', () => {
   it('memory_forget deletes by id', async () => {
     await ctx.client.callTool({ name: 'memory_forget', arguments: { memoryId: MEM } });
     expect(ctx.calls[0].method).toBe('DELETE');
+    expect(ctx.calls[0].headers['Content-Type']).toBeUndefined();
     expect(ctx.calls[0].url).toBe(`http://api.test/v1/vaults/${VAULT}/memories/${MEM}`);
   });
 

@@ -25,6 +25,30 @@ describe('API-hosted MCP', () => {
       expect(upstream[0]).toContain('/vaults/11111111-1111-4111-8111-111111111111/memories');
     } finally { await client.close(); }
   });
+  it('forgets a memory through a real Fastify DELETE without an empty JSON body', async () => {
+    const app = Fastify(); apps.push(app);
+    const memoryId = '22222222-2222-4222-8222-222222222222';
+    app.delete('/v1/vaults/:vaultId/memories/:memoryId', async () => ({
+      success: true, data: { deleted: true },
+    }));
+    const origin = await app.listen({ port: 0, host: '127.0.0.1' });
+    const { createMcpHttpServer } = await import('@mneme/mcp/http');
+    const server = createMcpHttpServer({ apiBase: `${origin}/v1` });
+    await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
+    const port = (server.address() as { port: number }).port;
+    const client = new Client({ name: 'delete-integration', version: '1' });
+    try {
+      await client.connect(new StreamableHTTPClientTransport(new URL(`http://127.0.0.1:${port}/mcp?vault=11111111-1111-4111-8111-111111111111`), {
+        requestInit: { headers: { Authorization: 'Bearer test-key' } },
+      }));
+      const result = await client.callTool({ name: 'memory_forget', arguments: { memoryId } });
+      expect(result.isError).not.toBe(true);
+      expect(JSON.parse((result.content as { text: string }[])[0].text)).toEqual({ deleted: true });
+    } finally {
+      await client.close();
+      await new Promise<void>(resolve => server.close(() => resolve()));
+    }
+  });
   it('keeps missing credentials and unsupported methods closed', async () => {
     const app = Fastify(); apps.push(app);
     await app.register(mcpRoutes, { apiBase: 'http://upstream/v1' });
