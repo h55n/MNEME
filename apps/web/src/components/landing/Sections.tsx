@@ -122,15 +122,13 @@ export function HowItWorks() {
 const SNIPPETS = {
   mcp: {
     label: 'MCP server',
-    file: 'claude_desktop_config.json',
+    file: 'mcp.json (Cursor) / mcp_config.json (Windsurf Cascade)',
     code: `{
   "mcpServers": {
     "mneme-memory": {
-      "command": "npx",
-      "args": ["-y", "@mneme/mcp"],
-      "env": {
-        "MNEME_API_URL": "https://mneme-six.vercel.app/api/v1",
-        "MNEME_API_KEY": "mnk_live_your-api-key"
+      "url": "https://trymneme-api.onrender.com/mcp?vault=YOUR_VAULT_UUID",
+      "headers": {
+        "Authorization": "Bearer YOUR_API_KEY"
       }
     }
   }

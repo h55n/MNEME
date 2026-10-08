@@ -40,8 +40,8 @@ async function readJson(req: IncomingMessage): Promise<unknown> {
   return JSON.parse(Buffer.concat(chunks).toString('utf8'));
 }
 
-export function createMcpHttpServer(opts: HttpMcpOptions): HttpServer {
-  return createServer(async (req, res) => {
+export function createMcpHttpHandler(opts: HttpMcpOptions) {
+  return async (req: IncomingMessage, res: ServerResponse, parsedBody?: unknown) => {
     const url = new URL(req.url ?? '/', 'http://localhost');
 
     if (url.pathname === '/health') return send(res, 200, { status: 'ok' });
@@ -62,7 +62,7 @@ export function createMcpHttpServer(opts: HttpMcpOptions): HttpServer {
 
     let body: unknown;
     try {
-      body = await readJson(req);
+      body = parsedBody === undefined ? await readJson(req) : parsedBody;
     } catch {
       return rpcError(res, 400, -32700, 'Request body must be JSON under 1 MB');
     }
@@ -82,10 +82,14 @@ export function createMcpHttpServer(opts: HttpMcpOptions): HttpServer {
     try {
       await server.connect(transport);
       await transport.handleRequest(req, res, body);
-    } catch (err) {
-      if (!res.headersSent) rpcError(res, 500, -32603, `Internal error: ${String(err)}`);
+    } catch {
+      if (!res.headersSent) rpcError(res, 500, -32603, 'Internal MCP error');
     }
-  });
+  };
+}
+
+export function createMcpHttpServer(opts: HttpMcpOptions): HttpServer {
+  return createServer(createMcpHttpHandler(opts));
 }
 
 // Run only when started directly, not when imported by tests.

@@ -29,20 +29,15 @@ export default function SettingsPage() {
     setTimeout(() => setCopied(null), 2000);
   };
 
-  const mcpConfig = `{
-  "mcpServers": {
-    "mneme-memory": {
-      "command": "npx",
-      "args": ["-y", "@mneme/mcp"],
-      "env": {
-        "MNEME_API_URL": "${process.env.NEXT_PUBLIC_API_URL ?? 'https://mneme-api.your-domain.com/v1'}",
-        "MNEME_API_KEY": "${apiKey ?? 'mnk_live_your-api-key'}",
-        "MNEME_VAULT_ID": "${vaultId ?? 'vlt_your-vault-id'}",
-        "MNEME_OPERATOR_PUBLIC_KEY": "${operatorAddress ?? '0x...'}"
-      }
-    }
-  }
-}`;
+  const apiBase = process.env.NEXT_PUBLIC_API_URL ?? 'https://trymneme-api.onrender.com/v1';
+  const mcpConfig = JSON.stringify({
+    mcpServers: {
+      'mneme-memory': {
+        url: `${apiBase.replace(/\/v1\/?$/, '')}/mcp?vault=${encodeURIComponent(vaultId ?? 'YOUR_VAULT_UUID')}`,
+        headers: { Authorization: `Bearer ${apiKey ?? 'YOUR_API_KEY'}` },
+      },
+    },
+  }, null, 2);
 
   return (
     <div className="p-8 max-w-3xl">

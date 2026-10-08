@@ -31,6 +31,8 @@ jobs:
         run: npm audit --omit=dev --audit-level=moderate
       - name: Build shared (required by downstream checks)
         run: npm run build --workspace=packages/shared
+      - name: Build MCP (required by API checks)
+        run: npm run build --workspace=apps/mcp
       - name: Lint all application code
         run: npx eslint apps/api/src apps/web/src --ext .ts,.tsx --max-warnings 0
       - name: Type-check web
@@ -81,6 +83,7 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm run build --workspace=packages/shared
+      - run: npm run build --workspace=apps/mcp
       - name: Run classifier tests
         run: npx vitest run src/__tests__/classifier.test.ts
         working-directory: apps/api
@@ -123,6 +126,7 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm run build --workspace=packages/shared
+      - run: npm run build --workspace=apps/mcp
 
       - name: Run migrations on test database
         run: npm run db:migrate:run --workspace=apps/api
@@ -136,6 +140,19 @@ jobs:
           DATABASE_URL: postgresql://mneme:password@localhost:5432/mneme_test
           REDIS_URL: redis://localhost:6379
           ENCRYPTION_SECRET: ${{ secrets.ENCRYPTION_SECRET }}
+
+  test-mcp:
+    name: MCP transport and tool tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build --workspace=packages/shared
+      - run: npm test --workspace=apps/mcp
 
   # ── Smart Contract Tests ────────────────────────────────────────────────────
   test-contracts:
@@ -213,7 +230,7 @@ jobs:
     name: Docker Build & Push
     runs-on: ubuntu-latest
     # Wait for ALL validation to pass before pushing images
-    needs: [build, test-api, test-classifier, test-contracts, validate-migrations]
+    needs: [build, test-api, test-classifier, test-contracts, validate-migrations, test-mcp]
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4

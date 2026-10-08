@@ -248,35 +248,64 @@ MNEME ships a **Model Context Protocol server** (`apps/mcp/`) — drop-in integr
 
 ### Available MCP Tools
 
-| Tool | Description |
-|---|---|
-| `memory_write` | Store a new memory with type, tags, importance |
-| `memory_recall` | Semantic vector search across stored memories |
-| `memory_inspect` | Temporal query — what did this agent know at time T? |
-| `memory_list` | List recent memories with pagination |
-| `memory_delete` | Delete a specific memory (triggers on-chain tombstone) |
-| `vault_export` | Export full vault as portable JSON |
+`memory_write`, `memory_recall`, `memory_forget`, `memory_inspect`,
+`memory_export`, `memory_import`, and `memory_list`.
 
-### Claude Desktop / Cursor / Windsurf Setup
+### Remote setup: Cursor and Windsurf Cascade
+
+The API serves Streamable HTTP at `/mcp`. After deploying the updated API,
+use this config in Cursor's `mcp.json` or Windsurf Cascade's
+`~/.codeium/windsurf/mcp_config.json`. Use your real vault UUID, not a `vlt_` demo ID.
 
 ```json
 {
   "mcpServers": {
     "mneme-memory": {
-      "command": "npx",
-      "args": ["-y", "@mneme/mcp"],
+      "url": "https://trymneme-api.onrender.com/mcp?vault=YOUR_VAULT_UUID",
+      "headers": { "Authorization": "Bearer YOUR_API_KEY" }
+    }
+  }
+}
+```
+
+### Claude Desktop: local server
+
+`@mneme/mcp` is not published on npm. Build from this repository instead:
+
+```bash
+git clone https://github.com/h55n/MNEME.git
+cd MNEME
+npm ci
+npm run build --workspace=packages/shared
+npm run build --workspace=apps/mcp
+```
+
+In Claude Desktop's `claude_desktop_config.json`, replace the absolute path:
+
+```json
+{
+  "mcpServers": {
+    "mneme-memory": {
+      "command": "node",
+      "args": ["/absolute/path/MNEME/apps/mcp/dist/index.js"],
       "env": {
-        "MNEME_API_URL": "https://mneme-six.vercel.app/api/v1",
-        "MNEME_API_KEY": "mnk_live_your-api-key",
-        "MNEME_VAULT_ID": "vlt_your-vault-id",
-        "MNEME_OPERATOR_PUBLIC_KEY": "0xYourAddress"
+        "MNEME_API_URL": "https://trymneme-api.onrender.com/v1",
+        "MNEME_API_KEY": "YOUR_API_KEY",
+        "MNEME_VAULT_ID": "YOUR_VAULT_UUID"
       }
     }
   }
 }
 ```
 
-> Get your keys from **Settings** at [mneme-six.vercel.app](https://mneme-six.vercel.app).
+Restart the app and allow the tools you need. The same local server can be
+used in Cursor and Windsurf. Keep API keys out of shared configs and source control.
+
+Claude remote connectors can use the endpoint above only where the request-header
+beta is available. ChatGPT's custom MCP apps have separate plan/auth requirements;
+MNEME does not yet implement OAuth. Do not make a private vault endpoint public to
+bypass that requirement. See [client setup and validation](docs/mcp-clients.md)
+for exact limits, plugin-style options, and the test matrix.
 
 ### SDK Usage
 
