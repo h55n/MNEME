@@ -8,6 +8,8 @@ RUN npm ci --ignore-scripts --workspace=packages/shared --workspace=apps/mcp --i
  && npm run build --workspace=packages/shared \
  && npm run build --workspace=apps/mcp
 
+RUN npm prune --omit=dev --ignore-scripts --workspace=packages/shared --workspace=apps/mcp --include-workspace-root
+
 FROM node:22-bookworm-slim
 WORKDIR /app
 ENV NODE_ENV=production

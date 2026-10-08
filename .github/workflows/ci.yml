@@ -27,6 +27,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
       - run: npm ci
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=moderate
       - name: Build shared (required by downstream checks)
         run: npm run build --workspace=packages/shared
       - name: Lint all application code

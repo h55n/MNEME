@@ -53,13 +53,11 @@ async function main() {
         .filter(f => f.endsWith('.sql'))
         .sort();
     } catch {
-      console.warn(`[migrate] No migrations directory found at ${MIGRATIONS_DIR} — skipping`);
-      return;
+      throw new Error(`Missing migrations directory: ${MIGRATIONS_DIR}`);
     }
 
     if (files.length === 0) {
-      console.log('[migrate] No migration files found — nothing to do.');
-      return;
+      throw new Error('No migration files found');
     }
 
     console.log(`[migrate] Found ${files.length} migration file(s)`);
