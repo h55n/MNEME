@@ -51,6 +51,7 @@ COPY --from=builder --chown=mneme:mneme /app/models ./models
 COPY --from=builder --chown=mneme:mneme /app/packages/shared/dist          ./packages/shared/dist
 COPY --from=builder --chown=mneme:mneme /app/packages/shared/package.json  ./packages/shared/
 COPY --from=builder --chown=mneme:mneme /app/apps/api/dist                 ./apps/api/dist
+COPY --from=builder --chown=mneme:mneme /app/apps/api/node_modules ./apps/api/node_modules
 COPY --from=builder --chown=mneme:mneme /app/apps/api/package.json         ./apps/api/
 COPY --from=builder --chown=mneme:mneme /app/node_modules                  ./node_modules
 COPY --from=builder --chown=mneme:mneme /app/package.json                  ./
