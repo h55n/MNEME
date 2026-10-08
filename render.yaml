@@ -1,5 +1,5 @@
 # MNEME API on Render (free web service, Docker).
-# The database is NOT created here: use a free Neon Postgres (pgvector included) and paste its
+# The database is NOT created here: use a persistent Postgres service with pgvector and paste its
 # connection string as DATABASE_URL in the Render dashboard. Secrets are never stored in this file.
 services:
   - type: web
