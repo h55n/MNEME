@@ -138,7 +138,7 @@ export default function SettingsPage() {
             </div>
           </CardHeader>
           <p className="text-body-md text-neutral-500 mb-3">
-            Add this to your Claude, Cursor, or any MCP-compatible agent's configuration:
+            Add this to your Claude, Cursor, or any MCP-compatible agent&apos;s configuration:
           </p>
           <pre className="mono text-xs bg-secondary/40 p-4 rounded-lg overflow-auto whitespace-pre-wrap text-on-surface leading-relaxed">
             {mcpConfig}

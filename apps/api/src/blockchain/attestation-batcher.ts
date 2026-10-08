@@ -149,6 +149,7 @@ export class AttestationBatcher {
       });
 
       const receipt = await this.publicClient.waitForTransactionReceipt({ hash: txHash });
+      if (receipt.status !== 'success') throw new Error('Attestation transaction reverted');
       const blockNumber = Number(receipt.blockNumber);
 
       logger.info({ txHash, blockNumber, batchSize: batch.length }, 'Batch attested on Monad');

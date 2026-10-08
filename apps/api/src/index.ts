@@ -6,6 +6,7 @@ import rateLimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import { vaultRoutes } from './routes/vaults.js';
+import { capabilityRoutes } from './routes/capabilities.js';
 import { livenessRoutes } from './routes/liveness.js';
 import { memoryRoutes } from './routes/memories.js';
 import { marketRoutes } from './routes/market.js';
@@ -236,6 +237,8 @@ async function bootstrap() {
   let cachedDeps: DependencyStatus | null = null;
   let depsLastChecked = 0;
   const DEPS_CACHE_MS = 30_000; // Re-check every 30s
+
+  await fastify.register(capabilityRoutes, { prefix: API_PREFIX });
 
   fastify.get('/health', async (_, reply) => {
     const now = Date.now();

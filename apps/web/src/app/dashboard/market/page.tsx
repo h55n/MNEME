@@ -79,6 +79,7 @@ export default function MarketPage() {
 
   return (
     <div className="p-8 max-w-5xl animate-fade-in">
+      <p role="status" className="mb-6 rounded-lg border border-border p-4 text-body-md">Paid memory exchange is not available on this deployment. Listings and purchases are disabled until contract and escrow integration are verified. PII screening detects patterns; it does not guarantee anonymisation.</p>
       <div className="flex flex-wrap justify-between items-start gap-4 mb-10">
         <div>
           <h1 className="text-display mb-2 flex items-center gap-3">
@@ -185,7 +186,7 @@ export default function MarketPage() {
             </p>
             {!buyerAddress && (
               <p role="alert" className="text-body-sm text-error mb-4">
-                This vault is not tied to a wallet address, so it can't buy packs. Sign in with a vault whose operator is a 0x wallet address.
+                This vault is not tied to a wallet address, so it can&apos;t buy packs. Sign in with a vault whose operator is a 0x wallet address.
               </p>
             )}
             <Input

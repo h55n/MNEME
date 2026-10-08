@@ -5,11 +5,9 @@ import { randomBytes } from 'crypto';
 import { sha256, buildDID } from '@mneme/shared';
 import type { Vault as VaultType } from '@mneme/shared';
 import { createLogger } from '../utils/logger.js';
-import { getSession, setSession } from '../db/redis.js';
 
 const logger = createLogger('vault-service');
 
-const API_KEY_CACHE_TTL = 60; // seconds
 
 import { createPublicClient, createWalletClient, http, encodeFunctionData, parseAbi, keccak256, type Hex } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
@@ -125,18 +123,10 @@ export class VaultService {
   }
 
   /**
-   * Validate an API key — cached in Redis for 60s to reduce DB load.
+   * Validate against the database so revocation and vault destruction apply immediately.
    */
   async validateApiKey(key: string): Promise<{ vaultId: string; operatorAddress: string } | null> {
     const keyHash = sha256(key);
-    const cacheKey = `apikey:${keyHash}`;
-
-    // Check Redis cache first
-    const cached = await getSession<{ vaultId: string; operatorAddress: string }>(cacheKey);
-    if (cached) {
-      return cached;
-    }
-
     // DB lookup
     const [apiKey] = await db.select()
       .from(apiKeys)
@@ -157,9 +147,6 @@ export class VaultService {
     if (!vault || vault.destroyedAt) return null;
 
     const result = { vaultId: vault.id, operatorAddress: vault.operatorAddress };
-
-    // Cache result to reduce DB pressure
-    await setSession(cacheKey, result, API_KEY_CACHE_TTL);
 
     return result;
   }

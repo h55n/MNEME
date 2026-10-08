@@ -33,6 +33,7 @@ export async function vaultRoutes(fastify: FastifyInstance) {
       }));
     }
 
+    reply.header('Cache-Control', 'no-store');
     const { vault, apiKey } = await vaultService.create(body.data);
     return reply.status(201).send(successResponse({ vault, apiKey }));
   });
@@ -104,6 +105,7 @@ export async function vaultRoutes(fastify: FastifyInstance) {
     { preHandler: [authMiddleware, requireVaultMatch()] },
     async (request, reply) => {
       const { vaultId } = request.params as { vaultId: string };
+      reply.header('Cache-Control', 'no-store');
       const newKey = await vaultService.rotateApiKey(vaultId);
       return reply.send(successResponse({ apiKey: newKey }));
     }
