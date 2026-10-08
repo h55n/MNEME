@@ -11,6 +11,11 @@ const BatchVerifySchema = z.object({
   contentHashes: z.array(z.string().min(1)).min(1).max(100),
 });
 
+const PaginationSchema = z.object({
+  page: z.coerce.number().int().min(1).max(Number.MAX_SAFE_INTEGER / 100).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+});
+
 export async function attestationRoutes(fastify: FastifyInstance) {
 
   // ── GET /vaults/:vaultId/attestations — list attestations (paginated) ─────
@@ -18,10 +23,11 @@ export async function attestationRoutes(fastify: FastifyInstance) {
     { preHandler: [authMiddleware, requireVaultMatch()] },
     async (request, reply) => {
       const { vaultId } = request.params as { vaultId: string };
-      const query = request.query as { page?: string; limit?: string };
-
-      const page = Math.max(1, parseInt(query.page ?? '1', 10));
-      const limit = Math.min(100, Math.max(1, parseInt(query.limit ?? '20', 10)));
+      const query = PaginationSchema.safeParse(request.query);
+      if (!query.success) {
+        return reply.status(400).send(errorResponse({ code: 'VALIDATION_ERROR', message: 'Invalid pagination' }));
+      }
+      const { page, limit } = query.data;
       const offset = (page - 1) * limit;
 
       const rows = await db.select()
