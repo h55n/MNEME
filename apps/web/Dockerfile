@@ -14,6 +14,9 @@ COPY packages/shared ./packages/shared
 RUN npm run build --workspace=packages/shared
 
 COPY apps/web ./apps/web
+# Public browser configuration is fixed at build time.
+ARG NEXT_PUBLIC_API_URL=
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build --workspace=apps/web
 

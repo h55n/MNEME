@@ -16,9 +16,7 @@ const nextConfig = {
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }];
   },
-  experimental: {
-    typedRoutes: false,
-  },
+  typedRoutes: false,
 
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL ?? '',

@@ -10,8 +10,8 @@ import { vaultRoutes } from '../routes/vaults.js';
 
 async function build(limit: string, trustProxy: number | boolean) {
   process.env.VAULT_CREATE_LIMIT = limit;
-  const app = Fastify({ trustProxy });
-  await app.register(rateLimit, { global: true, max: 1000, timeWindow: '1 minute', keyGenerator: r => r.ip });
+  const app = Fastify({ trustProxy: typeof trustProxy === 'number' ? (_address: string, hop: number) => hop < trustProxy : trustProxy });
+  await app.register(rateLimit, { global: true, max: 1000, timeWindow: '1 minute' });
   await app.register(vaultRoutes, { prefix: '/v1' });
   await app.ready();
   return app;
@@ -49,4 +49,12 @@ describe('POST /vaults per-IP limit', () => {
     expect([a.statusCode, b.statusCode, a2.statusCode]).toEqual([400, 400, 429]);
     await app.close();
   });
+});
+
+it('groups rotating IPv6 addresses within one subnet', async () => {
+  const app = await build('1', 1);
+  const first = await create(app, {'x-forwarded-for': '2001:db8:abcd:12::1'});
+  const second = await create(app, {'x-forwarded-for': '2001:db8:abcd:12::2'});
+  expect([first.statusCode, second.statusCode]).toEqual([400, 429]);
+  await app.close();
 });

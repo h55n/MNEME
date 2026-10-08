@@ -31,6 +31,9 @@ RUN npm run build --workspace=apps/api
 ENV MODEL_CACHE_DIR=/app/models
 RUN node -e "import('@huggingface/transformers').then(async m=>{m.env.cacheDir=process.env.MODEL_CACHE_DIR;await m.pipeline('feature-extraction','Xenova/all-MiniLM-L6-v2',{dtype:'fp32'});console.log('model cached')})"
 
+# Remove build/test tools before copying runtime dependencies.
+RUN npm prune --omit=dev --ignore-scripts --workspace=packages/shared --workspace=apps/api --include-workspace-root
+
 # Stage 4: lean production image
 FROM node:22-bookworm-slim AS runner
 WORKDIR /app
@@ -48,6 +51,7 @@ COPY --from=builder --chown=mneme:mneme /app/models ./models
 COPY --from=builder --chown=mneme:mneme /app/packages/shared/dist          ./packages/shared/dist
 COPY --from=builder --chown=mneme:mneme /app/packages/shared/package.json  ./packages/shared/
 COPY --from=builder --chown=mneme:mneme /app/apps/api/dist                 ./apps/api/dist
+COPY --from=builder --chown=mneme:mneme /app/apps/api/node_modules ./apps/api/node_modules
 COPY --from=builder --chown=mneme:mneme /app/apps/api/package.json         ./apps/api/
 COPY --from=builder --chown=mneme:mneme /app/node_modules                  ./node_modules
 COPY --from=builder --chown=mneme:mneme /app/package.json                  ./

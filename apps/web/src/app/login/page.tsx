@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
@@ -106,9 +107,9 @@ function LoginForm() {
     <div className="min-h-screen bg-surface flex flex-col items-center justify-center p-8">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <a href="/" className="inline-block mb-8">
+          <Link href="/" className="inline-block mb-8">
             <span className="inline-flex items-center gap-2" aria-label="mneme"><span className="w-2.5 h-2.5 rounded-full bg-tertiary" /><span className="font-mono uppercase text-[16px] font-medium">mneme</span></span>
-          </a>
+          </Link>
           <h1 className="text-display mb-2">Access Vault</h1>
           <p className="text-body-lg text-neutral-500">
             Sign in with the Vault ID and API key from your MNEME server.
@@ -162,7 +163,7 @@ function LoginForm() {
         </Card>
 
         <p className="mt-6 text-center text-body-md text-neutral-500">
-          New here? <a className="underline" href="/#start">Create a hosted vault</a>. You can also use your own MNEME server.
+          New here? <Link className="underline" href="/#start">Create a hosted vault</Link>. You can also use your own MNEME server.
 
         </p>
       </div>

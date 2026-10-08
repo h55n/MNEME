@@ -147,7 +147,7 @@ MNEME/
 │   │   └── main.py           # SpaCy NER + entity graph writing to Neo4j
 │   ├── mcp/                  # Model Context Protocol server (@mneme/mcp)
 │   │   └── src/index.ts      # memory_write, memory_recall, memory_inspect tools
-│   └── web/                  # Next.js 14 App Router dashboard
+│   └── web/                  # Next.js 15 App Router dashboard
 │       ├── src/app/          # Pages: landing, dashboard, memories, market, compliance, settings
 │       ├── src/components/   # Design system: Button, Card, Badge, MonoHash
 │       ├── src/lib/api.ts    # Typed API client with demo mode interceptor
@@ -380,7 +380,7 @@ Create free tiers of the following services and add their connection strings to 
 
 | Technology | Version | Purpose |
 |---|---|---|
-| Next.js | 14.2.35 | App Router, SSG, RSC |
+| Next.js | 15.5.27 | App Router, SSG, RSC |
 | React | 18.x | UI rendering |
 | TypeScript | 5.x | Type safety |
 | Zustand | 4.x | Auth state (persisted) |
@@ -392,7 +392,7 @@ Create free tiers of the following services and add their connection strings to 
 
 | Technology | Version | Purpose |
 |---|---|---|
-| Fastify | 4.x | REST API |
+| Fastify | 5.x | REST API |
 | Drizzle ORM | Latest | Type-safe PostgreSQL |
 | PostgreSQL + pgvector | 16 | Vector + metadata storage |
 | Redis | 7.x | Write queue + caching |
@@ -420,19 +420,6 @@ Create free tiers of the following services and add their connection strings to 
 | Docker Compose | Local dev + production containers |
 | GitHub Actions | CI/CD pipeline |
 | Turborepo Remote Cache | Build caching |
-
----
-
-## Built with Codex & GPT-5.6 (OpenAI Build Week)
-
-We built MNEME from the ground up during the OpenAI Build Week (July 13 to 21, 2026). Instead of typing out all the boilerplate by hand, we used Codex to generate the bulk of our code while treating GPT-5.6 as our senior architecture partner. It felt very much like pair programming where Codex handled the implementation details and GPT-5.6 helped us figure out the hard design problems.
-
-For example, Codex generated the entire Drizzle ORM schema and the viem contract client code for all our Monad Testnet contracts. We also had it write the Fastify route handlers, the attestation batching service, our Redis offline queue, the FastAPI extraction scaffolding, MCP server tool definitions, Hardhat deploy scripts, and our TypeScript SDK client methods. Meanwhile, GPT-5.6 took on the architectural and security reviews. We used it to weigh storage layer tradeoffs, design the temporal knowledge graph in Neo4j, structure our API responses, review Solidity contracts for reentrancy risks, write Hardhat test cases, design the compliance flows, write PII scanning logic, and debug Cypher queries.
-
-| Model | Usage Split |
-|---|---|
-| **Codex** | Generated the Drizzle ORM schema for PostgreSQL + pgvector (all tables: vaults, memories, attestations, memory_packs, pack_purchases, compliance_reports) and viem contract client code for all 4 Monad Testnet contracts (VaultRegistry, AttestationAggregator, DeletionProver, MemoryMarket). It also wrote Fastify route handlers and middleware for /vaults, /memories, /market, /compliance endpoints, as well as the attestation batching service (queue, flush every 10s or 100 items, retry on RPC failure). Additional scaffolding included the Redis offline queue for write resilience, Python FastAPI extraction microservice scaffolding, MCP server tool definitions (memory_write, memory_recall, memory_inspect, memory_list, memory_delete, vault_export), Hardhat deploy and verify scripts for Monad Testnet, and the TypeScript SDK (@mneme/sdk) client methods. |
-| **GPT-5.6** | Helped with architecture decisions and storage layer tradeoffs (why pgvector + Neo4j + Redis together) and reviewing Solidity contracts for edge cases and reentrancy risks. It shaped the temporal knowledge graph design in Neo4j (validity window approach) along with API response schema and envelope design. Furthermore, we used it for PII scanning pipeline logic for Memory Market listings, writing and reviewing Hardhat test cases, debugging Neo4j Cypher queries, and compliance flow design and audit report structure. |
 
 ---
 

@@ -22,7 +22,7 @@ export async function vaultRoutes(fastify: FastifyInstance) {
   // POST /vaults — create vault
   // Open endpoint (no key yet), so it gets its own tight per-IP limit against vault spam.
   fastify.post('/vaults', {
-    config: { rateLimit: { max: Number(process.env.VAULT_CREATE_LIMIT ?? 10), timeWindow: '1 hour', keyGenerator: (r: { ip: string }) => r.ip } },
+    config: { rateLimit: { max: Number(process.env.VAULT_CREATE_LIMIT ?? 10), timeWindow: '1 hour' } },
   }, async (request, reply) => {
     const body = CreateVaultSchema.safeParse(request.body);
     if (!body.success) {

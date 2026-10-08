@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import Fastify from 'fastify';
+import Fastify, { type FastifyError } from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
@@ -172,7 +172,7 @@ async function bootstrap() {
     genReqId: () => uuidv4(),
     // Trust only the proxy hops we run behind. `true` would believe a client-supplied X-Forwarded-For
     // and let anyone dodge per-IP limits by changing it.
-    trustProxy: Number(process.env.TRUST_PROXY_HOPS ?? 1),
+    trustProxy: (_address: string, hop: number) => hop < Number(process.env.TRUST_PROXY_HOPS ?? 1),
   });
 
   // ── Plugins ───────────────────────────────────────────────────────────────
@@ -195,7 +195,7 @@ async function bootstrap() {
     timeWindow: '1 minute',
     // Key by IP. Keying by the unauthenticated bearer value gave a caller a fresh bucket per
     // request just by changing the token.
-    keyGenerator: (request) => request.ip,
+    // Use the plugin's canonical IPv4/IPv6 subnet key, not raw client text.
   });
 
   // ── Swagger / OpenAPI docs ─────────────────────────────────────────────────
@@ -280,7 +280,7 @@ async function bootstrap() {
   await fastify.register(gptRoutes, { prefix: `${API_PREFIX}/gpt` });
 
   // ── Error Handler ─────────────────────────────────────────────────────────
-  fastify.setErrorHandler(async (error, request, reply) => {
+  fastify.setErrorHandler(async (error: FastifyError, request, reply) => {
     logger.error({ err: error, url: request.url, requestId: request.id }, 'Unhandled error');
     reply.status(error.statusCode ?? 500).send({
       success: false,
