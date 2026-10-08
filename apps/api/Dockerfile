@@ -14,6 +14,7 @@ FROM base AS deps
 COPY package.json package-lock.json turbo.json ./
 COPY packages/shared/package.json ./packages/shared/
 COPY apps/api/package.json ./apps/api/
+COPY apps/mcp/package.json ./apps/mcp/
 RUN npm ci --ignore-scripts
 
 # Stage 3: build
@@ -22,6 +23,9 @@ COPY tsconfig.base.json ./
 # Build shared package first (API depends on it)
 COPY packages/shared ./packages/shared
 RUN npm run build --workspace=packages/shared
+
+COPY apps/mcp ./apps/mcp
+RUN npm run build --workspace=apps/mcp
 
 # Build API (includes migrate.ts → dist/migrate.js)
 COPY apps/api ./apps/api
@@ -32,7 +36,7 @@ ENV MODEL_CACHE_DIR=/app/models
 RUN node -e "import('@huggingface/transformers').then(async m=>{m.env.cacheDir=process.env.MODEL_CACHE_DIR;await m.pipeline('feature-extraction','Xenova/all-MiniLM-L6-v2',{dtype:'fp32'});console.log('model cached')})"
 
 # Remove build/test tools before copying runtime dependencies.
-RUN npm prune --omit=dev --ignore-scripts --workspace=packages/shared --workspace=apps/api --include-workspace-root
+RUN npm prune --omit=dev --ignore-scripts --workspace=packages/shared --workspace=apps/api --workspace=apps/mcp --include-workspace-root
 
 # Stage 4: lean production image
 FROM node:22-bookworm-slim AS runner
@@ -55,6 +59,8 @@ COPY --from=builder --chown=mneme:mneme /app/apps/api/node_modules ./apps/api/no
 COPY --from=builder --chown=mneme:mneme /app/apps/api/package.json         ./apps/api/
 COPY --from=builder --chown=mneme:mneme /app/node_modules                  ./node_modules
 COPY --from=builder --chown=mneme:mneme /app/package.json                  ./
+COPY --from=builder --chown=mneme:mneme /app/apps/mcp/dist ./apps/mcp/dist
+COPY --from=builder --chown=mneme:mneme /app/apps/mcp/package.json ./apps/mcp/
 # SQL migration files (read by dist/migrate.js at startup)
 COPY --from=builder --chown=mneme:mneme /app/apps/api/src/db/migrations    ./apps/api/dist/db/migrations/
 

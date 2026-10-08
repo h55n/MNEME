@@ -12,6 +12,7 @@ import { memoryRoutes } from './routes/memories.js';
 import { marketRoutes } from './routes/market.js';
 import { complianceRoutes } from './routes/compliance.js';
 import { attestationRoutes } from './routes/attestations.js';
+import { mcpRoutes } from './routes/mcp.js';
 import { gptRoutes } from './routes/gpt.js';
 import { attestationBatcher } from './blockchain/attestation-batcher.js';
 import { graphService } from './services/graph.service.js';
@@ -277,6 +278,7 @@ async function bootstrap() {
   await fastify.register(marketRoutes, { prefix: API_PREFIX });
   await fastify.register(complianceRoutes, { prefix: API_PREFIX });
   await fastify.register(attestationRoutes, { prefix: API_PREFIX });
+  await fastify.register(mcpRoutes, { apiBase: `http://127.0.0.1:${PORT}${API_PREFIX}` });
   await fastify.register(gptRoutes, { prefix: `${API_PREFIX}/gpt` });
 
   // ── Error Handler ─────────────────────────────────────────────────────────
