@@ -14,7 +14,7 @@
     "@mneme/shared": "*",
     "@tanstack/react-query": "^5.101.2",
     "clsx": "^2.1.1",
-    "date-fns": "^3.6.0",
+    "date-fns": "^4.4.0",
     "force-graph": "^1.51.4",
     "framer-motion": "^12.42.2",
     "lucide-react": "^0.411.0",
