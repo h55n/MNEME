@@ -19,7 +19,7 @@
     <img src="https://img.shields.io/badge/Network-Monad_Testnet-7c3aed?style=for-the-badge&logo=web3dotjs" alt="Monad Testnet" />
     <img src="https://img.shields.io/badge/ChainID-10143-blueviolet?style=for-the-badge" alt="Chain ID" />
     <img src="https://img.shields.io/badge/License-MIT-22c55e?style=for-the-badge" alt="MIT" />
-    <img src="https://img.shields.io/badge/Stack-Next.js_14-000?style=for-the-badge&logo=next.js" alt="Next.js" />
+    <img src="https://img.shields.io/badge/Stack-Next.js_15-000?style=for-the-badge&logo=next.js" alt="Next.js" />
     <img src="https://img.shields.io/badge/Solidity-0.8.24-363636?style=for-the-badge&logo=solidity&logoColor=white" />
   </p>
 </div>
