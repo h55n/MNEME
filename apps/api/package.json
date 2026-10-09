@@ -37,7 +37,7 @@
     "tiktoken": "^1.0.12",
     "uuid": "^14.0.2",
     "viem": "^2.57.3",
-    "zod": "^3.23.0",
+    "zod": "^4.6.5",
     "@mneme/mcp": "*"
   },
   "devDependencies": {
