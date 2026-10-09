@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - 2026-10-09
+
+### Changed
+- Hosting: API runs on Render with a managed Postgres + pgvector database; Cloud Run deployment was dropped. Container images for the API and web app publish to GHCR from `main`.
+- Hosted trust model documented: memories are encrypted at rest with server-derived keys, not end-to-end.
+- Landing and dashboard redesign; real sign-in and route guards replace demo fixtures. Demo mode only shows inside an explicit demo session.
+- MCP: remote Streamable HTTP endpoint at `/mcp` on the API origin, seven tools (`memory_write`, `memory_recall`, `memory_forget`, `memory_inspect`, `memory_export`, `memory_import`, `memory_list`).
+
+### Fixed
+- `memory_forget` and delete calls no longer send empty JSON bodies.
+- Rate limiting keys, packaged SQL migrations and fail-closed migration startup.
+
+### Notes
+- Entries below that mention Cloud Run or the removed `render.yaml` describe an earlier state and are kept for history.
+- The indexer package is not deployed; its dependency updates are no longer tracked automatically.
+
 ## [Unreleased] - 2026-07-21
 
 ### Added

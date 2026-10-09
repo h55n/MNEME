@@ -45,6 +45,18 @@ UI, permissions, tool selection, or end-to-end execution.
   MNEME has no OAuth discovery, consent, token or refresh endpoints yet. Do not
   place bearer keys in URLs or create an unauthenticated proxy as a workaround.
 
+## Live protocol check (2026-10-09)
+
+Run against the hosted endpoint with the official MCP TypeScript client over Streamable HTTP, using a throwaway vault that was deleted afterwards:
+
+- Initialize and tool discovery: exactly seven tools listed.
+- `memory_write`, then `memory_recall` with a differently worded query, then `memory_list`: the written memory came back in both.
+- No Authorization header: rejected with 401.
+- A key from vault B used against vault A: `memory_list` denied with "Access denied to this vault".
+- Known behaviour: the endpoint is stateless, so an invalid key is not rejected at `initialize`; it fails on the first tool call.
+
+This is a protocol check, not a test of any vendor application.
+
 ## Verification checklist for each real client
 
 1. Use a dedicated test vault and key, never a real person's memory contents.
