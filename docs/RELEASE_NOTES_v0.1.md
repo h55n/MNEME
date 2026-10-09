@@ -14,6 +14,8 @@ Date: 2026-10-10
 
 What was measured: session-level retrieval on a 60-question subset of LongMemEval_S (cleaned release), the first 10 non-abstention questions of each of the 6 question types. Each question has about 48 candidate sessions on average. Sessions were split into 2-message chunks, embedded with MNEME's local embedder (all-MiniLM-L6-v2), and each session was scored by its best chunk against the question. Run on 2026-10-10 on CPU.
 
+The per-question result rows are in [`docs/benchmarks/longmemeval-s-60-2026-10-10.json`](benchmarks/longmemeval-s-60-2026-10-10.json). Each row records the question ID, question type, evidence rank, candidate count, and retrieval indicators used to aggregate the table. The benchmark runner and full dataset are not included, so the result file supports auditing the arithmetic but is not a standalone reproduction package.
+
 "any@k" means at least one evidence session is in the top k. "all@k" means every evidence session is in the top k.
 
 | Question type | n | any@5 | any@10 | all@5 | all@10 |
