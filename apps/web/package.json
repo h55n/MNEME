@@ -18,7 +18,7 @@
     "force-graph": "^1.51.4",
     "framer-motion": "^12.42.2",
     "lucide-react": "^0.411.0",
-    "next": "15.5.27",
+    "next": "16.3.8",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-force-graph-2d": "^1.29.1",
