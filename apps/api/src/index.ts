@@ -65,18 +65,18 @@ validateEnvironment();
 
 interface DependencyStatus {
   postgres: 'ok' | 'down';
-  redis: 'ok' | 'down';
-  neo4j: 'ok' | 'down';
-  monad: 'ok' | 'down';
+  redis: 'ok' | 'down' | 'disabled';
+  neo4j: 'ok' | 'down' | 'disabled';
+  monad: 'ok' | 'down' | 'disabled';
   embedding: 'ok' | 'down';
 }
 
 async function checkDependencies(): Promise<DependencyStatus> {
   const status: DependencyStatus = {
     postgres: 'down',
-    redis: 'down',
-    neo4j: 'down',
-    monad: 'down',
+    redis: process.env.REDIS_URL ? 'down' : 'disabled',
+    neo4j: process.env.NEO4J_URI ? 'down' : 'disabled',
+    monad: process.env.MONAD_RPC_URL ? 'down' : 'disabled',
     embedding: 'down',
   };
 
@@ -137,7 +137,7 @@ async function checkDependencies(): Promise<DependencyStatus> {
 }
 
 function logDependencyStatus(status: DependencyStatus): void {
-  const icon = (s: string) => s === 'ok' ? '✓' : '⚠';
+  const icon = (s: string) => s === 'ok' ? '✓' : s === 'disabled' ? '-' : '⚠';
   const descriptions: Record<string, string> = {
     neo4j: 'graph features disabled',
     monad: 'attestations queued locally',

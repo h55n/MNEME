@@ -65,7 +65,7 @@ Read the [trust model](docs/TRUST_MODEL.md) before storing sensitive data.
 | Feature | Description |
 |---|---|
 | 🏛 **Agent Vaults** | Every AI agent gets a W3C DID-bound vault on Monad. Exportable memory with API-key access; hosted operators control encryption keys. |
-| 🔗 **On-chain Attestations** | Every memory write is hashed and attested via `AttestationAggregator.sol` on Monad Testnet. |
+| 🔗 **On-chain Attestations** | Memory writes are hashed and recorded locally; when `MONAD_RPC_URL`, `MONAD_PRIVATE_KEY` and `ATTESTATION_AGGREGATOR_ADDRESS` are set, batches are submitted to `AttestationAggregator.sol` on Monad Testnet. The hosted demo API runs without them (see `/v1/capabilities`). |
 | 🗑 **GDPR Deletion Prover** | `DeletionProver.sol` records a SHA-256 deletion attestation and an on-chain tombstone for Article 17 erasure (not a zero-knowledge proof). |
 | 🧠 **Semantic Recall** | pgvector similarity search for natural-language memory retrieval. |
 | 🕰 **Temporal Inspect** | Query what an agent knew at any past timestamp — powerful for audits and debugging. |
@@ -454,7 +454,7 @@ Create free tiers of the following services and add their connection strings to 
 
 ## 🛡 Security & Compliance
 
-- **Attestation:** Every `memory_write` produces a SHA-256 hash attested on Monad — tamper-proof audit trail
+- **Attestation:** Every `memory_write` produces a SHA-256 content hash. With chain settings configured, batches are attested on Monad; without them (the hosted demo), attestations stay local records. `/v1/capabilities` reports which mode is active.
 - **GDPR Art. 17:** `DeletionProver.sol` tombstones allow verifying deletion with zero PII exposure
 - **Vault identity:** DIDs and wallet identifiers do not provide end-to-end content encryption; the API holds the server secret that derives memory keys.
 - **ReentrancyGuard:** All financial functions in `MemoryMarket.sol`
