@@ -43,6 +43,11 @@ Read the [trust model](docs/TRUST_MODEL.md) before storing sensitive data.
 | **Hassan Rehman** | Full-Stack & Blockchain Lead — REST API, Smart Contracts, MCP Integration, Hardhat, Monad Testnet Deployment  |
 | **Mrunmayee Daware** | Frontend & Compliance UI — Dashboard, GDPR Flows, Memory Market, Protocol & Infrastructure — Solidity Contracts |
 
+
+## Contribution split
+
+Contribution plan (50/50): Hassan Rehman focuses on the frontend, dashboard, and user-facing flows; Mrunmayee Daware focuses on the remaining software work, including backend/API, MCP, data and smart-contract integration, testing, and documentation.
+
 ---
 
 ## 📖 Table of Contents
