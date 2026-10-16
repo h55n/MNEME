@@ -18,13 +18,26 @@ jobs:
     # Enable only after /livez is deployed and verified.
     if: vars.KEEPALIVE_ENABLED == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 6
     steps:
       - name: Request the demo process endpoint
         shell: bash
         run: |
-          curl --fail --silent --show-error --connect-timeout 10 --max-time 100 \
-            --output /tmp/liveness.json https://trymneme-api.onrender.com/livez
+          # Render spins the free-tier service down on idle; a sleeping process answers
+          # 502 for up to a minute while it wakes. Retry through the wake-up.
+          code=000
+          for attempt in $(seq 1 10); do
+            code=$(curl --silent --show-error --connect-timeout 10 --max-time 60 \
+              --output /tmp/liveness.json --write-out '%{http_code}' \
+              https://trymneme-api.onrender.com/livez || true)
+            if [ "$code" = "200" ]; then break; fi
+            echo "attempt $attempt: HTTP $code (service may be waking)"
+            sleep 20
+          done
+          if [ "$code" != "200" ]; then
+            echo "still HTTP $code after 10 attempts"
+            exit 1
+          fi
           python3 - <<'PY'
           import json
           with open('/tmp/liveness.json') as response:
