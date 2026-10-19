@@ -9,8 +9,8 @@ if (!process.env.DATABASE_URL && process.env.NODE_ENV !== 'test') {
 
 // postgres.js connection pool
 const client = postgres(connectionString, {
-  max: Number(process.env.DB_POOL_MAX ?? 20),
-  idle_timeout: 30,
+  max: Number(process.env.DB_POOL_MAX ?? 5),
+  idle_timeout: 20,
   connect_timeout: 10,
 });
 
