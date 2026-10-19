@@ -5,13 +5,22 @@ const logger = createLogger('llm-service');
 
 export class LLMService {
   private openai: OpenAI | null = null;
-  private readonly model = 'gpt-4o-mini';
+  private readonly model: string;
 
   constructor() {
-    if (process.env.OPENAI_API_KEY) {
+    // Groq exposes an OpenAI-compatible API with a free tier; prefer it when a key is set.
+    if (process.env.GROQ_API_KEY) {
+      this.openai = new OpenAI({
+        apiKey: process.env.GROQ_API_KEY,
+        baseURL: process.env.GROQ_BASE_URL || 'https://api.groq.com/openai/v1',
+      });
+      this.model = process.env.LLM_MODEL || 'llama-3.1-8b-instant';
+    } else if (process.env.OPENAI_API_KEY) {
       this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      this.model = process.env.LLM_MODEL || 'gpt-4o-mini';
     } else {
-      logger.warn('No OPENAI_API_KEY — LLM generation disabled');
+      this.model = 'gpt-4o-mini';
+      logger.warn('No GROQ_API_KEY or OPENAI_API_KEY — LLM generation disabled');
     }
   }
 
