@@ -94,7 +94,7 @@ const ExportSchema = z.object({
 
 const ImportSchema = z.object({
   format: z.enum(['mem0', 'zep', 'letta', 'mneme']).describe('Source format'),
-  data: z.record(z.unknown()).describe('Imported memory data object'),
+  data: z.record(z.string(), z.unknown()).describe('Imported memory data object'),
 });
 
 // ── Tool Definitions ──────────────────────────────────────────────────────────
@@ -408,7 +408,7 @@ export function createMnemeServer(cfg: McpConfig): Server {
       if (err instanceof z.ZodError) {
         throw new McpError(
           ErrorCode.InvalidParams,
-          `Invalid parameters: ${err.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`,
+          `Invalid parameters: ${err.issues.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`,
         );
       }
       if (err instanceof McpError) throw err;
