@@ -60,6 +60,7 @@
     "@hono/node-server": "^1.19.16",
     "fast-copy": "4.1.2",
     "qs": "6.17.0",
-    "body-parser": "2.4.0"
+    "body-parser": "2.4.0",
+    "zod": "4.6.7"
   }
 }
