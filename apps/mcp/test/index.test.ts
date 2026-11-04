@@ -110,6 +110,22 @@ describe('API failures surface as MCP errors', () => {
     await expect(c.client.callTool({ name: 'memory_list', arguments: {} })).rejects.toThrow(/non-JSON response \(HTTP 502\)/);
   });
 
+  it('rejects an HTTP failure even when its JSON claims success', async () => {
+    const c = await connect(() => ({ status: 503, json: { success: true, data: { memories: [] } } }));
+    await expect(c.client.callTool({ name: 'memory_list', arguments: {} })).rejects.toThrow(/HTTP 503/);
+  });
+
+  it.each([null, [], { success: 'true', data: {} }, { success: true }])(
+    'rejects a malformed API envelope: %j', async body => {
+      const c = await connect(() => ({ status: 200, json: body }));
+      await expect(c.client.callTool({ name: 'memory_list', arguments: {} })).rejects.toThrow(/invalid response envelope/);
+    });
+
+  it('does not pass a malformed API error message into MCP', async () => {
+    const c = await connect(() => ({ status: 400, json: { success: false, error: { message: { secret: 'fixture' } } } }));
+    await expect(c.client.callTool({ name: 'memory_list', arguments: {} })).rejects.toThrow(/API request failed/);
+  });
+
   it('reports an unreachable API', async () => {
     const c = await connect(() => Promise.reject(new Error('ECONNREFUSED')) as never);
     await expect(c.client.callTool({ name: 'memory_list', arguments: {} })).rejects.toThrow(/unreachable/);
