@@ -141,6 +141,20 @@ jobs:
           REDIS_URL: redis://localhost:6379
           ENCRYPTION_SECRET: ${{ secrets.ENCRYPTION_SECRET }}
 
+  test-typescript-sdk:
+    name: TypeScript SDK transport
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build --workspace=packages/shared
+      - run: npm run build --workspace=packages/sdk
+      - run: npm test --workspace=packages/sdk
+
   test-mcp:
     name: MCP transport and tool tests
     runs-on: ubuntu-latest
@@ -230,7 +244,7 @@ jobs:
     name: Docker Build & Push
     runs-on: ubuntu-latest
     # Wait for ALL validation to pass before pushing images
-    needs: [build, test-api, test-classifier, test-contracts, validate-migrations, test-mcp]
+    needs: [build, test-api, test-classifier, test-contracts, validate-migrations, test-mcp, test-typescript-sdk]
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v7
