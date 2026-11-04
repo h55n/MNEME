@@ -57,7 +57,7 @@
     "ip-address": "10.7.5",
     "fast-uri": "4.2.3",
     "hono": "4.13.13",
-    "@hono/node-server": "^1.19.16",
+    "@hono/node-server": "^2.1.6",
     "fast-copy": "4.1.2",
     "qs": "6.17.0",
     "body-parser": "2.4.0",
