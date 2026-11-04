@@ -50,7 +50,7 @@ export interface MnemeClientConfig {
   operatorPublicKey?: string;
   /** Base URL (default: http://localhost:3001/v1) */
   baseUrl?: string;
-  /** Request timeout in ms (default: 30000) */
+  /** Request timeout in ms, greater than 0 and at most 2147483647 (default: 30000) */
   timeout?: number;
 }
 
@@ -73,8 +73,11 @@ class HttpClient {
   private readonly timeout: number;
 
   constructor(config: MnemeClientConfig) {
-    this.baseUrl = config.baseUrl ?? 'http://localhost:3001/v1';
+    this.baseUrl = (config.baseUrl ?? 'http://localhost:3001/v1').replace(/\/+$/, '');
     this.timeout = config.timeout ?? 30_000;
+    if (!Number.isFinite(this.timeout) || this.timeout <= 0 || this.timeout > 2_147_483_647) {
+      throw new MnemeError('Request timeout must be a positive finite number no greater than 2147483647 ms', 'INVALID_CONFIG');
+    }
     this.headers = {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${config.apiKey}`,
@@ -96,22 +99,31 @@ class HttpClient {
         signal: controller.signal,
       });
 
-      let data: APIResponse<T>;
+      let data: unknown;
       try {
-        data = (await res.json()) as APIResponse<T>;
-      } catch {
+        data = await res.json();
+      } catch (err) {
+        if (controller.signal.aborted) throw err;
         throw new MnemeError(`Server returned a non-JSON response (HTTP ${res.status})`, 'BAD_RESPONSE', res.status);
       }
 
-      if (!data.success || !res.ok) {
+      if (typeof data !== 'object' || data === null || Array.isArray(data) ||
+          !('success' in data) || typeof data.success !== 'boolean') {
+        throw new MnemeError('Server returned an invalid response envelope', 'BAD_RESPONSE', res.status);
+      }
+      const envelope = data as APIResponse<T>;
+      if (!envelope.success || !res.ok) {
         throw new MnemeError(
-          data.error?.message ?? 'Request failed',
-          data.error?.code ?? 'UNKNOWN_ERROR',
+          typeof envelope.error?.message === 'string' ? envelope.error.message : 'Request failed',
+          typeof envelope.error?.code === 'string' ? envelope.error.code : 'UNKNOWN_ERROR',
           res.status,
         );
       }
 
-      return data.data as T;
+      if (!('data' in data)) {
+        throw new MnemeError('Server response is missing data', 'BAD_RESPONSE', res.status);
+      }
+      return envelope.data as T;
     } catch (err) {
       if (err instanceof MnemeError) throw err;
       if (err instanceof Error && err.name === 'AbortError') {
@@ -222,7 +234,7 @@ export class MarketResource {
 
   /** Get a specific memory pack */
   get(packId: string): Promise<MemoryPack> {
-    return this.http.get(`/market/packs/${packId}`);
+    return this.http.get(`/market/packs/${encodeURIComponent(packId)}`);
   }
 
   /**
@@ -235,12 +247,12 @@ export class MarketResource {
 
   /** Purchase a pack (handles USDC settlement off-chain, records on Monad) */
   purchase(packId: string, data: { buyerAddress: string; monadTxHash: string }): Promise<{ purchaseId: string }> {
-    return this.http.post(`/market/packs/${packId}/purchase`, data);
+    return this.http.post(`/market/packs/${encodeURIComponent(packId)}/purchase`, data);
   }
 
   /** Ingest a purchased pack into the target vault */
   ingest(vaultId: string, packId: string): Promise<{ imported: number }> {
-    return this.http.post(`/vaults/${vaultId}/ingest/${packId}`);
+    return this.http.post(`/vaults/${encodeURIComponent(vaultId)}/ingest/${encodeURIComponent(packId)}`);
   }
 
   /** Get your listed packs */
@@ -292,7 +304,7 @@ export class MnemeClient {
 
   constructor(private readonly config: MnemeClientConfig) {
     this.http = new HttpClient(config);
-    this.vaultId = config.vaultId;
+    this.vaultId = encodeURIComponent(config.vaultId);
 
     this.vault = new VaultsResource(this.http, this.vaultId);
     this.memories = new MemoriesResource(this.http, this.vaultId);

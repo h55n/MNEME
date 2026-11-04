@@ -10,11 +10,13 @@ const upstream: { url: string; auth: string; body: any }[] = [];
 
 let http: Server;
 let base: string;
+let upstreamStatus = 200;
+let upstreamBody: unknown = { success: true, data: { stored: true } };
 
 beforeAll(async () => {
   const fetchImpl = (async (url: string, init: RequestInit) => {
     upstream.push({ url, auth: (init.headers as any).Authorization, body: init.body ? JSON.parse(init.body as string) : undefined });
-    return new Response(JSON.stringify({ success: true, data: { stored: true } }));
+    return new Response(JSON.stringify(upstreamBody), { status: upstreamStatus });
   }) as unknown as typeof fetch;
   http = createMcpHttpServer({ apiBase: 'http://api.test/v1', fetchImpl });
   await new Promise<void>(r => http.listen(0, '127.0.0.1', r));
@@ -40,6 +42,25 @@ describe('remote MCP over Streamable HTTP', () => {
     expect(last.auth).toBe('Bearer user-key');
     expect(last.body.content).toBe('remote hello');
     await client.close();
+  });
+
+  it.each([
+    { status: 503, body: { success: true, data: {} }, message: /HTTP 503/ },
+    { status: 200, body: null, message: /invalid response envelope/ },
+  ])('returns an MCP error for a bad upstream response: $status', async ({ status, body, message }) => {
+    const client = new Client({ name: 'error-test', version: '1.0.0' }, { capabilities: {} });
+    try {
+      await client.connect(new StreamableHTTPClientTransport(new URL(`${base}/mcp`), {
+        requestInit: { headers: { Authorization: 'Bearer fixture-key', 'X-Mneme-Vault-Id': VAULT } },
+      }));
+      upstreamStatus = status;
+      upstreamBody = body;
+      await expect(client.callTool({ name: 'memory_list', arguments: {} })).rejects.toThrow(message);
+    } finally {
+      upstreamStatus = 200;
+      upstreamBody = { success: true, data: { stored: true } };
+      await client.close();
+    }
   });
 
   it('rejects a request with no bearer key', async () => {

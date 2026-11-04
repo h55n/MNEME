@@ -41,17 +41,26 @@ function makeApiCall(cfg: McpConfig) {
       throw new McpError(ErrorCode.InternalError, `MNEME API unreachable: ${String(err)}`);
     }
 
-    let data: { success: boolean; data?: T; error?: { message: string } };
+    let data: unknown;
     try {
-      data = (await res.json()) as typeof data;
+      data = await res.json();
     } catch {
       throw new McpError(ErrorCode.InternalError, `MNEME API returned a non-JSON response (HTTP ${res.status})`);
     }
 
-    if (!data.success) {
-      throw new McpError(ErrorCode.InternalError, data.error?.message ?? 'API request failed');
+    if (typeof data !== 'object' || data === null || Array.isArray(data) ||
+        !('success' in data) || typeof data.success !== 'boolean') {
+      throw new McpError(ErrorCode.InternalError, `MNEME API returned an invalid response envelope (HTTP ${res.status})`);
     }
-    return data.data as T;
+    const envelope = data as { success: boolean; data?: T; error?: { message?: unknown } };
+    if (!res.ok || !envelope.success) {
+      const message = typeof envelope.error?.message === 'string' ? envelope.error.message : 'API request failed';
+      throw new McpError(ErrorCode.InternalError, `${message} (HTTP ${res.status})`);
+    }
+    if (!('data' in data)) {
+      throw new McpError(ErrorCode.InternalError, `MNEME API returned an invalid response envelope (HTTP ${res.status}): missing data`);
+    }
+    return envelope.data as T;
   };
 }
 
